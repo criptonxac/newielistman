@@ -11,20 +11,19 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $testCategories = TestCategory::active()
-            ->ordered()
-            ->with(['activeTests' => function ($query) {
-                $query->byType('familiarisation')->take(3);
-            }])
+        $testCategories = TestCategory::where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->with('activeTests')
             ->get();
 
         // So'nggi test statistikasi
-        $totalTests = Test::active()->count();
+        $totalTests = Test::where('is_active', true)->count();
         $totalAttempts = UserTestAttempt::count();
-        $completedTests = UserTestAttempt::completed()->count();
+        $completedTests = UserTestAttempt::where('status', 'completed')->count();
 
-        $featuredTests = Test::active()
-            ->byType('familiarisation')
+        $featuredTests = Test::where('is_active', true)
+            ->where('type', 'familiarisation')
             ->with('category')
             ->take(3)
             ->get();

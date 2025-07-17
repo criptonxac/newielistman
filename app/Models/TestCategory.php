@@ -42,4 +42,9 @@ class TestCategory extends Model
     {
         return $query->orderBy('sort_order')->orderBy('name');
     }
+
+    public function getActiveTestsCountAttribute()
+    {
+        return $this->activeTests()->count();
+    }
 }
