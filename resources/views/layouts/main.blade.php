@@ -75,9 +75,6 @@
                         <a href="{{ route('login') }}" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
                             Kirish
                         </a>
-                        <a href="{{ route('register') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                            Ro'yxatdan o'tish
-                        </a>
                     @endauth
                 </div>
 
@@ -117,9 +114,6 @@
                     @else
                         <a href="{{ route('login') }}" class="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors">
                             Kirish
-                        </a>
-                        <a href="{{ route('register') }}" class="bg-blue-600 hover:bg-blue-700 text-white block px-3 py-2 rounded-lg text-base font-medium transition-colors mx-3 mt-2 text-center">
-                            Ro'yxatdan o'tish
                         </a>
                     @endauth
                 </div>
