@@ -13,6 +13,15 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/categories', [TestCategoryController::class, 'index'])->name('categories.index');
 Route::get('/categories/{category:slug}', [TestCategoryController::class, 'show'])->name('categories.show');
 
+// Statik sahifalar
+Route::get('/about', function () {
+    return view('pages.about');
+})->name('about');
+
+Route::get('/help', function () {
+    return view('pages.help');
+})->name('help');
+
 // Testlar
 Route::prefix('tests')->name('tests.')->group(function () {
     Route::get('/{test:slug}', [TestController::class, 'show'])->name('show');

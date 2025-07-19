@@ -48,10 +48,10 @@
                     <a href="{{ route('categories.index') }}" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
                         Testlar
                     </a>
-                    <a href="#" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                    <a href="{{ route('about') }}" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
                         Haqida
                     </a>
-                    <a href="#" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                    <a href="{{ route('help') }}" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
                         Yordam
                     </a>
                 </div>
@@ -98,10 +98,10 @@
                     <a href="{{ route('categories.index') }}" class="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors">
                         Testlar
                     </a>
-                    <a href="#" class="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors">
+                    <a href="{{ route('about') }}" class="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors">
                         Haqida
                     </a>
-                    <a href="#" class="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors">
+                    <a href="{{ route('help') }}" class="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors">
                         Yordam
                     </a>
                     @auth
