@@ -131,6 +131,22 @@ class TestQuestionSeeder extends Seeder
                 'points' => 1,
                 'explanation' => 'The operating hours are clearly stated in the notice.',
                 'sort_order' => 1
+            ],
+            [
+                'test_id' => 6,
+                'question_number' => 2,
+                'question_type' => 'multiple_choice',
+                'question_text' => 'What is the main purpose of the community center?',
+                'options' => [
+                    'Sports activities only',
+                    'Educational programs only', 
+                    'Mixed community activities',
+                    'Senior citizen programs only'
+                ],
+                'correct_answer' => 'Mixed community activities',
+                'points' => 1,
+                'explanation' => 'The text mentions various types of community programs.',
+                'sort_order' => 2
             ]
         ];
 
