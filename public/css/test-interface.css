@@ -1,0 +1,553 @@
+
+/* Test Interface Styles */
+
+.test-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+.test-header {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.test-info h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.test-info p {
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.test-timer {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    min-width: 150px;
+    text-align: center;
+}
+
+.test-timer.timer-warning {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.progress-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.progress-bar-container {
+    background: #e5e7eb;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, #10b981, #059669);
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.question-navigation {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.question-indicator {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.question-indicator:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.question-indicator.current {
+    border-color: #3b82f6;
+    background: #3b82f6;
+    color: white;
+}
+
+.question-indicator.answered {
+    border-color: #10b981;
+    background: #10b981;
+    color: white;
+}
+
+.question-container {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.question-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.question-number {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 1rem;
+}
+
+.question-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.question-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #374151;
+    margin-bottom: 1.5rem;
+}
+
+.question-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 1rem 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.options-container {
+    margin: 1.5rem 0;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.option:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.option.selected {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.option input[type="radio"],
+.option input[type="checkbox"] {
+    margin-right: 1rem;
+    width: 18px;
+    height: 18px;
+}
+
+.option label {
+    flex: 1;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.text-input-container {
+    margin: 1.5rem 0;
+}
+
+.text-input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.text-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.textarea-input {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.essay-input {
+    min-height: 300px;
+}
+
+.word-count {
+    text-align: right;
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+}
+
+.word-count.over-limit {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.audio-player {
+    background: #f3f4f6;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    border: 2px solid #e5e7eb;
+}
+
+.audio-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.audio-controls button {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.audio-controls button:hover {
+    background: #1d4ed8;
+}
+
+.audio-progress-container {
+    flex: 1;
+    height: 6px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.audio-progress-bar {
+    height: 100%;
+    background: #3b82f6;
+    border-radius: 3px;
+    transition: width 0.1s ease;
+}
+
+.audio-time {
+    font-size: 0.9rem;
+    color: #6b7280;
+    min-width: 100px;
+    text-align: center;
+}
+
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.nav-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.nav-btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.nav-btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+.nav-btn-primary {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+}
+
+.nav-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.nav-btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.nav-btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.test-instructions {
+    background: #fef3c7;
+    border: 2px solid #f59e0b;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.test-instructions h3 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: #92400e;
+}
+
+.test-instructions h3 i {
+    margin-right: 0.5rem;
+}
+
+.test-instructions ul {
+    list-style-type: disc;
+    margin-left: 1.5rem;
+    color: #92400e;
+}
+
+.test-instructions li {
+    margin-bottom: 0.5rem;
+}
+
+/* Notifications */
+.test-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    z-index: 1000;
+    max-width: 300px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.test-notification.notification-success {
+    border-left: 4px solid #10b981;
+}
+
+.test-notification.notification-warning {
+    border-left: 4px solid #f59e0b;
+}
+
+.test-notification.notification-error {
+    border-left: 4px solid #ef4444;
+}
+
+.test-warning {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fef2f2;
+    border: 2px solid #ef4444;
+    border-radius: 12px;
+    padding: 2rem;
+    z-index: 1001;
+    max-width: 400px;
+    text-align: center;
+    animation: popIn 0.3s ease-out;
+}
+
+.warning-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.warning-content i {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes popIn {
+    from {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Reading passage styles */
+.reading-passage {
+    background: #f8fafc;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+.reading-passage h3 {
+    color: #1f2937;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.reading-passage p {
+    margin-bottom: 1rem;
+    color: #374151;
+}
+
+/* Writing task styles */
+.writing-task {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+}
+
+.task-requirements {
+    background: #eff6ff;
+    border: 2px solid #3b82f6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.task-requirements h4 {
+    color: #1d4ed8;
+    margin-bottom: 0.5rem;
+}
+
+.task-requirements ul {
+    list-style-type: disc;
+    margin-left: 1.5rem;
+    color: #1e40af;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .test-container {
+        padding: 1rem 0.5rem;
+    }
+    
+    .test-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .question-navigation {
+        grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
+    }
+    
+    .question-indicator {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+    
+    .navigation-buttons {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .nav-btn {
+        width: 100%;
+    }
+    
+    .audio-controls {
+        flex-wrap: wrap;
+    }
+    
+    .audio-progress-container {
+        order: 3;
+        width: 100%;
+        margin-top: 1rem;
+    }
+}
