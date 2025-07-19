@@ -24,6 +24,120 @@
     <link href="{{ asset('css/test-interface.css') }}" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
-    @yield('content')
+    <!-- Header Navigation -->
+    <header class="bg-white shadow-sm">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo and Brand -->
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <a href="{{ route('home') }}" class="flex items-center">
+                            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-graduation-cap text-white text-lg"></i>
+                            </div>
+                            <span class="text-xl font-bold text-gray-900">IELTS Platform</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{{ route('home') }}" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                        Bosh sahifa
+                    </a>
+                    <a href="{{ route('categories.index') }}" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                        Testlar
+                    </a>
+                    <a href="#" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                        Haqida
+                    </a>
+                    <a href="#" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                        Yordam
+                    </a>
+                </div>
+
+                <!-- Auth Links -->
+                <div class="flex items-center space-x-4">
+                    @auth
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm text-gray-700">Salom, {{ Auth::user()->name }}!</span>
+                            <a href="{{ route('dashboard') }}" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                                Dashboard
+                            </a>
+                            <form method="POST" action="{{ route('logout') }}" class="inline">
+                                @csrf
+                                <button type="submit" class="text-gray-600 hover:text-red-600 px-3 py-2 text-sm font-medium transition-colors">
+                                    Chiqish
+                                </button>
+                            </form>
+                        </div>
+                    @else
+                        <a href="{{ route('login') }}" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                            Kirish
+                        </a>
+                        <a href="{{ route('register') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            Ro'yxatdan o'tish
+                        </a>
+                    @endauth
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button type="button" class="text-gray-600 hover:text-blue-600 p-2" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="hidden md:hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50">
+                    <a href="{{ route('home') }}" class="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors">
+                        Bosh sahifa
+                    </a>
+                    <a href="{{ route('categories.index') }}" class="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors">
+                        Testlar
+                    </a>
+                    <a href="#" class="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors">
+                        Haqida
+                    </a>
+                    <a href="#" class="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors">
+                        Yordam
+                    </a>
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors">
+                            Dashboard
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" class="px-3 py-2">
+                            @csrf
+                            <button type="submit" class="text-gray-600 hover:text-red-600 text-base font-medium transition-colors">
+                                Chiqish
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium transition-colors">
+                            Kirish
+                        </a>
+                        <a href="{{ route('register') }}" class="bg-blue-600 hover:bg-blue-700 text-white block px-3 py-2 rounded-lg text-base font-medium transition-colors mx-3 mt-2 text-center">
+                            Ro'yxatdan o'tish
+                        </a>
+                    @endauth
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        @yield('content')
+    </main>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+    </script>
 </body>
 </html>
