@@ -4,29 +4,36 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
     <title>@yield('title', 'IELTS Tayyorgarlik Platformasi')</title>
     <meta name="description" content="@yield('description', 'IELTS imtihoniga tayyorgarlik platformasi. Familiarisation testlar, namuna testlar va tayyorgarlik materiallari.')">
-    
+
     <!-- Open Graph -->
     <meta property="og:title" content="@yield('title', 'IELTS Tayyorgarlik Platformasi')">
     <meta property="og:description" content="@yield('description', 'IELTS imtihoniga tayyorgarlik platformasi')">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
-    
-    <!-- Icons -->
+
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Styles -->
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/test-interface.css') }}">
+
+    <!-- Vite CSS -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
+
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     @stack('styles')
 </head>
 <body class="font-inter antialiased bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
@@ -46,7 +53,7 @@
                         </div>
                     </a>
                 </div>
-                
+
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="{{ route('home') }}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
@@ -62,7 +69,7 @@
                         <i class="fas fa-download mr-2"></i>Resurslar
                     </a>
                 </div>
-                
+
                 <!-- User Menu -->
                 <div class="flex items-center space-x-4">
                     @auth
@@ -74,7 +81,7 @@
                                 <span class="hidden md:block text-sm font-medium">{{ Auth::user()->name }}</span>
                                 <i class="fas fa-chevron-down text-xs"></i>
                             </button>
-                            
+
                             <div x-show="open" @click.outside="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                                 <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
@@ -100,7 +107,7 @@
                         </a>
                     @endauth
                 </div>
-                
+
                 <!-- Mobile menu button -->
                 <div class="md:hidden flex items-center">
                     <button x-data @click="$refs.mobileMenu.classList.toggle('hidden')" class="text-gray-700 hover:text-blue-600">
@@ -109,7 +116,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Mobile Navigation -->
         <div x-ref="mobileMenu" class="hidden md:hidden bg-white border-t border-gray-200">
             <div class="px-2 pt-2 pb-3 space-y-1">
@@ -128,25 +135,25 @@
             </div>
         </div>
     </nav>
-    
+
     <!-- Flash Messages -->
     @if(session('success'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mx-4 mt-4" role="alert">
             <span class="block sm:inline">{{ session('success') }}</span>
         </div>
     @endif
-    
+
     @if(session('error'))
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mx-4 mt-4" role="alert">
             <span class="block sm:inline">{{ session('error') }}</span>
         </div>
     @endif
-    
+
     <!-- Main Content -->
     <main>
         @yield('content')
     </main>
-    
+
     <!-- Footer -->
     <footer class="bg-gray-900 text-white mt-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -175,7 +182,7 @@
                         </a>
                     </div>
                 </div>
-                
+
                 <!-- Quick Links -->
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Tezkor havolalar</h4>
@@ -186,7 +193,7 @@
                         <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Javoblar varaqasi</a></li>
                     </ul>
                 </div>
-                
+
                 <!-- Support -->
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Yordam</h4>
@@ -198,13 +205,13 @@
                     </ul>
                 </div>
             </div>
-            
+
             <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
                 <p>&copy; 2025 IELTS Platform. Barcha huquqlar himoyalangan.</p>
             </div>
         </div>
     </footer>
-    
+
     @stack('scripts')
 </body>
 </html>
