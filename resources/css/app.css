@@ -1,5 +1,5 @@
 
-@tailwind base;
+<old_str>@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -125,4 +125,52 @@
       @apply w-full;
     }
   }
+}</old_str>
+<new_str>@tailwind utilities;
+
+/* Custom styles */
+.scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
+
+.scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hidden-x {
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hidden-x::-webkit-scrollbar {
+    display: none;
+}
+
+/* Animation classes */
+.transform {
+    transform: translateZ(0);
+}
+
+.transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.duration-200 {
+    transition-duration: 200ms;
+}
+
+.duration-300 {
+    transition-duration: 300ms;
+}
+
+.hover\:scale-105:hover {
+    transform: scale(1.05);
+}
+
+.hover\:-translate-y-1:hover {
+    transform: translateY(-0.25rem);
+}</new_str>
