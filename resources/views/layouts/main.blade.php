@@ -15,10 +15,6 @@
 
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
-    <!-- Fallback CSS -->
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/test-interface.css') }}" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
     @yield('content')
