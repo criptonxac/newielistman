@@ -23,10 +23,65 @@ Route::prefix('tests')->name('tests.')->group(function () {
     Route::get('/{test:slug}/attempt/{attempt}/results', [TestController::class, 'results'])->name('results');
 });
 
-// Autentifikatsiya kerak bo'lgan route'lar
+// Role-based dashboard redirect
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $user = auth()->user();
+    
+    if (!$user) {
+        return redirect()->route('login');
+    }
+
+    switch ($user->role) {
+        case 'admin':
+            return redirect()->route('admin.dashboard');
+        case 'teacher':
+            return redirect()->route('teacher.dashboard');
+        case 'student':
+            return redirect()->route('student.dashboard');
+        default:
+            return redirect()->route('home');
+    }
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// Admin routes
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/users', [App\Http\Controllers\AdminController::class, 'users'])->name('users');
+    Route::get('/users/create', [App\Http\Controllers\AdminController::class, 'createUser'])->name('users.create');
+    Route::post('/users', [App\Http\Controllers\AdminController::class, 'storeUser'])->name('users.store');
+    Route::get('/users/{user}/edit', [App\Http\Controllers\AdminController::class, 'editUser'])->name('users.edit');
+    Route::patch('/users/{user}', [App\Http\Controllers\AdminController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{user}', [App\Http\Controllers\AdminController::class, 'destroyUser'])->name('users.destroy');
+    Route::get('/statistics', [App\Http\Controllers\AdminController::class, 'statistics'])->name('statistics');
+    Route::get('/export-results', [App\Http\Controllers\AdminController::class, 'exportResults'])->name('export.results');
+    Route::get('/tests', [App\Http\Controllers\AdminController::class, 'tests'])->name('tests');
+    Route::get('/tests/create', [App\Http\Controllers\AdminController::class, 'createTest'])->name('tests.create');
+    Route::post('/tests', [App\Http\Controllers\AdminController::class, 'storeTest'])->name('tests.store');
+});
+
+// Teacher routes
+Route::prefix('teacher')->name('teacher.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\TeacherController::class, 'dashboard'])->name('dashboard');
+    Route::get('/tests', [App\Http\Controllers\TeacherController::class, 'tests'])->name('tests');
+    Route::get('/tests/create', [App\Http\Controllers\TeacherController::class, 'createTest'])->name('tests.create');
+    Route::post('/tests', [App\Http\Controllers\TeacherController::class, 'storeTest'])->name('tests.store');
+    Route::get('/tests/{test}', [App\Http\Controllers\TeacherController::class, 'showTest'])->name('tests.show');
+    Route::get('/tests/{test}/edit', [App\Http\Controllers\TeacherController::class, 'editTest'])->name('tests.edit');
+    Route::patch('/tests/{test}', [App\Http\Controllers\TeacherController::class, 'updateTest'])->name('tests.update');
+    Route::get('/tests/{test}/questions', [App\Http\Controllers\TeacherController::class, 'questions'])->name('tests.questions');
+    Route::get('/tests/{test}/questions/create', [App\Http\Controllers\TeacherController::class, 'createQuestion'])->name('tests.questions.create');
+    Route::post('/tests/{test}/questions', [App\Http\Controllers\TeacherController::class, 'storeQuestion'])->name('tests.questions.store');
+    Route::get('/results', [App\Http\Controllers\TeacherController::class, 'results'])->name('results');
+    Route::get('/students/{student}/results', [App\Http\Controllers\TeacherController::class, 'studentResults'])->name('students.results');
+});
+
+// Student routes
+Route::prefix('student')->name('student.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\StudentController::class, 'dashboard'])->name('dashboard');
+    Route::get('/tests', [App\Http\Controllers\StudentController::class, 'tests'])->name('tests');
+    Route::get('/results', [App\Http\Controllers\StudentController::class, 'results'])->name('results');
+    Route::get('/profile', [App\Http\Controllers\StudentController::class, 'profile'])->name('profile');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

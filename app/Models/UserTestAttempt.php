@@ -60,6 +60,22 @@ class UserTestAttempt extends Model
         return $query->where('session_id', $sessionId);
     }
 
+    public function scopeToday($query)
+    {
+        return $query->whereDate('created_at', today());
+    }
+
+    public function scopeThisWeek($query)
+    {
+        return $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+    }
+
+    public function scopeThisMonth($query)
+    {
+        return $query->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year);
+    }
+
     public function calculateScore()
     {
         $this->correct_answers = $this->userAnswers()->where('is_correct', true)->count();

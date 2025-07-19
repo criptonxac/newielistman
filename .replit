@@ -6,3 +6,15 @@ channel = "stable-24_05"
 [[ports]]
 localPort = 8000
 externalPort = 80
+
+[workflows]
+runButton = "Laravel Server"
+
+[[workflows.workflow]]
+name = "Laravel Server"
+author = 45150719
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "php artisan serve --host=0.0.0.0 --port=5000"
