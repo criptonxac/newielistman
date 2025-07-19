@@ -10,7 +10,7 @@ IELTS.com.au saytiga o'xshash, lekin o'zgartirilgan dizaynli IELTS tayyorgarlik 
 
 ## Project Architecture
 - **Framework**: Laravel 12.x
-- **Database**: SQLite (development)
+- **Database**: PostgreSQL (database name: `ielist`)
 - **Frontend**: Blade templates with modern CSS/JS
 - **CSS Framework**: TailwindCSS
 - **Authentication**: Laravel Breeze/built-in auth
@@ -55,7 +55,8 @@ IELTS.com.au saytiga o'xshash, lekin o'zgartirilgan dizaynli IELTS tayyorgarlik 
 - Modern UI/UX created with TailwindCSS and professional design
 - Database seeded with authentic IELTS test data (Listening, Academic Reading, Academic Writing, General Training Reading)
 - Sample tests and questions added with realistic content
-- Laravel server successfully deployed and running on port 8000
+- Laravel server successfully deployed and running on port 5000
+- **PostgreSQL migration completed (July 19, 2025)**: SQLite dan PostgreSQL ga ko'chirildi, database nomi `ielist`
 
 ## Database Structure
 - **test_categories**: Listening, Academic Reading, Academic Writing, General Training Reading
