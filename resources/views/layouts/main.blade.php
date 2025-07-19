@@ -99,11 +99,8 @@
                             </div>
                         </div>
                     @else
-                        <a href="{{ route('login') }}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                        <a href="{{ route('login') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
                             <i class="fas fa-sign-in-alt mr-2"></i>Kirish
-                        </a>
-                        <a href="{{ route('register') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                            <i class="fas fa-user-plus mr-2"></i>Ro'yxatdan o'tish
                         </a>
                     @endauth
                 </div>
