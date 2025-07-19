@@ -4,6 +4,10 @@ modules = ["php-8.2", "nodejs-20"]
 channel = "stable-24_05"
 
 [[ports]]
+localPort = 5000
+externalPort = 5000
+
+[[ports]]
 localPort = 8000
 externalPort = 80
 
