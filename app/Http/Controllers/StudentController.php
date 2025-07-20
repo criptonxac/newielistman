@@ -1,4 +1,3 @@
-
 <?php
 
 namespace App\Http\Controllers;
@@ -28,45 +27,32 @@ class StudentController extends Controller
         $stats = [
             'total_tests' => $user->testAttempts()->count(),
             'completed_tests' => $user->completedAttempts()->count(),
-            'average_score' => $user->getAverageScore(),
-            'best_score' => $user->completedAttempts()->max('total_score') ?? 0,
+            'average_score' => $user->completedAttempts()->avg('score') ?? 0,
         ];
 
         $recentAttempts = $user->testAttempts()
-            ->with('test.category')
+            ->with('test')
             ->latest()
             ->limit(5)
             ->get();
 
-        $categories = TestCategory::with(['activeTests' => function($query) {
-            $query->where('is_active', true);
-        }])->get();
-
-        return view('student.dashboard', compact('stats', 'recentAttempts', 'categories'));
+        return view('student.dashboard', compact('stats', 'recentAttempts'));
     }
 
     public function tests()
     {
-        $categories = TestCategory::with(['activeTests' => function($query) {
-            $query->where('is_active', true);
-        }])->get();
-
+        $categories = TestCategory::with('tests')->get();
         return view('student.tests', compact('categories'));
     }
 
     public function results()
     {
         $user = auth()->user();
-        $attempts = $user->completedAttempts()
-            ->with(['test.category'])
+        $attempts = $user->testAttempts()
+            ->with('test')
             ->latest()
             ->paginate(10);
 
         return view('student.results', compact('attempts'));
-    }
-
-    public function profile()
-    {
-        return view('student.profile');
     }
 }
