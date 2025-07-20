@@ -53,6 +53,25 @@ Route::get('/dashboard', function () {
     }
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// Direct admin access (development only)
+Route::get('/admin-direct', function () {
+    // Create temporary admin session
+    $adminUser = App\Models\User::where('role', 'admin')->first();
+    if (!$adminUser) {
+        // Create admin user if not exists
+        $adminUser = App\Models\User::create([
+            'name' => 'Admin User',
+            'email' => 'admin@ielts.com',
+            'password' => bcrypt('admin123'),
+            'role' => 'admin',
+            'email_verified_at' => now(),
+        ]);
+    }
+    
+    auth()->login($adminUser);
+    return redirect()->route('admin.dashboard');
+})->name('admin.direct');
+
 // Admin routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\AdminController::class, 'dashboard'])->name('dashboard');

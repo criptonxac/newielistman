@@ -32,7 +32,26 @@ class AdminController extends Controller
             'total_attempts' => UserTestAttempt::count(),
         ];
 
-        return view('admin.dashboard', compact('stats'));
+        // Demo data for charts
+        $weeklyStats = collect([
+            ['date' => 'Dushanba', 'count' => 45],
+            ['date' => 'Seshanba', 'count' => 62],
+            ['date' => 'Chorshanba', 'count' => 38],
+            ['date' => 'Payshanba', 'count' => 71],
+            ['date' => 'Juma', 'count' => 89],
+            ['date' => 'Shanba', 'count' => 56],
+            ['date' => 'Yakshanba', 'count' => 43],
+        ]);
+
+        $categoryStats = collect([
+            ['name' => 'Listening', 'count' => 156],
+            ['name' => 'Academic Reading', 'count' => 134],
+            ['name' => 'General Reading', 'count' => 98],
+            ['name' => 'Academic Writing', 'count' => 87],
+            ['name' => 'General Writing', 'count' => 76],
+        ]);
+
+        return view('admin.dashboard', compact('stats', 'weeklyStats', 'categoryStats'));
     }
 
     public function users()
