@@ -22,7 +22,7 @@ class AdminController extends Controller
         });
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $stats = [
             'total_users' => User::count(),
@@ -54,13 +54,13 @@ class AdminController extends Controller
         return view('admin.dashboard', compact('stats', 'weeklyStats', 'categoryStats'));
     }
 
-    public function users()
+    public function users(Request $request)
     {
         $users = User::paginate(20);
         return view('admin.users', compact('users'));
     }
 
-    public function tests()
+    public function tests(Request $request)
     {
         $tests = Test::with('category')->paginate(20);
         return view('admin.tests', compact('tests'));

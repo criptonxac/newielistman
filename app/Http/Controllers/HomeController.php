@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $testCategories = TestCategory::where('is_active', true)
             ->orderBy('sort_order')

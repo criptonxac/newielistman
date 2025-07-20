@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class TestCategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $categories = TestCategory::active()
             ->ordered()
@@ -17,7 +17,7 @@ class TestCategoryController extends Controller
         return view('categories.index', compact('categories'));
     }
 
-    public function show(TestCategory $category)
+    public function show(TestCategory $category, Request $request)
     {
         $category->load(['activeTests' => function ($query) {
             $query->orderBy('created_at', 'desc');

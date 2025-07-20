@@ -22,7 +22,7 @@ class TeacherController extends Controller
         });
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $stats = [
             'total_tests' => Test::count(),
@@ -39,13 +39,13 @@ class TeacherController extends Controller
         return view('teacher.dashboard', compact('stats', 'recent_attempts'));
     }
 
-    public function students()
+    public function students(Request $request)
     {
         $students = User::where('role', 'student')->paginate(20);
         return view('teacher.students', compact('students'));
     }
 
-    public function results()
+    public function results(Request $request)
     {
         $results = UserTestAttempt::with(['user', 'test'])
             ->latest()

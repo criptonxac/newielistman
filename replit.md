@@ -109,6 +109,11 @@ IELTS.com.au saytiga o'xshash, lekin o'zgartirilgan dizaynli IELTS tayyorgarlik 
     - Faqat login/logout qoldirildi
   - Jami view fayllar soni: 42 → 19 (55% kamaytirish)
   - Auth controller fayllar soni: 8 → 1 (faqat AuthenticatedSessionController)
+  - **Kernel va Middleware fayllar yaratildi (July 20, 2025)**
+    - app/Console/Kernel.php va app/Http/Kernel.php yaratildi
+    - 9 ta middleware fayl yaratildi (Authenticate, VerifyCsrfToken, va h.k.)
+    - Barcha controller metodlari Request parametr bilan yangilandi
+    - Loyiha to'liq strukturaga keltirildi
 
 ## Next Steps
 - Add test taking functionality with timer and progress tracking

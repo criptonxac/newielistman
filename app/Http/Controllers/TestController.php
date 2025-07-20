@@ -11,14 +11,14 @@ use Illuminate\Support\Str;
 
 class TestController extends Controller
 {
-    public function show(Test $test)
+    public function show(Test $test, Request $request)
     {
         $test->load(['category', 'questions']);
         
         return view('tests.show', compact('test'));
     }
 
-    public function start(Test $test)
+    public function start(Test $test, Request $request)
     {
         $sessionId = session()->getId();
         
@@ -54,7 +54,7 @@ class TestController extends Controller
         return redirect()->route('tests.take', ['test' => $test, 'attempt' => $attempt]);
     }
 
-    public function take(Test $test, UserTestAttempt $attempt)
+    public function take(Test $test, UserTestAttempt $attempt, Request $request)
     {
         // Authorization check
         if (!$this->canAccessAttempt($attempt)) {
@@ -108,7 +108,7 @@ class TestController extends Controller
         ]);
     }
 
-    public function submitTest(Test $test, UserTestAttempt $attempt)
+    public function submitTest(Test $test, UserTestAttempt $attempt, Request $request)
     {
         if (!$this->canAccessAttempt($attempt)) {
             abort(403);

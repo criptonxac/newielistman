@@ -20,7 +20,7 @@ class StudentController extends Controller
         });
     }
 
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $user = auth()->user();
         
@@ -42,13 +42,13 @@ class StudentController extends Controller
         return view('student.dashboard', compact('stats', 'recent_attempts', 'test_categories'));
     }
 
-    public function tests()
+    public function tests(Request $request)
     {
         $categories = TestCategory::with('tests')->get();
         return view('student.tests', compact('categories'));
     }
 
-    public function results()
+    public function results(Request $request)
     {
         $user = auth()->user();
         $attempts = $user->testAttempts()
