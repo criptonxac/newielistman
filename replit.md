@@ -101,8 +101,14 @@ IELTS.com.au saytiga o'xshash, lekin o'zgartirilgan dizaynli IELTS tayyorgarlik 
   - ProfileController o'chirildi
   - Auth-related ishlatilmayotgan fayllar o'chirildi
   - Route'lar soddalashtitildi
-  - Jami view fayllar soni: 42 → 22 (47% kamaytirish)
-  - Controller fayllar soni: 9 → 7 (Auth Controller'larsiz)
+  - **Register sahifasi va functionality o'chirildi (July 20, 2025)**
+    - register.blade.php o'chirildi
+    - RegisteredUserController va boshqa auth controllers o'chirildi
+    - Password reset functionality o'chirildi
+    - Email verification o'chirildi
+    - Faqat login/logout qoldirildi
+  - Jami view fayllar soni: 42 → 19 (55% kamaytirish)
+  - Auth controller fayllar soni: 8 → 1 (faqat AuthenticatedSessionController)
 
 ## Next Steps
 - Add test taking functionality with timer and progress tracking
