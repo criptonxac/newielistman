@@ -25,18 +25,21 @@ class StudentController extends Controller
         $user = auth()->user();
         
         $stats = [
-            'total_tests' => $user->testAttempts()->count(),
-            'completed_tests' => $user->completedAttempts()->count(),
-            'average_score' => $user->completedAttempts()->avg('score') ?? 0,
+            'completed_tests' => $user->testAttempts()->whereNotNull('completed_at')->count(),
+            'average_score' => $user->testAttempts()->whereNotNull('completed_at')->avg('score') ?? 0,
+            'highest_score' => $user->testAttempts()->whereNotNull('completed_at')->max('score') ?? 0,
+            'total_time' => $user->testAttempts()->whereNotNull('completed_at')->sum('duration') ?? 0,
         ];
 
-        $recentAttempts = $user->testAttempts()
+        $recent_attempts = $user->testAttempts()
             ->with('test')
             ->latest()
             ->limit(5)
             ->get();
 
-        return view('student.dashboard', compact('stats', 'recentAttempts'));
+        $test_categories = TestCategory::withCount('tests')->get();
+
+        return view('student.dashboard', compact('stats', 'recent_attempts', 'test_categories'));
     }
 
     public function tests()

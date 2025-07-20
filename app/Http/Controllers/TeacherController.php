@@ -28,9 +28,15 @@ class TeacherController extends Controller
             'total_tests' => Test::count(),
             'total_students' => User::where('role', 'student')->count(),
             'total_attempts' => UserTestAttempt::count(),
+            'average_score' => UserTestAttempt::whereNotNull('completed_at')->avg('score') ?? 0,
         ];
 
-        return view('teacher.dashboard', compact('stats'));
+        $recent_attempts = UserTestAttempt::with(['user', 'test'])
+            ->latest()
+            ->limit(10)
+            ->get();
+
+        return view('teacher.dashboard', compact('stats', 'recent_attempts'));
     }
 
     public function students()
