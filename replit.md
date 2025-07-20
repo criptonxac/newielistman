@@ -57,6 +57,8 @@ IELTS.com.au saytiga o'xshash, lekin o'zgartirilgan dizaynli IELTS tayyorgarlik 
 - Sample tests and questions added with realistic content
 - Laravel server successfully deployed and running on port 5000
 - **PostgreSQL migration completed (July 19, 2025)**: SQLite dan PostgreSQL ga ko'chirildi, database nomi `ielist`
+- **New admin dashboard design implemented (July 20, 2025)**: User-provided mockup-based modern design with DashboardKit sidebar
+- **Cleanup completed (July 20, 2025)**: Ishlatilmayotgan sahifalar va controllerlar o'chirildi
 
 ## Database Structure
 - **test_categories**: Listening, Academic Reading, Academic Writing, General Training Reading
@@ -86,6 +88,21 @@ IELTS.com.au saytiga o'xshash, lekin o'zgartirilgan dizaynli IELTS tayyorgarlik 
   - View [tests.show], [tests.take] fayllar mavjud va ishlayapti
   - Login sahifasiga tezkor kirish tugmalari qo'shildi (rangdor tugmalar)
   - CSRF token muammolari hal qilindi
+✅ **Admin dashboard redesigned (July 20, 2025)**: Zamonaviy DashboardKit dizayni qo'llandi
+  - Chap sidebar navigation bilan
+  - Modern statistika kartlari
+  - Interactive charts (Chart.js)
+  - Purple/indigo gradient color scheme
+  - Professional layout va design
+✅ **Code cleanup completed (July 20, 2025)**: Loyiha tozalandi
+  - Ishlatilmayotgan view fayllar o'chirildi (dashboard.blade.php, welcome.blade.php)
+  - Kerakmas layout fayllar o'chirildi (app.blade.php, guest.blade.php, navigation.blade.php)
+  - Components va profile fayllar o'chirildi
+  - ProfileController o'chirildi
+  - Auth-related ishlatilmayotgan fayllar o'chirildi
+  - Route'lar soddalashtitildi
+  - Jami view fayllar soni: 42 → 22 (47% kamaytirish)
+  - Controller fayllar soni: 9 → 7 (Auth Controller'larsiz)
 
 ## Next Steps
 - Add test taking functionality with timer and progress tracking
