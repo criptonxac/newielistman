@@ -198,7 +198,7 @@ function saveCurrentAnswer() {
         if (input.value.trim() !== '') {
             const questionId = input.name.replace('question_', '');
             
-            fetch(`/tests/${testId}/attempt/${attemptId}/answer`, {
+            fetch(`{{ route('tests.submit-answer', ['test' => $test->slug, 'attempt' => $attempt->id]) }}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -215,7 +215,7 @@ function saveCurrentAnswer() {
 
 // Finish test function  
 function finishTest() {
-    fetch(`{{ route('tests.submit', ['test' => $test->slug, 'attempt' => $attempt->id]) }}`, {
+    fetch(`{{ route('tests.complete', ['test' => $test->slug, 'attempt' => $attempt->id]) }}`, {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
