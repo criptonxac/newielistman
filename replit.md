@@ -80,6 +80,12 @@ IELTS.com.au saytiga o'xshash, lekin o'zgartirilgan dizaynli IELTS tayyorgarlik 
   - Auth sahifalari (login, register) faol
   - Static sahifalar (about, help) mavjud
   - Test kategoriyalari va alohida testlar ochiladi
+✅ **Critical bugs fixed (July 20, 2025)**: Server errors tuzatildi
+  - Route [tests.submit] qo'shildi va submitTest() method yaratildi
+  - Undefined variable $slot muammosi hal qilindi (app.blade.php'da @yield('content') ga o'zgartirildi)
+  - View [tests.show], [tests.take] fayllar mavjud va ishlayapti
+  - Login sahifasiga tezkor kirish tugmalari qo'shildi (rangdor tugmalar)
+  - CSRF token muammolari hal qilindi
 
 ## Next Steps
 - Add test taking functionality with timer and progress tracking

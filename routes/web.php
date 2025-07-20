@@ -28,6 +28,7 @@ Route::prefix('tests')->name('tests.')->group(function () {
     Route::post('/{test:slug}/start', [TestController::class, 'start'])->name('start');
     Route::get('/{test:slug}/take/{attempt}', [TestController::class, 'take'])->name('take');
     Route::post('/{test:slug}/attempt/{attempt}/answer', [TestController::class, 'submitAnswer'])->name('submit-answer');
+    Route::post('/{test:slug}/attempt/{attempt}/submit', [TestController::class, 'submitTest'])->name('submit');
     Route::post('/{test:slug}/attempt/{attempt}/complete', [TestController::class, 'complete'])->name('complete');
     Route::get('/{test:slug}/attempt/{attempt}/results', [TestController::class, 'results'])->name('results');
 });

@@ -213,15 +213,15 @@ function saveCurrentAnswer() {
     });
 }
 
-// Finish test function
+// Finish test function  
 function finishTest() {
-    fetch(`/tests/${testId}/attempt/${attemptId}/complete`, {
+    fetch(`{{ route('tests.submit', ['test' => $test->slug, 'attempt' => $attempt->id]) }}`, {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     }).then(() => {
-        window.location.href = `/tests/${testId}/attempt/${attemptId}/results`;
+        window.location.href = `{{ route('tests.results', ['test' => $test->slug, 'attempt' => $attempt->id]) }}`;
     });
 }
 

@@ -108,6 +108,22 @@ class TestController extends Controller
         ]);
     }
 
+    public function submitTest(Test $test, UserTestAttempt $attempt)
+    {
+        if (!$this->canAccessAttempt($attempt)) {
+            abort(403);
+        }
+
+        $attempt->update([
+            'completed_at' => now(),
+            'status' => 'completed'
+        ]);
+
+        $attempt->calculateScore();
+
+        return redirect()->route('tests.results', ['test' => $test, 'attempt' => $attempt]);
+    }
+
     public function complete(Test $test, UserTestAttempt $attempt)
     {
         if (!$this->canAccessAttempt($attempt)) {
