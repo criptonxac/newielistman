@@ -4,25 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Test;
-use App\Models\TestCategory;
 use App\Models\UserTestAttempt;
-use App\Models\TestQuestion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TeacherController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (!auth()->user() || (!auth()->user()->isTeacher() && !auth()->user()->isAdmin())) {
-                abort(403, 'Faqat o\'qituvchilar kirish huquqiga ega.');
-            }
-            return $next($request);
-        });
-    }
-
     public function dashboard(Request $request)
     {
         $stats = [
@@ -60,7 +48,7 @@ class TeacherController extends Controller
     public function exportUser(Request $request, User $user)
     {
         $format = $request->get('format', 'pdf');
-        
+
         // Get user's test attempts with detailed results
         $attempts = UserTestAttempt::with(['test', 'test.category'])
             ->where('user_id', $user->id)
@@ -79,7 +67,7 @@ class TeacherController extends Controller
             if ($attempt->test) {
                 $testTitle = strtolower($attempt->test->title);
                 $categoryName = $attempt->test->category ? strtolower($attempt->test->category->name) : '';
-                
+
                 // Check both test title and category name for skill type
                 if (str_contains($testTitle, 'listening') || str_contains($categoryName, 'listening')) {
                     $skillResults['listening'][] = [
@@ -111,13 +99,13 @@ class TeacherController extends Controller
 
         // Calculate averages
         $averages = [
-            'listening' => count($skillResults['listening']) > 0 ? 
+            'listening' => count($skillResults['listening']) > 0 ?
                 array_sum(array_column($skillResults['listening'], 'score')) / count($skillResults['listening']) : 0,
-            'reading' => count($skillResults['reading']) > 0 ? 
+            'reading' => count($skillResults['reading']) > 0 ?
                 array_sum(array_column($skillResults['reading'], 'score')) / count($skillResults['reading']) : 0,
-            'writing' => count($skillResults['writing']) > 0 ? 
+            'writing' => count($skillResults['writing']) > 0 ?
                 array_sum(array_column($skillResults['writing'], 'score')) / count($skillResults['writing']) : 0,
-            'speaking' => count($skillResults['speaking']) > 0 ? 
+            'speaking' => count($skillResults['speaking']) > 0 ?
                 array_sum(array_column($skillResults['speaking'], 'score')) / count($skillResults['speaking']) : 0,
         ];
 
@@ -145,7 +133,7 @@ class TeacherController extends Controller
     {
         // Create HTML content optimized for PDF printing
         $html = view('teacher.exports.user-report', $data)->render();
-        
+
         // Add PDF-specific styling
         $pdfHtml = '
         <!DOCTYPE html>
@@ -167,9 +155,9 @@ class TeacherController extends Controller
         </head>
         <body>' . $html . '</body>
         </html>';
-        
+
         $fileName = 'test-natijalari-' . str_replace(' ', '-', $data['user']->name) . '-' . date('Y-m-d') . '.html';
-        
+
         return response($pdfHtml)
             ->header('Content-Type', 'text/html; charset=UTF-8')
             ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"')
@@ -182,9 +170,9 @@ class TeacherController extends Controller
     {
         // Create HTML content that can be opened in Word
         $html = view('teacher.exports.user-report', $data)->render();
-        
+
         $fileName = 'test-natijalari-' . $data['user']->name . '-' . date('Y-m-d') . '.doc';
-        
+
         return response($html)
             ->header('Content-Type', 'application/msword')
             ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
@@ -194,16 +182,16 @@ class TeacherController extends Controller
     {
         // Increase execution time for Excel export
         set_time_limit(120);
-        
+
         $fileName = 'test-natijalari-' . str_replace(' ', '-', $data['user']->name) . '-' . date('Y-m-d') . '.xlsx';
-        
+
         try {
             return Excel::download(new \App\Exports\UserReportExport($data), $fileName);
         } catch (\Exception $e) {
             // If Excel export fails, fallback to simple CSV-like format
             $csvContent = $this->generateSimpleCSV($data);
             $csvFileName = 'test-natijalari-' . str_replace(' ', '-', $data['user']->name) . '-' . date('Y-m-d') . '.csv';
-            
+
             return response($csvContent)
                 ->header('Content-Type', 'text/csv')
                 ->header('Content-Disposition', 'attachment; filename="' . $csvFileName . '"');
@@ -217,17 +205,17 @@ class TeacherController extends Controller
         $csv .= "Email," . $data['user']->email . "\n";
         $csv .= "Jami Urinishlar," . $data['totalAttempts'] . "\n";
         $csv .= "Umumiy O'rtacha," . number_format($data['overallAverage'], 1) . "%\n\n";
-        
+
         $csv .= "Ko'nikmalar O'rtachasi\n";
         $csv .= "Listening," . number_format($data['averages']['listening'], 1) . "%," . count($data['skillResults']['listening']) . " ta test\n";
         $csv .= "Reading," . number_format($data['averages']['reading'], 1) . "%," . count($data['skillResults']['reading']) . " ta test\n";
         $csv .= "Writing," . number_format($data['averages']['writing'], 1) . "%," . count($data['skillResults']['writing']) . " ta test\n";
         $csv .= "Speaking," . number_format($data['averages']['speaking'], 1) . "%," . count($data['skillResults']['speaking']) . " ta test\n\n";
-        
+
         foreach (['listening', 'reading', 'writing', 'speaking'] as $skill) {
             $skillName = ucfirst($skill);
             $csv .= $skillName . " Test Natijalari\n";
-            
+
             if (count($data['skillResults'][$skill]) > 0) {
                 foreach ($data['skillResults'][$skill] as $result) {
                     $csv .= $result['test_name'] . "," . $result['score'] . "%," . $result['date'] . "\n";
@@ -237,7 +225,7 @@ class TeacherController extends Controller
             }
             $csv .= "\n";
         }
-        
+
         return $csv;
     }
 }

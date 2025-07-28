@@ -13,16 +13,6 @@ use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(function ($request, $next) {
-            if (!auth()->user() || !auth()->user()->isAdmin()) {
-                abort(403, 'Faqat adminlar kirish huquqiga ega.');
-            }
-            return $next($request);
-        });
-    }
-
     public function dashboard(Request $request)
     {
         $stats = [
@@ -38,7 +28,7 @@ class AdminController extends Controller
         $todayAverageScore = UserTestAttempt::today()
             ->completed()
             ->avg('total_score') ?? 0;
-        
+
         // Eng yaxshi 10 talaba (o'rtacha ball bo'yicha)
         $topStudents = User::where('role', User::ROLE_STUDENT)
             ->withAvg('completedAttempts', 'total_score')
@@ -53,7 +43,7 @@ class AdminController extends Controller
                     'total_tests' => $user->completedAttempts()->count()
                 ];
             });
-        
+
         // Agar haqiqiy ma'lumotlar bo'lmasa, demo ma'lumotlar
         if ($topStudents->isEmpty()) {
             $topStudents = collect([
@@ -80,7 +70,7 @@ class AdminController extends Controller
             'average_score' => round(UserTestAttempt::completed()->avg('total_score') ?? 0, 1),
             'highest_score' => UserTestAttempt::completed()->max('total_score') ?? 0
         ];
-        
+
         // Agar haqiqiy ma'lumotlar bo'lmasa, demo ma'lumotlar
         if ($studentActivity['completed_tests'] == 0) {
             $studentActivity = [
@@ -103,16 +93,16 @@ class AdminController extends Controller
                 'count' => $count
             ]);
         }
-        
+
         // Haftalik faollik foizi
         $weeklyActivity = [
             'total_tests' => $totalWeeklyTests,
             'active_days' => $weeklyStats->where('count', '>', 0)->count(),
             'avg_daily' => $totalWeeklyTests > 0 ? round($totalWeeklyTests / 7, 1) : 0,
-            'activity_percentage' => $weeklyStats->where('count', '>', 0)->count() > 0 ? 
+            'activity_percentage' => $weeklyStats->where('count', '>', 0)->count() > 0 ?
                 round(($weeklyStats->where('count', '>', 0)->count() / 7) * 100, 1) : 0
         ];
-        
+
         // Agar haqiqiy ma'lumotlar bo'lmasa, demo ma'lumotlar
         if ($totalWeeklyTests == 0) {
             $weeklyActivity = [
@@ -121,7 +111,7 @@ class AdminController extends Controller
                 'avg_daily' => 6.7,
                 'activity_percentage' => 85.7
             ];
-            
+
             // Demo haftalik statistika
             $weeklyStats = collect([
                 ['date' => 'Mon', 'count' => 8],
@@ -137,29 +127,14 @@ class AdminController extends Controller
         return view('admin.dashboard', compact('stats', 'weeklyStats', 'todayAverageScore', 'topStudents', 'studentActivity', 'weeklyActivity'));
     }
 
-    public function users(Request $request)
+    public function index(Request $request)
     {
         $users = User::paginate(20);
         return view('admin.users', compact('users'));
     }
 
-    public function tests(Request $request)
-    {
-        // Test kategoriyalari va testlarni olish
-        $categories = TestCategory::with(['tests' => function($query) {
-            $query->orderBy('created_at', 'desc');
-        }])->get();
-        
-        // Barcha testlar
-        $tests = Test::with('category')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-            
-        return view('admin.tests', compact('categories', 'tests'));
-    }
-
     // Users CRUD Methods
-    public function storeUser(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -179,10 +154,10 @@ class AdminController extends Controller
             ->with('success', 'Foydalanuvchi muvaffaqiyatli yaratildi!');
     }
 
-    public function updateUser(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
@@ -207,10 +182,10 @@ class AdminController extends Controller
             ->with('success', 'Foydalanuvchi muvaffaqiyatli yangilandi!');
     }
 
-    public function destroyUser($id)
+    public function destroy($id)
     {
         $user = User::findOrFail($id);
-        
+
         // Prevent deleting the current admin user
         if ($user->id === auth()->id()) {
             return redirect()->route('admin.users')
@@ -221,5 +196,20 @@ class AdminController extends Controller
 
         return redirect()->route('admin.users')
             ->with('success', 'Foydalanuvchi muvaffaqiyatli o\'chirildi!');
+    }
+
+    public function tests(Request $request)
+    {
+        // Test kategoriyalari va testlarni olish
+        $categories = TestCategory::with(['tests' => function($query) {
+            $query->orderBy('created_at', 'desc');
+        }])->get();
+
+        // Barcha testlar
+        $tests = Test::with('category')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('admin.tests', compact('categories', 'tests'));
     }
 }
