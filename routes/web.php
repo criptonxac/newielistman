@@ -184,15 +184,15 @@ Route::middleware(['auth'])->prefix('test-management')->name('test-management.')
                 Route::get('/', [TestManagementController::class, 'index'])->name('index');
                 Route::get('/create', [TestManagementController::class, 'create'])->name('create');
                 Route::post('/', [TestManagementController::class, 'store'])->name('store');
-                Route::get('/{test}/edit', [TestManagementController::class, 'edit'])->name('edit');
-                Route::put('/{test}', [TestManagementController::class, 'update'])->name('update');
-                Route::delete('/{test}', [TestManagementController::class, 'destroy'])->name('destroy');
+                Route::get('/{test}/edit', [TestManagementController::class, 'edit'])->name('edit')->where('test', '[0-9]+');
+                Route::put('/{test}', [TestManagementController::class, 'update'])->name('update')->where('test', '[0-9]+');
+                Route::delete('/{test}', [TestManagementController::class, 'destroy'])->name('destroy')->where('test', '[0-9]+');
 
                 // Savollar boshqaruvi
-                Route::get('/{test}/questions/create', [TestManagementController::class, 'createQuestions'])->name('questions.create');
-                Route::get('/{test}/questions/add', [TestManagementController::class, 'addQuestion'])->name('questions.add');
-                Route::post('/{test}/questions', [TestManagementController::class, 'storeQuestions'])->name('questions.store');
-                Route::get('/{test}/questions/edit', [TestManagementController::class, 'editQuestions'])->name('questions.edit');
+                Route::get('/{test}/questions/create', [TestManagementController::class, 'createQuestions'])->name('questions.create')->where('test', '[0-9]+');
+                Route::get('/{test}/questions/add', [TestManagementController::class, 'addQuestion'])->name('questions.add')->where('test', '[0-9]+');
+                Route::post('/{test}/questions', [TestManagementController::class, 'storeQuestions'])->name('questions.store')->where('test', '[0-9]+');
+                Route::get('/{test}/questions/edit', [TestManagementController::class, 'editQuestions'])->name('questions.edit')->where('test', '[0-9]+');
                 
                 // Enum jadvalini ko'rsatish
                 Route::get('/enums', [TestManagementController::class, 'showEnums'])->name('enums');

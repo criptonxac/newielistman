@@ -27,76 +27,9 @@ class TestManagementController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Test::with('category');
-        
-        // Type bo'yicha filterlash
-        if ($request->has('type') && in_array($request->type, ['familiarisation', 'sample', 'practice'])) {
-            $query->where('type', $request->type);
-        }
-        
-        $tests = $query->orderBy('created_at', 'desc')->get();
-        $layout = auth()->user()->role === 'admin' ? 'admin.dashboard' : 'teacher.dashboard';
-        
-        // Admin dashboard uchun statistika ma'lumotlarini tayyorlash
-        $stats = [];
-        $todayAverageScore = 0;
-        $weeklyActivity = [];
-        $topStudents = collect();
-        $studentActivity = [];
-        $weeklyStats = [];
-        
-        if (auth()->user()->role === 'admin') {
-            $stats = [
-                'total_users' => \App\Models\User::count(),
-                'total_students' => \App\Models\User::where('role', 'student')->count(),
-                'total_questions' => \App\Models\TestQuestion::count(),
-                'total_teachers' => \App\Models\User::where('role', 'teacher')->count(),
-                'total_tests' => \App\Models\Test::count(),
-            ];
-            
-            // Talabalar faolligi
-            $studentActivity = [
-                'active_students' => \App\Models\User::where('role', 'student')->count(),
-                'completed_tests' => 156, // Test uchun statik qiymat
-                'average_score' => 6.8,   // Test uchun statik qiymat
-                'highest_score' => 8.5    // Test uchun statik qiymat
-            ];
-            
-            // Haftalik statistika
-            $weeklyStats = [
-                ['date' => 'Dushanba', 'tests' => 12, 'students' => 45, 'count' => 12],
-                ['date' => 'Seshanba', 'tests' => 18, 'students' => 52, 'count' => 18],
-                ['date' => 'Chorshanba', 'tests' => 15, 'students' => 48, 'count' => 15],
-                ['date' => 'Payshanba', 'tests' => 22, 'students' => 57, 'count' => 22],
-                ['date' => 'Juma', 'tests' => 28, 'students' => 63, 'count' => 28],
-                ['date' => 'Shanba', 'tests' => 16, 'students' => 42, 'count' => 16],
-                ['date' => 'Yakshanba', 'tests' => 8, 'students' => 35, 'count' => 8]
-            ];
-            
-            // O'rtacha ball
-            $todayAverageScore = 7.5; // Bu yerda haqiqiy ma'lumotlarni olish kerak
-            
-            // Haftalik faollik
-            $weeklyActivity = [
-                'labels' => ['Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba', 'Juma', 'Shanba', 'Yakshanba'],
-                'data' => [15, 22, 18, 24, 33, 28, 19],
-                'activity_percentage' => 68,
-                'total_tests' => \App\Models\Test::count(),
-                'avg_daily' => round(\App\Models\Test::count() / 7)
-            ];
-            
-            // Top talabalar
-            $topStudents = \App\Models\User::where('role', 'student')
-                ->take(10)
-                ->get()
-                ->map(function($student) {
-                    // Har bir talaba uchun o'rtacha ball qo'shish
-                    $student->average_score = rand(50, 90) / 10; // Test uchun tasodifiy qiymat
-                    return $student;
-                });
-        }
-        
-        return view('test-management.index', compact('tests', 'layout', 'stats', 'todayAverageScore', 'weeklyActivity', 'topStudents', 'studentActivity', 'weeklyStats'));
+        // Admin dashboard'ga yo'naltirish
+        $adminController = new AdminController();
+        return $adminController->dashboard($request);
     }
     
     /**
@@ -125,8 +58,17 @@ class TestManagementController extends Controller
             'is_timed' => 'boolean'
         ]);
         
-        // Slug yaratish
-        $validated['slug'] = Str::slug($validated['title']);
+        // Unikal slug yaratish
+        $baseSlug = Str::slug($validated['title']);
+        $slug = $baseSlug;
+        $counter = 1;
+        
+        // Slug unikal bo'lmaguncha raqam qo'shib borish
+        while (Test::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter++;
+        }
+        
+        $validated['slug'] = $slug;
         
         // Instructions ni JSON formatga o'tkazish
         if (isset($validated['instructions'])) {
