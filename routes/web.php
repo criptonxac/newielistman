@@ -15,7 +15,7 @@ require __DIR__ . '/auth.php';
 // Admin routes
 Route::prefix('admin')->name('admin.')
     ->middleware(['auth', 'verified', 'role:' . User::ROLE_ADMIN])
-    ->conroller(AdminController::class)
+    ->controller(AdminController::class)
     ->group(function () {
         Route::get('/dashboard', 'dashboard')->name('dashboard');
         Route::get('/users', 'index')->name('users');
@@ -160,132 +160,18 @@ Route::get('/writing-test', function () {
     return view('tests.writing');
 })->name('tests.writing');
 
-// Public familiarisation test routes (static data, dashboard-style)
-Route::get('/tests/ielts-listening-familiarisation', function () {
-    // Static test data for public viewing
-    $staticTests = [
-        (object)[
-            'id' => 1,
-            'title' => 'IELTS Listening Familiarisation Test',
-            'description' => 'familiarisation test',
-            'category' => (object)['name' => 'Listening'],
-            'questions_count' => 40,
-            'duration' => 30,
-            'difficulty' => 'Beginner',
-            'status' => 'Cheklanmagan'
-        ],
-        (object)[
-            'id' => 2,
-            'title' => 'Listening Sample Test 1',
-            'description' => 'sample test',
-            'category' => (object)['name' => 'Listening'],
-            'questions_count' => 40,
-            'duration' => 30,
-            'difficulty' => 'Beginner',
-            'status' => 'Cheklanmagan'
-        ],
-        (object)[
-            'id' => 3,
-            'title' => 'Listening Sample Test 2',
-            'description' => 'sample test',
-            'category' => (object)['name' => 'Listening'],
-            'questions_count' => 40,
-            'duration' => 30,
-            'difficulty' => 'Beginner',
-            'status' => 'Cheklanmagan'
-        ]
-    ];
+// Public familiarisation test routes (dynamic data from database)
+Route::get('/tests/ielts-listening-familiarisation', [TestController::class, 'showListeningFamiliarisation'])->name('tests.public.listening');
 
-    return view('tests.public-familiarisation', [
-        'tests' => $staticTests,
-        'category' => 'Listening',
-        'pageTitle' => 'IELTS Listening Familiarisation Tests'
-    ]);
-})->name('tests.public.listening');
+Route::get('/tests/ielts-reading-familiarisation', [TestController::class, 'showReadingFamiliarisation'])->name('tests.public.reading');
 
-Route::get('/tests/ielts-reading-familiarisation', function () {
-    // Static test data for public viewing
-    $staticTests = [
-        (object)[
-            'id' => 4,
-            'title' => 'IELTS Academic Reading Familiarisation Test',
-            'description' => 'familiarisation test',
-            'category' => (object)['name' => 'Academic Reading'],
-            'questions_count' => 40,
-            'duration' => 60,
-            'difficulty' => 'Beginner',
-            'status' => 'Cheklanmagan'
-        ],
-        (object)[
-            'id' => 5,
-            'title' => 'Academic Reading Sample Task 1',
-            'description' => 'sample test',
-            'category' => (object)['name' => 'Academic Reading'],
-            'questions_count' => 40,
-            'duration' => 60,
-            'difficulty' => 'Beginner',
-            'status' => 'Cheklanmagan'
-        ],
-        (object)[
-            'id' => 6,
-            'title' => 'Academic Reading Sample Task 2',
-            'description' => 'sample test',
-            'category' => (object)['name' => 'Academic Reading'],
-            'questions_count' => 40,
-            'duration' => 60,
-            'difficulty' => 'Beginner',
-            'status' => 'Cheklanmagan'
-        ]
-    ];
+Route::get('/tests/ielts-writing-familiarisation', [TestController::class, 'showWritingFamiliarisation'])->name('tests.public.writing');
 
-    return view('tests.public-familiarisation', [
-        'tests' => $staticTests,
-        'category' => 'Reading',
-        'pageTitle' => 'IELTS Academic Reading Familiarisation Tests'
-    ]);
-})->name('tests.public.reading');
+// Enum routes
+Route::get('/enums', [App\Http\Controllers\EnumController::class, 'index'])->name('enums.index');
 
-Route::get('/tests/ielts-writing-familiarisation', function () {
-    // Static test data for public viewing
-    $staticTests = [
-        (object)[
-            'id' => 7,
-            'title' => 'IELTS Academic Writing Familiarisation Test',
-            'description' => 'familiarisation test',
-            'category' => (object)['name' => 'Academic Writing'],
-            'questions_count' => 2,
-            'duration' => 60,
-            'difficulty' => 'Beginner',
-            'status' => 'Cheklanmagan'
-        ],
-        (object)[
-            'id' => 8,
-            'title' => 'Academic Writing Sample Task 1',
-            'description' => 'sample test',
-            'category' => (object)['name' => 'Academic Writing'],
-            'questions_count' => 1,
-            'duration' => 20,
-            'difficulty' => 'Beginner',
-            'status' => 'Cheklanmagan'
-        ],
-        (object)[
-            'id' => 9,
-            'title' => 'Academic Writing Sample Task 2',
-            'description' => 'sample test',
-            'category' => (object)['name' => 'Academic Writing'],
-            'questions_count' => 1,
-            'duration' => 40,
-            'difficulty' => 'Beginner',
-            'status' => 'Cheklanmagan'
-        ]
-    ];
-
-    return view('tests.public-familiarisation', [
-        'tests' => $staticTests,
-        'category' => 'Writing',
-        'pageTitle' => 'IELTS Academic Writing Familiarisation Tests'
-    ]);
-})->name('tests.public.writing');
+// Test type routes
+Route::get('/tests/by-type/{type?}', [App\Http\Controllers\TestTypeController::class, 'showByType'])->name('tests.by-type');
 
 // Role-based dashboard redirect
 // Test boshqaruvi (admin va o'qituvchilar uchun)
@@ -307,43 +193,10 @@ Route::middleware(['auth'])->prefix('test-management')->name('test-management.')
                 Route::get('/{test}/questions/add', [TestManagementController::class, 'addQuestion'])->name('questions.add');
                 Route::post('/{test}/questions', [TestManagementController::class, 'storeQuestions'])->name('questions.store');
                 Route::get('/{test}/questions/edit', [TestManagementController::class, 'editQuestions'])->name('questions.edit');
+                
+                // Enum jadvalini ko'rsatish
+                Route::get('/enums', [TestManagementController::class, 'showEnums'])->name('enums');
             });
     });
 
-Route::get('/dashboard', function () {
-    $user = auth()->user();
-
-    if (!$user) {
-        return redirect()->route('login');
-    }
-
-    switch ($user->role) {
-        case 'admin':
-            return redirect()->route('admin.dashboard');
-        case 'teacher':
-            return redirect()->route('teacher.dashboard');
-        case 'student':
-            return redirect()->route('student.dashboard');
-        default:
-            return redirect()->route('home');
-    }
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-// Direct admin access (development only)
-Route::get('/admin-direct', function () {
-    // Create temporary admin session
-    $adminUser = App\Models\User::where('role', 'admin')->first();
-    if (!$adminUser) {
-        // Create admin user if not exists
-        $adminUser = App\Models\User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@ielts.com',
-            'password' => bcrypt('admin123'),
-            'role' => 'admin',
-            'email_verified_at' => now(),
-        ]);
-    }
-
-    auth()->login($adminUser);
-    return redirect()->route('admin.dashboard');
-})->name('admin.direct');
+Route::get('/dashboard', [App\Http\Controllers\AdminController::class, 'dashboardRedirect'])->middleware(['auth', 'verified'])->name('dashboard');

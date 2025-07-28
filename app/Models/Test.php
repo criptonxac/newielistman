@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\TestStatus;
+use App\Enums\TestType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -28,7 +30,9 @@ class Test extends Model
         'is_active' => 'boolean',
         'is_timed' => 'boolean',
         'duration_minutes' => 'integer',
-        'total_questions' => 'integer'
+        'total_questions' => 'integer',
+        'type' => TestType::class,
+        'status' => TestStatus::class
     ];
 
     public function category(): BelongsTo

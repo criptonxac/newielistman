@@ -4,8 +4,28 @@
 <div class="container mx-auto px-4 py-6">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Test boshqaruvi</h1>
-        <a href="{{ route('test-management.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
-            Yangi test qo'shish
+        <div class="flex space-x-2">
+            <a href="{{ route('test-management.enums') }}" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded">
+                Enumlar jadvali
+            </a>
+            <a href="{{ route('test-management.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
+                Yangi test qo'shish
+            </a>
+        </div>
+    </div>
+    
+    <div class="flex space-x-2 mb-4">
+        <a href="{{ route('test-management.index') }}" class="px-4 py-2 rounded {{ !request()->has('type') ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700' }}">
+            Barchasi
+        </a>
+        <a href="{{ route('test-management.index', ['type' => 'familiarisation']) }}" class="px-4 py-2 rounded {{ request('type') === 'familiarisation' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700' }}">
+            Tanishuv
+        </a>
+        <a href="{{ route('test-management.index', ['type' => 'sample']) }}" class="px-4 py-2 rounded {{ request('type') === 'sample' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700' }}">
+            Namuna
+        </a>
+        <a href="{{ route('test-management.index', ['type' => 'practice']) }}" class="px-4 py-2 rounded {{ request('type') === 'practice' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700' }}">
+            Amaliyot
         </a>
     </div>
 
@@ -23,6 +43,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategoriya</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Turi</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Savollar soni</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Faollik</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amallar</th>
                 </tr>
@@ -38,13 +59,7 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-500">
-                            @if($test->type == 'familiarisation')
-                                Tanishuv
-                            @elseif($test->type == 'sample')
-                                Namuna
-                            @elseif($test->type == 'practice')
-                                Amaliyot
-                            @endif
+                            {{ $test->type ? $test->type->label() : 'Belgilanmagan' }}
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -58,6 +73,17 @@
                         @else
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                 Faol emas
+                            </span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        @if($test->status)
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $test->status->value === 'completed' ? 'bg-green-100 text-green-800' : ($test->status->value === 'in_progress' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">
+                                {{ $test->status->label() }}
+                            </span>
+                        @else
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                Belgilanmagan
                             </span>
                         @endif
                     </td>

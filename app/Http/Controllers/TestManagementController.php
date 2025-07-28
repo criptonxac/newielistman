@@ -25,9 +25,16 @@ class TestManagementController extends Controller
     /**
      * Testlar ro'yxatini ko'rsatish
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tests = Test::with('category')->orderBy('created_at', 'desc')->get();
+        $query = Test::with('category');
+        
+        // Type bo'yicha filterlash
+        if ($request->has('type') && in_array($request->type, ['familiarisation', 'sample', 'practice'])) {
+            $query->where('type', $request->type);
+        }
+        
+        $tests = $query->orderBy('created_at', 'desc')->get();
         $layout = auth()->user()->role === 'admin' ? 'admin.dashboard' : 'teacher.dashboard';
         
         // Admin dashboard uchun statistika ma'lumotlarini tayyorlash
@@ -280,5 +287,14 @@ class TestManagementController extends Controller
     {
         $layout = auth()->user()->role === 'admin' ? 'admin.dashboard' : 'teacher.dashboard';
         return view('test-management.questions.add', compact('test', 'layout'));
+    }
+    
+    /**
+     * Enumlarni jadval ko'rinishida ko'rsatish
+     */
+    public function showEnums()
+    {
+        $layout = auth()->user()->role === 'admin' ? 'admin.dashboard' : 'teacher.dashboard';
+        return view('test-management.enums', compact('layout'));
     }
 }

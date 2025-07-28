@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TestType;
 use App\Models\Test;
+use App\Models\TestCategory;
 use App\Models\TestQuestion;
 use App\Models\UserTestAttempt;
 use App\Models\UserAnswer;
@@ -158,5 +160,62 @@ class TestController extends Controller
 
         return ($userId && $attempt->user_id == $userId) || 
                (!$userId && $attempt->session_id == $sessionId);
+    }
+    
+    /**
+     * Listening familiarisation testlarni ko'rsatish
+     */
+    public function showListeningFamiliarisation()
+    {
+        $category = TestCategory::where('name', 'Listening')->first();
+        
+        $tests = Test::where('test_category_id', $category->id)
+            ->where('type', TestType::FAMILIARISATION)
+            ->where('is_active', true)
+            ->get();
+            
+        return view('tests.public-familiarisation', [
+            'tests' => $tests,
+            'category' => 'Listening',
+            'pageTitle' => 'IELTS Listening Familiarisation Tests'
+        ]);
+    }
+    
+    /**
+     * Reading familiarisation testlarni ko'rsatish
+     */
+    public function showReadingFamiliarisation()
+    {
+        $category = TestCategory::where('name', 'Academic Reading')->first();
+        
+        $tests = Test::where('test_category_id', $category->id)
+            ->where('type', TestType::FAMILIARISATION)
+            ->where('is_active', true)
+            ->get();
+            
+        return view('tests.public-familiarisation', [
+            'tests' => $tests,
+            'category' => 'Reading',
+            'pageTitle' => 'IELTS Academic Reading Familiarisation Tests'
+        ]);
+    }
+    
+    /**
+     * Writing familiarisation testlarni ko'rsatish
+     */
+    public function showWritingFamiliarisation()
+    {
+        $category = TestCategory::where('name', 'Academic Writing')->first();
+        
+        $tests = Test::where('test_category_id', $category->id)
+            ->where('type', TestType::FAMILIARISATION)
+            ->where('is_active', true)
+            ->get();
+            
+        return view('tests.public-familiarisation', [
+            'tests' => $tests,
+            'category' => 'Writing',
+            'pageTitle' => 'IELTS Academic Writing Familiarisation Tests'
+        ]);
     }
 }

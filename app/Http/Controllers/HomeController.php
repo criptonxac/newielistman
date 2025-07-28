@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TestStatus;
+use App\Enums\TestType;
+use App\Enums\UserRole;
 use App\Models\TestCategory;
 use App\Models\Test;
 use App\Models\TestQuestion;
@@ -22,16 +25,16 @@ class HomeController extends Controller
         // So'nggi test statistikasi
         $totalTests = Test::where('is_active', true)->count();
         $totalAttempts = UserTestAttempt::count();
-        $completedTests = UserTestAttempt::where('status', 'completed')->count();
-        
+        $completedTests = UserTestAttempt::where('status', TestStatus::COMPLETED)->count();
+         
         // Database statistikasi
         $totalUsers = User::count();
-        $totalStudents = User::where('role', User::ROLE_STUDENT)->count();
-        $totalTeachers = User::where('role', User::ROLE_TEACHER)->count();
+        $totalStudents = User::where('role', UserRole::STUDENT)->count();
+        $totalTeachers = User::where('role', UserRole::TEACHER)->count();
         $totalQuestions = TestQuestion::count();
 
         $featuredTests = Test::where('is_active', true)
-            ->where('type', 'familiarisation')
+            ->where('type', TestType::FAMILIARISATION)
             ->with('category')
             ->take(3)
             ->get();
