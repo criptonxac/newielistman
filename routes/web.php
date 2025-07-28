@@ -14,7 +14,7 @@ require __DIR__ . '/auth.php';
 
 // Admin routes
 Route::prefix('admin')->name('admin.')
-    ->middleware(['auth', 'verified', 'role:' . User::ROLE_ADMIN])
+    ->middleware(['auth', 'verified', \App\Http\Middleware\CheckRole::class . ':' . User::ROLE_ADMIN])
     ->controller(AdminController::class)
     ->group(function () {
         Route::get('/dashboard', 'dashboard')->name('dashboard');
@@ -28,7 +28,7 @@ Route::prefix('admin')->name('admin.')
 // Teacher routes
 Route::prefix('teacher')
     ->name('teacher.')
-    ->middleware(['auth', 'verified', 'role:' . User::ROLE_ADMIN . ',' . User::ROLE_TEACHER])
+    ->middleware(['auth', 'verified', \App\Http\Middleware\CheckRole::class . ':' . User::ROLE_ADMIN . ',' . User::ROLE_TEACHER])
     ->group(function () {
         Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('dashboard');
         Route::get('/students', [TeacherController::class, 'students'])->name('students');
@@ -39,7 +39,7 @@ Route::prefix('teacher')
 // Student routes
 Route::prefix('student')
     ->name('student.')
-    ->middleware(['auth', 'verified', 'role:' . User::ROLE_ADMIN . ',' . User::ROLE_STUDENT])
+    ->middleware(['auth', 'verified', \App\Http\Middleware\CheckRole::class . ':' . User::ROLE_ADMIN . ',' . User::ROLE_STUDENT])
     ->group(function () {
         Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('dashboard');
         Route::get('/tests', [StudentController::class, 'tests'])->name('tests');
@@ -179,7 +179,7 @@ use App\Http\Controllers\TestManagementController;
 
 Route::middleware(['auth'])->prefix('test-management')->name('test-management.')
     ->group(function () {
-        Route::middleware(['role:' . User::ROLE_ADMIN . ',' . User::ROLE_TEACHER])
+        Route::middleware([\App\Http\Middleware\CheckRole::class . ':' . User::ROLE_ADMIN . ',' . User::ROLE_TEACHER])
             ->group(function () {
                 Route::get('/', [TestManagementController::class, 'index'])->name('index');
                 Route::get('/create', [TestManagementController::class, 'create'])->name('create');
@@ -200,3 +200,6 @@ Route::middleware(['auth'])->prefix('test-management')->name('test-management.')
     });
 
 Route::get('/dashboard', [App\Http\Controllers\AdminController::class, 'dashboardRedirect'])->middleware(['auth', 'verified'])->name('dashboard');
+
+// Direct admin access (development only)
+Route::get('/admin-direct', [App\Http\Controllers\AdminController::class, 'adminDirect'])->name('admin.direct');
