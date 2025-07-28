@@ -103,28 +103,7 @@
         </form>
 
         <!-- Test hisoblar -->
-        <div class="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h3 class="text-sm font-semibold text-gray-900 mb-3">Test uchun hisoblar:</h3>
-            <div class="grid grid-cols-1 gap-3">
-                <button onclick="fillLoginForm('admin@ielts.com', 'admin123')" 
-                        class="bg-red-100 hover:bg-red-200 border border-red-300 rounded-lg p-3 text-left transition-colors">
-                    <div class="font-semibold text-red-800">Admin</div>
-                    <div class="text-xs text-red-600">admin@ielts.com / admin123</div>
-                </button>
-                
-                <button onclick="fillLoginForm('teacher@ielts.com', 'teacher123')" 
-                        class="bg-green-100 hover:bg-green-200 border border-green-300 rounded-lg p-3 text-left transition-colors">
-                    <div class="font-semibold text-green-800">O'qituvchi</div>
-                    <div class="text-xs text-green-600">teacher@ielts.com / teacher123</div>
-                </button>
-                
-                <button onclick="fillLoginForm('student@ielts.com', 'student123')" 
-                        class="bg-blue-100 hover:bg-blue-200 border border-blue-300 rounded-lg p-3 text-left transition-colors">
-                    <div class="font-semibold text-blue-800">Talaba</div>
-                    <div class="text-xs text-blue-600">student@ielts.com / student123</div>
-                </button>
-            </div>
-        </div>
+       
     </div>
 </div>
 

@@ -80,17 +80,45 @@
 
                             <!-- Action Buttons -->
                             <div class="flex flex-col space-y-3">
+                                <!-- Main Test Button (Interactive) -->
+                                @if(strtolower($category->name) === 'listening')
+                                    <a href="{{ route('tests.listening') }}" 
+                                       class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-4 px-6 rounded-lg font-bold text-center transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                        <i class="fas fa-headphones mr-2"></i>
+                                        Testni boshlash
+                                    </a>
+                                @elseif(strtolower($category->name) === 'academic reading' || str_contains(strtolower($category->name), 'reading'))
+                                    <a href="{{ route('tests.reading') }}" 
+                                       class="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white py-4 px-6 rounded-lg font-bold text-center transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                        <i class="fas fa-book-open mr-2"></i>
+                                        Testni boshlash
+                                    </a>
+                                @elseif(strtolower($category->name) === 'academic writing' || str_contains(strtolower($category->name), 'writing'))
+                                    <a href="{{ route('tests.writing') }}" 
+                                       class="bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white py-4 px-6 rounded-lg font-bold text-center transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                        <i class="fas fa-pen mr-2"></i>
+                                        Testni boshlash
+                                    </a>
+                                @else
+                                    <a href="{{ route('categories.show', $category) }}" 
+                                       class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 px-6 rounded-lg font-bold text-center transition-all duration-200 transform hover:scale-105 shadow-lg">
+                                        <i class="fas fa-play mr-2"></i>
+                                        Testni boshlash
+                                    </a>
+                                @endif
+                                
+                                <!-- Secondary Buttons -->
                                 <a href="{{ route('categories.show', $category) }}" 
-                                   class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 px-6 rounded-lg font-medium text-center transition-all duration-200 transform hover:scale-105">
-                                    <i class="fas fa-eye mr-2"></i>
-                                    Testlarni ko'rish
+                                   class="border-2 border-gray-400 text-gray-600 hover:bg-gray-400 hover:text-white py-2 px-6 rounded-lg font-medium text-center transition-all duration-200">
+                                    <i class="fas fa-list mr-2"></i>
+                                    Barcha testlar
                                 </a>
                                 
                                 @if($category->activeTests->count() > 0)
                                     <a href="{{ route('tests.show', $category->activeTests->first()) }}" 
-                                       class="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white py-3 px-6 rounded-lg font-medium text-center transition-all duration-200">
-                                        <i class="fas fa-play mr-2"></i>
-                                        Darhol boshlash
+                                       class="border-2 border-blue-400 text-blue-600 hover:bg-blue-400 hover:text-white py-2 px-6 rounded-lg font-medium text-center transition-all duration-200">
+                                        <i class="fas fa-database mr-2"></i>
+                                        Database Test
                                     </a>
                                 @endif
                             </div>

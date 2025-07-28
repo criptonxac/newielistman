@@ -40,15 +40,7 @@ class TestCategorySeeder extends Seeder
                 'is_active' => true,
                 'sort_order' => 3
             ],
-            [
-                'name' => 'General Training Reading',
-                'slug' => 'general-training-reading',
-                'description' => 'IELTS General Training Reading testi kundalik hayot kontekstida ingliz tilini tushunish qobiliyatingizni baholaydi.',
-                'icon' => 'fas fa-newspaper',
-                'duration_minutes' => 60,
-                'is_active' => true,
-                'sort_order' => 4
-            ]
+          
         ];
 
         foreach ($categories as $category) {

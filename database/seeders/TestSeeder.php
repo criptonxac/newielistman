@@ -102,23 +102,24 @@ class TestSeeder extends Seeder
                 'is_active' => true,
                 'is_timed' => false
             ],
+            // General Training Reading Test
             [
-                'title' => 'General Training Reading - Sentence Completion',
-                'slug' => 'general-training-reading-sentence-completion',
-                'description' => 'Bu test sizning kundalik kontekstda yozma ingliz tilini tushunish qobiliyatingizni baholaydi.',
-                'test_category_id' => 4, // General Training Reading
-                'type' => 'sample',
-                'duration_minutes' => null,
-                'total_questions' => 14,
+                'title' => 'IELTS General Training Reading Test',
+                'slug' => 'ielts-general-training-reading',
+                'description' => 'Bu IELTS General Training Reading testida 3 ta qismdan iborat matnlarni o\'qib, savolarga javob berasiz.',
+                'test_category_id' => 2, // Reading
+                'type' => 'practice',
+                'duration_minutes' => 60,
+                'total_questions' => 40,
                 'instructions' => [
-                    'Matnni diqqat bilan o\'qing',
-                    'Gaplarni to\'ldirish uchun mos so\'zlarni toping',
-                    'Javoblar matn tartibida keladi',
-                    'Grammatikaga e\'tibor bering'
+                    'Test 3 ta qismdan iborat',
+                    'Har bir qismda turli xil matnlar',
+                    'Vaqt chegarasi: 60 daqiqa',
+                    'Barcha javoblarni javoblar varaqasiga ko\'chiring'
                 ],
                 'is_active' => true,
-                'is_timed' => false
-            ]
+                'is_timed' => true
+            ],
         ];
 
         foreach ($tests as $test) {

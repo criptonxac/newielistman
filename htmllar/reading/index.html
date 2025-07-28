@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Reading Test - Main Menu</title>
+    <link rel="stylesheet" href="css/reading.css">
+    <style>
+        .menu-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .menu-title {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 2rem;
+        }
+        .part-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .part-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .part-card:hover {
+            border-color: #3498db;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(52, 152, 219, 0.2);
+        }
+        .part-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 0.5rem;
+        }
+        .part-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .part-description {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        .question-range {
+            background: #3498db;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .features-list {
+            background: #e8f4fd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .features-list h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        .features-list ul {
+            list-style: none;
+            padding: 0;
+        }
+        .features-list li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .features-list li::before {
+            content: "✓";
+            color: #27ae60;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>IELTS Academic Reading</h1>
+                <div>Practice Test Platform</div>
+            </div>
+            <div class="timer" style="color: #27ae60;">Ready</div>
+        </div>
+
+        <!-- Navigation Section -->
+        <div class="nav-section">
+            IELTS Reading Test &gt; Main Menu
+        </div>
+
+        <!-- Main Menu -->
+        <div class="menu-container">
+            <h1 class="menu-title">IELTS Academic Reading Practice</h1>
+            
+            <p style="text-align: center; color: #7f8c8d; margin-bottom: 2rem;">
+                Practice authentic IELTS Academic Reading test with three different passages and 40 questions total.
+                Each part replicates real IELTS test format and question types.
+            </p>
+
+            <!-- Features -->
+            <div class="features-list">
+                <h3>Test Features:</h3>
+                <ul>
+                    <li>3 reading passages with 40 questions total</li>
+                    <li>Multiple question types: True/False/Not Given, Fill blanks, Multiple choice, Headings</li>
+                    <li>60-minute timer (real IELTS timing)</li>
+                    <li>Automatic progress tracking</li>
+                    <li>Answer checking and scoring</li>
+                    <li>Professional IELTS interface design</li>
+                </ul>
+            </div>
+
+            <!-- Parts Grid -->
+            <div class="part-grid">
+                <div class="part-card" onclick="window.location.href='reading1.html'">
+                    <div class="part-number">1</div>
+                    <div class="part-title">Part 1</div>
+                    <div class="part-description">
+                        <strong>Topic:</strong> Marie Curie Biography<br>
+                        <strong>Types:</strong> True/False/Not Given + Fill blanks<br>
+                        <strong>Level:</strong> Intermediate
+                    </div>
+                    <div class="question-range">Questions 1-13</div>
+                </div>
+
+                <div class="part-card" onclick="window.location.href='reading2.html'">
+                    <div class="part-number">2</div>
+                    <div class="part-title">Part 2</div>
+                    <div class="part-description">
+                        <strong>Topic:</strong> Traffic Physics<br>
+                        <strong>Types:</strong> List of Headings + Summary completion<br>
+                        <strong>Level:</strong> Upper-Intermediate
+                    </div>
+                    <div class="question-range">Questions 14-26</div>
+                </div>
+
+                <div class="part-card" onclick="window.location.href='reading3.html'">
+                    <div class="part-number">3</div>
+                    <div class="part-title">Part 3</div>
+                    <div class="part-description">
+                        <strong>Topic:</strong> Academic Research<br>
+                        <strong>Types:</strong> Multiple choice + Complex tasks<br>
+                        <strong>Level:</strong> Advanced
+                    </div>
+                    <div class="question-range">Questions 27-40</div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e0e0e0;">
+                <p style="color: #7f8c8d; font-size: 0.9rem;">
+                    <strong>Instructions:</strong> Each part can be practiced individually or as a complete test.<br>
+                    Time limit: 60 minutes for full test (20 minutes per part recommended).<br>
+                    All answers are automatically saved and progress is tracked.
+                </p>
+                
+                <div style="margin-top: 1.5rem;">
+                    <a href="../index.html" class="nav-btn secondary" style="margin-right: 1rem;">← Back to Listening</a>
+                    <button class="nav-btn primary" onclick="window.location.href='reading1.html'">Start Reading Test</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

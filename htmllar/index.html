@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Listening Test - Main Menu</title>
+    <link rel="stylesheet" href="css/listening.css">
+    <style>
+        .menu-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .menu-title {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 2rem;
+        }
+        .part-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .part-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .part-card:hover {
+            border-color: #3498db;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(52, 152, 219, 0.2);
+        }
+        .part-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 0.5rem;
+        }
+        .part-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .part-description {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .question-range {
+            background: #3498db;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .full-test-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin: 2rem auto;
+            display: block;
+        }
+        .full-test-btn:hover {
+            background: #219a52;
+        }
+        .features-list {
+            background: #e8f4fd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .features-list h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        .features-list ul {
+            list-style: none;
+            padding: 0;
+        }
+        .features-list li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .features-list li::before {
+            content: "✓";
+            color: #27ae60;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>IELTS Listening Test</h1>
+                <div>Interactive Practice Platform</div>
+            </div>
+            <div class="timer" style="color: #27ae60;">Ready</div>
+        </div>
+
+        <!-- Navigation Section -->
+        <div class="nav-section">
+            IELTS Listening Test &gt; Main Menu
+        </div>
+
+        <!-- Main Menu -->
+        <div class="menu-container">
+            <h1 class="menu-title">IELTS Listening Test Practice</h1>
+            
+            <p style="text-align: center; color: #7f8c8d; margin-bottom: 2rem;">
+                To'liq IELTS listening test yoki alohida qismlarni tanlang. Har bir qism authentic IELTS test formatida yaratilgan.
+            </p>
+
+            <!-- Features -->
+            <div class="features-list">
+                <h3>Platforma imkoniyatlari:</h3>
+                <ul>
+                    <li>40 ta savol bilan to'liq IELTS listening test</li>
+                    <li>Professional drag & drop funksiyalar</li>
+                    <li>Real IELTS test interfeysi</li>
+                    <li>Audio player va timer</li>
+                    <li>Avtomatik progress tracking</li>
+                    <li>Javoblarni tekshirish imkoniyati</li>
+                </ul>
+            </div>
+
+            <!-- Parts Grid -->
+            <div class="part-grid">
+                <div class="part-card" onclick="window.location.href='part1.html'">
+                    <div class="part-number">1</div>
+                    <div class="part-title">Part 1</div>
+                    <div class="part-description">Gap-fill questions<br>Input fields</div>
+                    <div class="question-range">Questions 1-10</div>
+                </div>
+
+                <div class="part-card" onclick="window.location.href='part2.html'">
+                    <div class="part-number">2</div>
+                    <div class="part-title">Part 2</div>
+                    <div class="part-description">Staff mapping + Map labeling<br>Drag & drop + Input fields</div>
+                    <div class="question-range">Questions 11-20</div>
+                </div>
+
+                <div class="part-card" onclick="window.location.href='part3.html'">
+                    <div class="part-number">3</div>
+                    <div class="part-title">Part 3</div>
+                    <div class="part-description">Food categories + Flowchart<br>Full drag & drop</div>
+                    <div class="question-range">Questions 21-30</div>
+                </div>
+
+                <div class="part-card" onclick="window.location.href='part4.html'">
+                    <div class="part-number">4</div>
+                    <div class="part-title">Part 4</div>
+                    <div class="part-description">Multiple choice + Table + Recommendations<br>Mixed question types</div>
+                    <div class="question-range">Questions 31-40</div>
+                </div>
+            </div>
+
+            <!-- Full Test Button -->
+            <button class="full-test-btn" onclick="window.location.href='listening.html'">
+                To'liq Test (40 savol) - 30 daqiqa
+            </button>
+
+            <!-- All Tests Navigation -->
+            <div style="background: #e8f4fd; border-radius: 10px; padding: 2rem; margin-top: 2rem;">
+                <h3 style="text-align: center; color: #2c3e50; margin-bottom: 1.5rem;">Complete IELTS Practice Platform</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="background: white; padding: 1rem; border-radius: 6px; text-align: center;">
+                        <h4 style="color: #3498db; margin-bottom: 0.5rem;">🎧 Listening</h4>
+                        <p style="font-size: 0.9rem; color: #7f8c8d; margin-bottom: 1rem;">40 questions, 4 parts<br>40 minutes</p>
+                        <button class="nav-btn primary" onclick="window.location.href='listening.html'" style="width: 100%;">Start Test</button>
+                    </div>
+                    
+                    <div style="background: white; padding: 1rem; border-radius: 6px; text-align: center;">
+                        <h4 style="color: #e74c3c; margin-bottom: 0.5rem;">📖 Reading</h4>
+                        <p style="font-size: 0.9rem; color: #7f8c8d; margin-bottom: 1rem;">40 questions, 3 parts<br>60 minutes</p>
+                        <button class="nav-btn primary" onclick="window.location.href='reading/index.html'" style="width: 100%;">Start Test</button>
+                    </div>
+                    
+                    <div style="background: white; padding: 1rem; border-radius: 6px; text-align: center;">
+                        <h4 style="color: #f39c12; margin-bottom: 0.5rem;">✍️ Writing</h4>
+                        <p style="font-size: 0.9rem; color: #7f8c8d; margin-bottom: 1rem;">2 tasks<br>60 minutes</p>
+                        <button class="nav-btn primary" onclick="window.location.href='writing/index.html'" style="width: 100%;">Start Test</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e0e0e0;">
+                <p style="color: #7f8c8d; font-size: 0.9rem;">
+                    Har bir qismni alohida yoki to'liq testni o'tishingiz mumkin.<br>
+                    Barcha javoblar avtomatik saqlanadi va progress tracking ishlaydi.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

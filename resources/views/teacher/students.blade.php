@@ -1,14 +1,17 @@
-@extends('layouts.main')
+@extends('layouts.teacher')
 
 @section('title', 'Talabalar - O\'qituvchi Panel')
 
+@section('page_title', 'Talabalar')
+
 @section('content')
-<div class="min-h-screen bg-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="bg-white rounded-lg shadow-sm">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-xl font-semibold text-gray-800">Talabalar</h2>
-            </div>
+<div class="bg-white rounded-lg shadow-sm border border-gray-100">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center">
+            <i class="fas fa-users text-blue-600 text-xl mr-3"></i>
+            <h2 class="text-xl font-semibold text-gray-800">Ro'yxatdan o'tgan talabalar</h2>
+        </div>
+    </div>
             <div class="p-6">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -37,6 +40,5 @@
                 </div>
             </div>
         </div>
-    </div>
 </div>
 @endsection

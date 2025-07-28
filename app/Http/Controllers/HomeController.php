@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\TestCategory;
 use App\Models\Test;
+use App\Models\TestQuestion;
+use App\Models\User;
 use App\Models\UserTestAttempt;
 use Illuminate\Http\Request;
 
@@ -21,6 +23,12 @@ class HomeController extends Controller
         $totalTests = Test::where('is_active', true)->count();
         $totalAttempts = UserTestAttempt::count();
         $completedTests = UserTestAttempt::where('status', 'completed')->count();
+        
+        // Database statistikasi
+        $totalUsers = User::count();
+        $totalStudents = User::where('role', User::ROLE_STUDENT)->count();
+        $totalTeachers = User::where('role', User::ROLE_TEACHER)->count();
+        $totalQuestions = TestQuestion::count();
 
         $featuredTests = Test::where('is_active', true)
             ->where('type', 'familiarisation')
@@ -33,7 +41,11 @@ class HomeController extends Controller
             'totalTests', 
             'totalAttempts',
             'completedTests',
-            'featuredTests'
+            'featuredTests',
+            'totalUsers',
+            'totalStudents',
+            'totalTeachers',
+            'totalQuestions'
         ));
     }
 }

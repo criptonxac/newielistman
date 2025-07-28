@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Writing Test - Main Menu</title>
+    <link rel="stylesheet" href="css/writing.css">
+    <style>
+        .menu-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .menu-title {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 2rem;
+        }
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .task-card {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .task-card:hover {
+            border-color: #3498db;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(52, 152, 219, 0.2);
+        }
+        .task-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 1rem;
+        }
+        .task-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        .task-description {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        .task-details {
+            background: white;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        .task-details h4 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        .task-details ul {
+            margin: 0;
+            padding-left: 1.2rem;
+            font-size: 0.9rem;
+            color: #34495e;
+        }
+        .time-badge {
+            background: #3498db;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        .word-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+        .features-list {
+            background: #e8f4fd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        .features-list h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        .features-list ul {
+            list-style: none;
+            padding: 0;
+        }
+        .features-list li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        .features-list li::before {
+            content: "✓";
+            color: #27ae60;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        .full-test-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            grid-column: 1 / -1;
+            margin-top: 1rem;
+        }
+        .full-test-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        .full-test-card .task-number {
+            color: white;
+        }
+        .full-test-card .task-title {
+            color: white;
+        }
+        .full-test-card .task-description {
+            color: rgba(255,255,255,0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>IELTS Academic Writing</h1>
+                <div>Practice Test Platform</div>
+            </div>
+            <div class="timer" style="color: #27ae60;">Ready</div>
+        </div>
+
+        <!-- Navigation Section -->
+        <div class="nav-section">
+            IELTS Writing Test &gt; Main Menu
+        </div>
+
+        <!-- Main Menu -->
+        <div class="menu-container">
+            <h1 class="menu-title">IELTS Academic Writing Practice</h1>
+            
+            <p style="text-align: center; color: #7f8c8d; margin-bottom: 2rem; font-size: 1.1rem;">
+                Practice authentic IELTS Academic Writing tasks with professional guidance and real-time feedback.
+                Master both Task 1 (chart description) and Task 2 (essay writing) formats.
+            </p>
+
+            <!-- Features -->
+            <div class="features-list">
+                <h3>Writing Test Features:</h3>
+                <ul>
+                    <li>Authentic IELTS Task 1 and Task 2 questions</li>
+                    <li>60-minute timer with recommended time allocation</li>
+                    <li>Real-time word counting and progress tracking</li>
+                    <li>Auto-save functionality to prevent data loss</li>
+                    <li>Writing tools for formatting and editing</li>
+                    <li>Professional tips and example structures</li>
+                    <li>Individual task practice or complete test mode</li>
+                </ul>
+            </div>
+
+            <!-- Tasks Grid -->
+            <div class="task-grid">
+                <div class="task-card" onclick="window.location.href='task1.html'">
+                    <div class="task-number">1</div>
+                    <div class="task-title">Chart Description</div>
+                    <div class="time-badge">20 minutes</div>
+                    <div class="word-badge">150+ words</div>
+                    
+                    <div class="task-description">
+                        Academic Task 1 requires you to describe visual information such as charts, graphs, tables, or diagrams.
+                    </div>
+                    
+                    <div class="task-details">
+                        <h4>What you'll practice:</h4>
+                        <ul>
+                            <li>Analyzing bar charts and trends</li>
+                            <li>Summarizing key features</li>
+                            <li>Making comparisons with data</li>
+                            <li>Using appropriate academic language</li>
+                            <li>Meeting minimum word requirements</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="task-card" onclick="window.location.href='task2.html'">
+                    <div class="task-number">2</div>
+                    <div class="task-title">Essay Writing</div>
+                    <div class="time-badge">40 minutes</div>
+                    <div class="word-badge">250+ words</div>
+                    
+                    <div class="task-description">
+                        Academic Task 2 requires you to write an essay responding to a point of view, argument, or problem.
+                    </div>
+                    
+                    <div class="task-details">
+                        <h4>What you'll practice:</h4>
+                        <ul>
+                            <li>Discussing different perspectives</li>
+                            <li>Presenting your own opinion</li>
+                            <li>Supporting arguments with examples</li>
+                            <li>Using formal academic style</li>
+                            <li>Structuring essays effectively</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="task-card full-test-card" onclick="window.location.href='writing.html'">
+                    <div class="task-number">FULL</div>
+                    <div class="task-title">Complete Writing Test</div>
+                    <div class="time-badge">60 minutes total</div>
+                    
+                    <div class="task-description">
+                        Take the complete IELTS Academic Writing test with both tasks in the recommended time frame.
+                        Perfect for exam simulation and final practice.
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 6px; padding: 1rem; margin-top: 1rem;">
+                        <strong>Includes:</strong> Task 1 chart analysis + Task 2 essay writing with integrated timer and progress tracking
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 1.5rem; margin-top: 2rem;">
+                <h3 style="color: #856404; margin-bottom: 1rem;">Test Instructions:</h3>
+                <ul style="color: #856404; margin: 0; padding-left: 1.2rem;">
+                    <li><strong>Time Management:</strong> Spend 20 minutes on Task 1 and 40 minutes on Task 2</li>
+                    <li><strong>Word Count:</strong> Task 1 minimum 150 words, Task 2 minimum 250 words</li>
+                    <li><strong>Task 2 Worth More:</strong> Task 2 carries twice the weight of Task 1 in scoring</li>
+                    <li><strong>Academic Style:</strong> Use formal language, avoid contractions and personal pronouns</li>
+                    <li><strong>Auto-save:</strong> Your progress is automatically saved every 30 seconds</li>
+                </ul>
+            </div>
+
+            <!-- Navigation -->
+            <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e0e0e0;">
+                <div style="margin-bottom: 1.5rem;">
+                    <a href="../reading/index.html" class="nav-btn secondary" style="margin-right: 1rem;">← Reading Test</a>
+                    <a href="../index.html" class="nav-btn secondary">← Listening Test</a>
+                </div>
+                
+                <button class="nav-btn primary" onclick="window.location.href='task1.html'" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                    Start Writing Practice
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

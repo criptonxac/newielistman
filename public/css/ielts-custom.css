@@ -1,0 +1,128 @@
+/* IELTS Test Custom Styles */
+
+/* Force scrolling on overflow containers */
+.overflow-y-auto {
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: 70vh;
+    display: block !important;
+}
+
+/* Questions container specific styling */
+.questions-container, .overflow-y-auto {
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: 100vh !important;
+    display: block !important;
+    padding-right: 10px;
+}
+
+/* Ensure radio buttons are properly aligned and visible */
+.form-radio {
+    display: inline-block !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* Improve spacing between questions */
+.question-item {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    display: block !important;
+}
+
+/* Fix for tab panes */
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block !important;
+}
+
+/* Fix for radio button labels */
+label {
+    display: flex !important;
+    align-items: center !important;
+    margin-bottom: 8px !important;
+    cursor: pointer !important;
+}
+
+/* Fix for space-y utility */
+.space-y-8 > * {
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+    display: block !important;
+}
+
+/* Fix for space-y-3 utility */
+.space-y-3 > * {
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+    display: block !important;
+}
+
+/* Drag and Drop Styles */
+.draggable {
+    cursor: move;
+    padding: 8px 12px;
+    background-color: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.draggable:hover {
+    background-color: #e0f2fe;
+    border-color: #7dd3fc;
+}
+
+.draggable.dragging {
+    opacity: 0.5;
+    background-color: #dbeafe;
+}
+
+.drop-zone {
+    min-height: 40px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 12px;
+    background-color: #f8fafc;
+    transition: all 0.2s;
+}
+
+.drop-zone.drag-over {
+    background-color: #f0f9ff;
+    border-color: #7dd3fc;
+}
+
+.drop-zone.has-item {
+    border-style: solid;
+    border-color: #94a3b8;
+}
+
+.answer-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.answer-number {
+    font-weight: bold;
+    margin-right: 12px;
+    min-width: 24px;
+}
+
+.answer-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 8px;
+    background-color: #f1f5f9;
+    border-radius: 6px;
+}

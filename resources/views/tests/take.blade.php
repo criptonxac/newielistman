@@ -57,7 +57,7 @@
 
                 @if($question->question_type === 'multiple_choice')
                     <div class="space-y-3">
-                        @php $options = json_decode($question->options, true) ?? [] @endphp
+                        @php $options = is_array($question->options) ? $question->options : (json_decode($question->options, true) ?? []) @endphp
                         @foreach($options as $key => $option)
                         <label class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
                             <input type="radio" name="question_{{ $question->id }}" value="{{ $key }}" 

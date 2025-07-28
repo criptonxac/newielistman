@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Listening Test - Full Test</title>
+    <link rel="stylesheet" href="css/listening.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>IELTS Listening Test</h1>
+                <div>Full Test: Questions 1-40</div>
+            </div>
+            <div class="timer" id="timer">30:00</div>
+        </div>
+
+        <!-- Navigation Section -->
+        <div class="nav-section">
+            Listening &gt; Full Test &gt; Questions 1-40
+            <span style="float: right;">
+                <a href="index.html" style="color: white; text-decoration: none;">← Back to Menu</a>
+            </span>
+        </div>
+
+        <!-- Test Content -->
+        <div style="background: #f5f7fa; min-height: calc(100vh - 120px); padding: 2rem;">
+            <div style="max-width: 1200px; margin: 0 auto; background: white; border-radius: 10px; padding: 2rem;">
+                <h2 style="color: #2c3e50; margin-bottom: 1.5rem; text-align: center;">To'liq IELTS Listening Test</h2>
+                
+                <div style="background: #e8f4fd; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <h3 style="color: #2c3e50; margin-bottom: 1rem;">Test Instructions:</h3>
+                    <ul style="color: #34495e; line-height: 1.6;">
+                        <li>Test davomiyligi: 30 daqiqa</li>
+                        <li>Jami savollar: 40 ta (4 qism)</li>
+                        <li>Har bir audio faqat bir marta tinglaladi</li>
+                        <li>Javoblar avtomatik saqlanadi</li>
+                        <li>Timer yuqori o'ng burchakda ko'rsatiladi</li>
+                    </ul>
+                </div>
+
+                <!-- Parts Overview -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+                    <div style="background: #f8f9fa; border: 2px solid #3498db; border-radius: 8px; padding: 1.5rem; text-align: center;">
+                        <h3 style="color: #3498db; margin-bottom: 0.5rem;">Part 1</h3>
+                        <p style="color: #7f8c8d; font-size: 0.9rem;">Questions 1-10<br>Gap-fill (Input fields)</p>
+                    </div>
+                    <div style="background: #f8f9fa; border: 2px solid #27ae60; border-radius: 8px; padding: 1.5rem; text-align: center;">
+                        <h3 style="color: #27ae60; margin-bottom: 0.5rem;">Part 2</h3>
+                        <p style="color: #7f8c8d; font-size: 0.9rem;">Questions 11-20<br>Drag & drop + Input</p>
+                    </div>
+                    <div style="background: #f8f9fa; border: 2px solid #e74c3c; border-radius: 8px; padding: 1.5rem; text-align: center;">
+                        <h3 style="color: #e74c3c; margin-bottom: 0.5rem;">Part 3</h3>
+                        <p style="color: #7f8c8d; font-size: 0.9rem;">Questions 21-30<br>Full drag & drop</p>
+                    </div>
+                    <div style="background: #f8f9fa; border: 2px solid #f39c12; border-radius: 8px; padding: 1.5rem; text-align: center;">
+                        <h3 style="color: #f39c12; margin-bottom: 0.5rem;">Part 4</h3>
+                        <p style="color: #7f8c8d; font-size: 0.9rem;">Questions 31-40<br>Mixed types</p>
+                    </div>
+                </div>
+
+                <!-- Start Test Button -->
+                <div style="text-align: center; margin: 3rem 0;">
+                    <button onclick="startFullTest()" style="background: #27ae60; color: white; border: none; padding: 1.5rem 3rem; border-radius: 8px; font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: background 0.3s ease;">
+                        Testni Boshlash
+                    </button>
+                </div>
+
+                <!-- Test Content Area (Initially Hidden) -->
+                <div id="testContent" style="display: none;">
+                    <iframe id="testFrame" src="" style="width: 100%; height: 80vh; border: none; border-radius: 8px;"></iframe>
+                </div>
+
+                <!-- Navigation between parts -->
+                <div id="partNavigation" style="display: none; margin-top: 2rem; text-align: center;">
+                    <button onclick="loadPart(1)" class="nav-btn secondary">Part 1</button>
+                    <button onclick="loadPart(2)" class="nav-btn secondary" style="margin-left: 1rem;">Part 2</button>
+                    <button onclick="loadPart(3)" class="nav-btn secondary" style="margin-left: 1rem;">Part 3</button>
+                    <button onclick="loadPart(4)" class="nav-btn secondary" style="margin-left: 1rem;">Part 4</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPart = 1;
+        let testStarted = false;
+        let testTimer;
+
+        function startFullTest() {
+            testStarted = true;
+            document.getElementById('testContent').style.display = 'block';
+            document.getElementById('partNavigation').style.display = 'block';
+            
+            // Load Part 1
+            loadPart(1);
+            
+            // Start timer
+            startTestTimer();
+            
+            // Hide start button
+            event.target.style.display = 'none';
+        }
+
+        function loadPart(partNumber) {
+            currentPart = partNumber;
+            const frame = document.getElementById('testFrame');
+            frame.src = `part${partNumber}.html`;
+            
+            // Update navigation
+            const navButtons = document.querySelectorAll('#partNavigation .nav-btn');
+            navButtons.forEach(btn => btn.classList.remove('primary'));
+            navButtons[partNumber - 1].classList.add('primary');
+        }
+
+        function startTestTimer() {
+            let minutes = 30;
+            let seconds = 0;
+            
+            function updateTimer() {
+                const timerDisplay = document.getElementById('timer');
+                const displayMinutes = minutes.toString().padStart(2, '0');
+                const displaySeconds = seconds.toString().padStart(2, '0');
+                timerDisplay.textContent = `${displayMinutes}:${displaySeconds}`;
+                
+                // Change color based on time remaining
+                if (minutes < 5) {
+                    timerDisplay.style.color = '#e74c3c';
+                } else if (minutes < 10) {
+                    timerDisplay.style.color = '#f39c12';
+                } else {
+                    timerDisplay.style.color = '#27ae60';
+                }
+                
+                // Countdown
+                if (seconds === 0) {
+                    if (minutes === 0) {
+                        clearInterval(testTimer);
+                        alert('Time is up! Test completed.');
+                        return;
+                    }
+                    minutes--;
+                    seconds = 59;
+                } else {
+                    seconds--;
+                }
+            }
+            
+            testTimer = setInterval(updateTimer, 1000);
+            updateTimer(); // Initial call
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (!testStarted) return;
+            
+            // Number keys 1-4 to switch parts
+            if (e.key >= '1' && e.key <= '4') {
+                loadPart(parseInt(e.key));
+            }
+            
+            // Arrow keys for navigation
+            if (e.key === 'ArrowLeft' && currentPart > 1) {
+                loadPart(currentPart - 1);
+            }
+            if (e.key === 'ArrowRight' && currentPart < 4) {
+                loadPart(currentPart + 1);
+            }
+        });
+    </script>
+</body>
+</html>

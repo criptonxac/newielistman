@@ -26,9 +26,9 @@ class StudentController extends Controller
         
         $stats = [
             'completed_tests' => $user->testAttempts()->whereNotNull('completed_at')->count(),
-            'average_score' => $user->testAttempts()->whereNotNull('completed_at')->avg('score') ?? 0,
-            'highest_score' => $user->testAttempts()->whereNotNull('completed_at')->max('score') ?? 0,
-            'total_time' => $user->testAttempts()->whereNotNull('completed_at')->sum('duration') ?? 0,
+            'average_score' => $user->testAttempts()->whereNotNull('completed_at')->avg('total_score') ?? 0,
+            'highest_score' => $user->testAttempts()->whereNotNull('completed_at')->max('total_score') ?? 0,
+            'total_time' => 0, // Duration ustuni mavjud emas, 0 qilib qo'yamiz
         ];
 
         $recent_attempts = $user->testAttempts()
@@ -44,7 +44,11 @@ class StudentController extends Controller
 
     public function tests(Request $request)
     {
-        $categories = TestCategory::with('tests')->get();
+        // Faqat admin va teacher tomonidan yaratilgan testlarni ko'rsatish
+        $categories = TestCategory::with(['tests' => function($query) {
+            $query->where('is_active', true); // Faqat faol testlarni ko'rsatish
+        }])->get();
+        
         return view('student.tests', compact('categories'));
     }
 

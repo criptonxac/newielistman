@@ -1,0 +1,568 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+}
+
+/* Header */
+.header {
+    background: #2c3e50;
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.timer {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+/* Navigation */
+.nav-section {
+    background: #34495e;
+    color: white;
+    padding: 0.5rem 2rem;
+    font-size: 0.9rem;
+}
+
+/* Main Content */
+.main-content {
+    display: flex;
+    height: calc(100vh - 120px);
+}
+
+.question-panel {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.audio-panel {
+    width: 300px;
+    background: #ecf0f1;
+    padding: 1.5rem;
+    border-left: 1px solid #bdc3c7;
+}
+
+/* Question Styles */
+.question-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+}
+
+.question-instruction {
+    background: #e8f4fd;
+    border-left: 4px solid #3498db;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.question-block {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+/* Input Fields for Gap-fill */
+.answer-input {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.3rem 0.5rem;
+    margin: 0 0.2rem;
+    min-width: 80px;
+    max-width: 120px;
+    font-size: 0.9rem;
+    text-align: center;
+    background: white;
+    transition: border-color 0.2s ease;
+}
+
+.answer-input:focus {
+    outline: none;
+    border-color: #007cba;
+    box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.2);
+}
+
+.answer-input.filled {
+    background: #f0f8ff;
+    border-color: #007cba;
+}
+
+/* Drag and Drop Areas for Mapping */
+.drop-zone {
+    min-height: 40px;
+    border: 2px dashed #bdc3c7;
+    border-radius: 6px;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.drop-zone:hover {
+    border-color: #3498db;
+    background: #e8f4fd;
+}
+
+.drop-zone.drag-over {
+    border-color: #27ae60;
+    background: #d5f4e6;
+    transform: scale(1.02);
+}
+
+.drop-zone.filled {
+    border: 2px solid #27ae60;
+    background: #e8f5e8;
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.placeholder {
+    color: #95a5a6;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+.drop-zone.filled .placeholder {
+    color: #27ae60;
+    font-style: normal;
+}
+
+/* Draggable Items */
+.draggable-item {
+    background: #3498db;
+    color: white;
+    padding: 0.7rem 1rem;
+    margin: 0.3rem 0;
+    border-radius: 6px;
+    cursor: grab;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    font-weight: 500;
+}
+
+.draggable-item:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.draggable-item:active {
+    cursor: grabbing;
+    transform: rotate(3deg);
+}
+
+.draggable-item.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg) scale(0.95);
+}
+
+.draggable-item.used {
+    background: #95a5a6;
+    color: #7f8c8d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.draggable-item.used:hover {
+    background: #95a5a6;
+    transform: none;
+}
+
+/* People and Staff Lists */
+.person-row {
+    display: flex;
+    align-items: center;
+    margin: 1rem 0;
+    padding: 0.8rem;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+.person-label {
+    font-weight: 600;
+    margin-right: 1rem;
+    min-width: 120px;
+    color: #2c3e50;
+}
+
+.people-input, .staff-input {
+    width: 150px;
+}
+
+.map-input {
+    width: 100px;
+    font-size: 0.8rem;
+}
+
+/* Food Categories Styles */
+.food-categories-container {
+    display: flex;
+    gap: 2rem;
+    margin: 2rem 0;
+    align-items: flex-start;
+}
+
+.food-category {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.category-title {
+    font-weight: bold;
+    margin-bottom: 0.8rem;
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.3rem;
+}
+
+.category-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.food-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-top: 1rem;
+}
+
+/* Flowchart styles */
+.flowchart-container {
+    display: flex;
+    gap: 2rem;
+    margin: 2rem 0;
+    align-items: flex-start;
+}
+
+.flowchart-diagram {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 2rem;
+}
+
+.flowchart-step {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #3498db;
+    position: relative;
+}
+
+.step-number {
+    background: #3498db;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    position: absolute;
+    left: -15px;
+    top: 1rem;
+}
+
+.step-content {
+    margin-left: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.drop-zone-flow {
+    display: inline-block;
+    min-width: 100px;
+    height: 30px;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    text-align: center;
+    line-height: 26px;
+    background: #fafafa;
+    transition: all 0.3s ease;
+    margin: 0 0.3rem;
+}
+
+.drop-zone-flow.drag-over {
+    border-color: #3498db;
+    background: #e8f4fd;
+}
+
+.drop-zone-flow.filled {
+    border: 2px solid #27ae60;
+    background: #e8f5e8;
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.drop-zone-flow .placeholder {
+    color: #999;
+    font-size: 0.8rem;
+}
+
+.drop-zone-flow.filled .placeholder {
+    color: #27ae60;
+}
+
+/* Flowchart options */
+.flowchart-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-top: 1rem;
+}
+
+/* Part 4 Table styles */
+.drop-zone-table {
+    display: inline-block;
+    width: 80px;
+    height: 25px;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    text-align: center;
+    line-height: 21px;
+    background: #fafafa;
+    transition: all 0.3s ease;
+    margin: 0 0.2rem;
+    vertical-align: middle;
+}
+
+.drop-zone-table.drag-over {
+    border-color: #3498db;
+    background: #e8f4fd;
+}
+
+.drop-zone-table.filled {
+    border: 2px solid #27ae60;
+    background: #e8f5e8;
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.drop-zone-table .placeholder {
+    color: #999;
+    font-size: 0.8rem;
+}
+
+.drop-zone-table.filled .placeholder {
+    color: #27ae60;
+}
+
+/* Recommendations styles */
+.drop-zone-rec {
+    display: inline-block;
+    width: 100px;
+    height: 25px;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    text-align: center;
+    line-height: 21px;
+    background: #fafafa;
+    transition: all 0.3s ease;
+    margin: 0 0.3rem;
+    vertical-align: middle;
+}
+
+.drop-zone-rec.drag-over {
+    border-color: #3498db;
+    background: #e8f4fd;
+}
+
+.drop-zone-rec.filled {
+    border: 2px solid #27ae60;
+    background: #e8f5e8;
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.drop-zone-rec .placeholder {
+    color: #999;
+    font-size: 0.8rem;
+}
+
+.drop-zone-rec.filled .placeholder {
+    color: #27ae60;
+}
+
+.recommendation-item {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.recommendations-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-top: 1rem;
+}
+
+/* Audio Player */
+.audio-player {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.audio-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.play-btn {
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.play-btn:hover {
+    background: #219a52;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.volume-slider {
+    width: 100px;
+}
+
+/* Progress and Navigation */
+.progress-section {
+    background: white;
+    border-top: 1px solid #e0e0e0;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #ecf0f1;
+    border-radius: 4px;
+    margin: 0 2rem;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #3498db;
+    transition: width 0.3s ease;
+}
+
+.nav-btn {
+    padding: 0.7rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.nav-btn.primary {
+    background: #3498db;
+    color: white;
+}
+
+.nav-btn.primary:hover {
+    background: #2980b9;
+}
+
+.nav-btn.secondary {
+    background: #ecf0f1;
+    color: #2c3e50;
+}
+
+.nav-btn.secondary:hover {
+    background: #d5dbdb;
+}
+
+/* Text formatting */
+.text-passage {
+    line-height: 1.8;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+}
+
+.blank-space {
+    display: inline-block;
+    min-width: 120px;
+    margin: 0 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .audio-panel {
+        width: 100%;
+        order: -1;
+    }
+    
+    .header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* Animation */
+@keyframes dropSuccess {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.drop-success {
+    animation: dropSuccess 0.3s ease;
+}

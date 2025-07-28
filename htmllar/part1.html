@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Listening Test - Part 1</title>
+    <link rel="stylesheet" href="css/listening.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>IELTS Listening Test</h1>
+                <div>Part 1: Questions 1-10</div>
+            </div>
+            <div class="timer" id="timer">30:00</div>
+        </div>
+
+        <!-- Navigation Section -->
+        <div class="nav-section">
+            Listening &gt; Part 1 &gt; Questions 1-10
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Question Panel -->
+            <div class="question-panel">
+                <!-- Question Instructions -->
+                <div class="question-instruction">
+                    <strong>Questions 1-10</strong><br>
+                    Complete the notes below. Write <strong>ONE WORD AND/OR A NUMBER</strong> for each answer.<br><br>
+                    <strong>Phone call about second-hand furniture</strong>
+                </div>
+
+                <!-- Section 1: Gap-fill Questions -->
+                <h2 style="margin-bottom: 1rem; color: #2c3e50;">Items:</h2>
+
+                <!-- Question 1 -->
+                <div class="question-block">
+                    <div class="text-passage">
+                        <strong>Dining table:</strong><br>
+                        - shape: <input type="text" class="answer-input" data-question="1" placeholder="1"><br>
+                        - medium size<br>
+                        - <input type="text" class="answer-input" data-question="2" placeholder="2"> old<br>
+                        - price: £25.00
+                    </div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="question-block">
+                    <div class="text-passage">
+                        <strong>Dining chairs:</strong><br>
+                        - set of <input type="text" class="answer-input" data-question="3" placeholder="3"> chairs<br>
+                        - seats covered in <input type="text" class="answer-input" data-question="4" placeholder="4"> material<br>
+                        - in <input type="text" class="answer-input" data-question="5" placeholder="5"> condition<br>
+                        - price: £20.00
+                    </div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="question-block">
+                    <div class="text-passage">
+                        <strong>Desk:</strong><br>
+                        - length: 1 metre 20<br>
+                        - 3 drawers. Top drawer has a <input type="text" class="answer-input" data-question="6" placeholder="6"><br>
+                        - price: £<input type="text" class="answer-input" data-question="7" placeholder="7">
+                    </div>
+                </div>
+
+                <!-- Address Section -->
+                <div class="question-block">
+                    <div class="text-passage">
+                        <strong>Address:</strong><br>
+                        <input type="text" class="answer-input" data-question="8" placeholder="8"> Old Lane, Stonethorpe
+                    </div>
+                </div>
+
+                <!-- Directions Section -->
+                <div class="question-block">
+                    <div class="text-passage">
+                        <strong>Directions:</strong><br>
+                        Take the Hawcroft road out of Stonethorpe. Go past the secondary school, then turn <input type="text" class="answer-input" data-question="9" placeholder="9"> at the crossroads. House is down this road, opposite the <input type="text" class="answer-input" data-question="10" placeholder="10">.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Panel -->
+            <div class="audio-panel">
+                <div class="audio-player">
+                    <h3>Audio Player</h3>
+                    <div class="audio-controls">
+                        <button class="play-btn" id="playBtn">▶</button>
+                        <div class="volume-control">
+                            <span>🔊</span>
+                            <input type="range" class="volume-slider" min="0" max="100" value="70">
+                        </div>
+                    </div>
+                    <audio id="audioPlayer" controls style="width: 100%; margin-top: 1rem;">
+                        <source src="listening-part1.mp3" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+
+                <div style="background: white; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                    <h4>Instructions</h4>
+                    <ul style="margin-top: 0.5rem; padding-left: 1.5rem; font-size: 0.9rem;">
+                        <li>Listen to the audio carefully</li>
+                        <li>Type your answers in the input fields</li>
+                        <li>Press Enter to move to next field</li>
+                        <li>Answers are auto-saved</li>
+                        <li>ONE WORD AND/OR NUMBER per answer</li>
+                    </ul>
+                </div>
+
+                <div style="background: #e8f4fd; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                    <h4>Progress</h4>
+                    <div id="progressText">0/10 questions answered</div>
+                    <div style="margin-top: 0.5rem;">
+                        <div style="background: #ddd; height: 10px; border-radius: 5px;">
+                            <div id="progressBar" style="background: #3498db; height: 100%; width: 0%; border-radius: 5px; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress and Navigation -->
+        <div class="progress-section">
+            <button class="nav-btn secondary" onclick="window.location.href='listening.html'">Main Test</button>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 25%;"></div>
+            </div>
+            <button class="nav-btn primary" onclick="window.location.href='part2.html'">Next: Part 2</button>
+        </div>
+    </div>
+
+    <script src="js/listening.js"></script>
+    <script>
+        // Update for Part 1 only
+        totalQuestions = 10;
+        
+        // Override progress function for Part 1
+        function updateProgress() {
+            const progressText = document.getElementById('progressText');
+            const progressBar = document.getElementById('progressBar');
+            const percentage = (answeredCount / totalQuestions) * 100;
+            
+            progressText.textContent = `${answeredCount}/${totalQuestions} questions answered`;
+            progressBar.style.width = percentage + '%';
+        }
+    </script>
+</body>
+</html>

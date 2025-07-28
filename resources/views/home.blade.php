@@ -81,8 +81,8 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             @foreach($testCategories as $category)
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                    <div class="p-6">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow h-full">
+                    <div class="p-6 h-full flex flex-col">
                         <div class="flex items-center mb-4">
                             <div class="bg-gradient-to-r from-blue-500 to-indigo-500 w-12 h-12 rounded-lg flex items-center justify-center mr-4">
                                 @if($category->icon)
@@ -120,10 +120,12 @@
                             </div>
                         @endif
                         
-                        <a href="{{ route('categories.show', $category) }}" 
-                           class="block w-full text-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-lg font-medium transition-all">
-                            Barcha testlarni ko'rish
-                        </a>
+                        <div class="mt-auto pt-4">
+                            <a href="{{ route('categories.show', $category) }}" 
+                               class="block w-full text-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-lg font-medium transition-all">
+                                Barcha testlarni ko'rish
+                            </a>
+                        </div>
                     </div>
                 </div>
             @endforeach

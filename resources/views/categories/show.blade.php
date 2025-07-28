@@ -157,6 +157,16 @@
                                     Batafsil ko'rish
                                 </a>
                                 
+                                @if($category->name === 'Listening')
+                                <form action="{{ route('listening.start', $test) }}" method="POST" class="flex-1">
+                                    @csrf
+                                    <button type="submit" 
+                                            class="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white py-3 px-6 rounded-lg font-medium transition-all duration-200">
+                                        <i class="fas fa-play mr-2"></i>
+                                        Darhol boshlash
+                                    </button>
+                                </form>
+                                @else
                                 <form action="{{ route('tests.start', $test) }}" method="POST" class="flex-1">
                                     @csrf
                                     <button type="submit" 
@@ -165,6 +175,7 @@
                                         Darhol boshlash
                                     </button>
                                 </form>
+                                @endif
                             </div>
                         </div>
 
@@ -199,53 +210,6 @@
                 </a>
             </div>
         @endif
-    </div>
-</div>
-
-<!-- Additional Resources -->
-<div class="py-16 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Download Resources -->
-            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-8">
-                <div class="flex items-center mb-6">
-                    <div class="bg-green-500 w-12 h-12 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-download text-white text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900">Javoblar varaqasi</h3>
-                        <p class="text-gray-600">{{ $category->name }} uchun</p>
-                    </div>
-                </div>
-                <p class="text-gray-700 mb-6">
-                    {{ $category->name }} familiarisation testlari uchun javoblar varaqasini yuklab oling.
-                </p>
-                <a href="#" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
-                    <i class="fas fa-file-pdf mr-2"></i>
-                    PDF yuklab olish
-                </a>
-            </div>
-
-            <!-- Video Guide -->
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-8">
-                <div class="flex items-center mb-6">
-                    <div class="bg-blue-500 w-12 h-12 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-play text-white text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900">Video qo'llanma</h3>
-                        <p class="text-gray-600">{{ $category->name }} uchun</p>
-                    </div>
-                </div>
-                <p class="text-gray-700 mb-6">
-                    {{ $category->name }} testini kompyuterda qanday topshirish bo'yicha qisqa qo'llanma videosi.
-                </p>
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
-                    <i class="fas fa-video mr-2"></i>
-                    Videoni tomosha qilish
-                </button>
-            </div>
-        </div>
     </div>
 </div>
 @endsection

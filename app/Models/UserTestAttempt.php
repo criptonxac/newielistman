@@ -18,16 +18,22 @@ class UserTestAttempt extends Model
         'correct_answers',
         'results',
         'status',
-        'session_id'
+        'session_id',
+        'answers',
+        'score',
+        'max_score'
     ];
 
     protected $casts = [
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
         'results' => 'array',
+        'answers' => 'array',
         'total_score' => 'integer',
         'total_questions' => 'integer',
-        'correct_answers' => 'integer'
+        'correct_answers' => 'integer',
+        'score' => 'integer',
+        'max_score' => 'integer'
     ];
 
     public function user(): BelongsTo

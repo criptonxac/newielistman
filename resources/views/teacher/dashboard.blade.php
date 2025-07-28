@@ -1,93 +1,75 @@
-@extends('layouts.main')
+@extends('layouts.teacher')
 
 @section('title', 'O\'qituvchi Dashboard - IELTS Platform')
 
+@section('page_title', 'O\'qituvchi Dashboard')
+
 @section('content')
-<div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <div class="bg-white shadow">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-6">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">O'qituvchi Dashboard</h1>
-                    <p class="mt-1 text-sm text-gray-500">Salom, {{ auth()->user()->name }}! Talabalar va testlarni boshqaring</p>
-                </div>
-                <div class="flex space-x-3">
-                    <a href="{{ route('teacher.tests.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-                        <i class="fas fa-plus mr-2"></i>Yangi Test
-                    </a>
-                    <a href="{{ route('teacher.tests') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                        <i class="fas fa-list mr-2"></i>Barcha Testlar
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Stats Grid -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-clipboard-list text-blue-500 text-2xl"></i>
+            <!-- Top Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <!-- Jami testlar -->
+                <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                                <i class="fas fa-file-alt text-white text-xl"></i>
+                            </div>
                         </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Jami Testlar</dt>
-                                <dd class="text-3xl font-bold text-gray-900">{{ $stats['total_tests'] }}</dd>
-                            </dl>
+                        <div class="text-right">
+                            <div class="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-full">+12%</div>
                         </div>
                     </div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_tests'] }}</div>
+                    <div class="text-xs text-gray-400">Jami testlar soni</div>
                 </div>
-            </div>
 
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-users text-green-500 text-2xl"></i>
+                <!-- Talabalar -->
+                <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg">
+                                <i class="fas fa-users text-white text-xl"></i>
+                            </div>
                         </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Talabalar</dt>
-                                <dd class="text-3xl font-bold text-gray-900">{{ $stats['total_students'] }}</dd>
-                            </dl>
+                        <div class="text-right">
+                            <div class="text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded-full">+8%</div>
                         </div>
                     </div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_students'] }}</div>
+                    <div class="text-xs text-gray-400">Ro'yxatdan o'tgan talabalar</div>
                 </div>
-            </div>
 
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-chart-line text-purple-500 text-2xl"></i>
+                <!-- Test urinishlari -->
+                <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                                <i class="fas fa-chart-line text-white text-xl"></i>
+                            </div>
                         </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">Test Urinishlari</dt>
-                                <dd class="text-3xl font-bold text-gray-900">{{ $stats['total_attempts'] }}</dd>
-                            </dl>
+                        <div class="text-right">
+                            <div class="text-xs text-purple-600 font-medium bg-purple-50 px-2 py-1 rounded-full">+15%</div>
                         </div>
                     </div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_attempts'] }}</div>
+                    <div class="text-xs text-gray-400">Jami test urinishlari</div>
                 </div>
-            </div>
 
-            <div class="bg-white overflow-hidden shadow rounded-lg">
-                <div class="p-5">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-star text-yellow-500 text-2xl"></i>
+                <!-- O'rtacha ball -->
+                <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
+                                <i class="fas fa-trophy text-white text-xl"></i>
+                            </div>
                         </div>
-                        <div class="ml-5 w-0 flex-1">
-                            <dl>
-                                <dt class="text-sm font-medium text-gray-500 truncate">O'rtacha Ball</dt>
-                                <dd class="text-3xl font-bold text-gray-900">{{ number_format($stats['average_score'], 1) }}</dd>
-                            </dl>
+                        <div class="text-right">
+                            <div class="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-1 rounded-full">+5%</div>
                         </div>
                     </div>
+                    <div class="text-2xl font-bold text-gray-800">{{ number_format($stats['average_score'], 1) }}</div>
+                    <div class="text-xs text-gray-400">O'rtacha ball</div>
                 </div>
             </div>
         </div>
@@ -104,8 +86,8 @@
                         @forelse($recent_attempts as $attempt)
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div>
-                                <div class="font-medium text-gray-900">{{ $attempt->user->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $attempt->test->title }}</div>
+                                <div class="font-medium text-gray-900">{{ $attempt->user ? $attempt->user->name : 'Noma\'lum foydalanuvchi' }}</div>
+                                <div class="text-sm text-gray-500">{{ $attempt->test ? $attempt->test->title : 'Noma\'lum test' }}</div>
                                 <div class="text-xs text-gray-400">{{ $attempt->created_at->diffForHumans() }}</div>
                             </div>
                             <div class="text-right">
@@ -134,12 +116,12 @@
                         <i class="fas fa-bolt mr-2 text-yellow-500"></i>Tezkor Amallar
                     </h3>
                     <div class="space-y-3">
-                        <a href="{{ route('teacher.tests.create') }}" class="block w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-4 transition-colors">
+                        <a href="{{ route('categories.index') }}" class="block w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-4 transition-colors">
                             <div class="flex items-center">
-                                <i class="fas fa-plus-circle text-blue-600 text-xl mr-3"></i>
+                                <i class="fas fa-list text-blue-600 text-xl mr-3"></i>
                                 <div>
-                                    <div class="font-medium text-blue-900">Yangi Test Yaratish</div>
-                                    <div class="text-sm text-blue-600">IELTS uchun yangi test yarating</div>
+                                    <div class="font-medium text-blue-900">Testlarni Ko'rish</div>
+                                    <div class="text-sm text-blue-600">Barcha mavjud testlarni ko'ring</div>
                                 </div>
                             </div>
                         </a>
@@ -154,22 +136,22 @@
                             </div>
                         </a>
 
-                        <a href="{{ route('teacher.analytics') }}" class="block w-full bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg p-4 transition-colors">
+                        <a href="{{ route('teacher.results') }}" class="block w-full bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg p-4 transition-colors">
                             <div class="flex items-center">
                                 <i class="fas fa-chart-bar text-purple-600 text-xl mr-3"></i>
                                 <div>
-                                    <div class="font-medium text-purple-900">Analitika va Hisobotlar</div>
-                                    <div class="text-sm text-purple-600">Batafsil statistika va tahlillar</div>
+                                    <div class="font-medium text-purple-900">Test Natijalari</div>
+                                    <div class="text-sm text-purple-600">Talabalar natijalarini ko'ring</div>
                                 </div>
                             </div>
                         </a>
 
-                        <a href="{{ route('teacher.settings') }}" class="block w-full bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg p-4 transition-colors">
+                        <a href="{{ route('teacher.dashboard') }}" class="block w-full bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg p-4 transition-colors">
                             <div class="flex items-center">
-                                <i class="fas fa-cog text-gray-600 text-xl mr-3"></i>
+                                <i class="fas fa-home text-gray-600 text-xl mr-3"></i>
                                 <div>
-                                    <div class="font-medium text-gray-900">Sozlamalar</div>
-                                    <div class="text-sm text-gray-600">Profil va test sozlamalari</div>
+                                    <div class="font-medium text-gray-900">Bosh sahifa</div>
+                                    <div class="text-sm text-gray-600">Dashboard sahifasiga qaytish</div>
                                 </div>
                             </div>
                         </a>
@@ -177,6 +159,4 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
 @endsection

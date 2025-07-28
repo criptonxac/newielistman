@@ -1,28 +1,9 @@
-@extends('layouts.main')
+@extends('layouts.student')
 
 @section('title', 'Talaba Dashboard - IELTS Platform')
+@section('page_title', 'Dashboard')
 
 @section('content')
-<div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <div class="bg-white shadow">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-6">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Talaba Dashboard</h1>
-                    <p class="mt-1 text-sm text-gray-500">Salom, {{ auth()->user()->name }}! IELTS tayyorgarligingizni davom ettiring</p>
-                </div>
-                <div class="flex space-x-3">
-                    <a href="{{ route('categories.index') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-                        <i class="fas fa-play mr-2"></i>Test Boshlash
-                    </a>
-                    <a href="{{ route('student.progress') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                        <i class="fas fa-chart-line mr-2"></i>Mening Natijalarim
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Progress Overview -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -162,7 +143,7 @@
                             @endforelse
                         </div>
                         <div class="mt-4">
-                            <a href="{{ route('student.progress') }}" class="text-sm text-blue-600 hover:text-blue-500">
+                            <a href="{{ route('student.results') }}" class="text-sm text-blue-600 hover:text-blue-500">
                                 Barcha natijalarni ko'rish →
                             </a>
                         </div>
@@ -194,5 +175,4 @@
             </div>
         </div>
     </div>
-</div>
 @endsection
