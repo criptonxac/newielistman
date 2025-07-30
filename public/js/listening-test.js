@@ -317,19 +317,27 @@ function saveAnswer(questionId, answer) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': window.csrf_token
+            'X-CSRF-TOKEN': window.csrf_token,
+            'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({
             question_id: questionId,
             answer: answer
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
         console.log('Answer saved:', data);
+        // Update UI to show success if needed
     })
     .catch(error => {
         console.error('Error saving answer:', error);
+        // Don't reload or redirect on error, just log it
     });
 }
 

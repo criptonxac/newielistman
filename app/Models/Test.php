@@ -2,78 +2,103 @@
 
 namespace App\Models;
 
-use App\Enums\TestStatus;
-use App\Enums\TestType;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Test extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
+        'category_id',
         'title',
-        'slug',
         'description',
-        'reading_passage',
-        'test_category_id',
         'type',
         'duration_minutes',
-        'total_questions',
-        'instructions',
-        'resources',
+        'pass_score',
         'is_active',
-        'is_timed'
+        'attempts_allowed'
     ];
 
     protected $casts = [
-        'instructions' => 'array',
-        'resources' => 'array',
         'is_active' => 'boolean',
-        'is_timed' => 'boolean',
         'duration_minutes' => 'integer',
-        'total_questions' => 'integer',
-        'type' => TestType::class,
-        'status' => TestStatus::class
+        'pass_score' => 'integer',
+        'attempts_allowed' => 'integer'
     ];
 
-    public function category(): BelongsTo
+    // Relationships
+    public function category()
     {
-        return $this->belongsTo(TestCategory::class, 'test_category_id');
+        return $this->belongsTo(Category::class);
     }
 
-    public function questions(): HasMany
+    public function questions()
     {
-        return $this->hasMany(TestQuestion::class)->orderBy('sort_order')->orderBy('question_number');
-    }
-    
-    /**
-     * Get the passages for the test
-     * For Reading tests, we need to get passages from the database
-     */
-    public function passages()
-    {
-        // If this is a reading test, we would fetch passages from a related table
-        // For now, we'll use a placeholder implementation
-        return $this->hasMany(TestPassage::class)->orderBy('sort_order');
+        return $this->hasMany(TestQuestion::class)->orderBy('part_number')->orderBy('question_number');
     }
 
-    public function attempts(): HasMany
+    public function audioFiles()
     {
-        return $this->hasMany(UserTestAttempt::class);
+        return $this->hasMany(TestAudioFile::class)->orderBy('part_number')->orderBy('play_order');
     }
 
+    public function attempts()
+    {
+        return $this->hasMany(TestAttempt::class);
+    }
+
+    // Scopes
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    public function scopeByType($query, $type)
+    public function scopeListening($query)
     {
-        return $query->where('type', $type);
+        return $query->whereHas('category', function($q) {
+            $q->where('slug', 'listening');
+        });
     }
 
-    public function getRouteKeyName()
+    // Methods
+    public function getTotalQuestionsAttribute()
     {
-        return 'id';
+        return $this->questions()->count();
+    }
+
+    public function getTotalPointsAttribute()
+    {
+        return $this->questions()->sum('points');
+    }
+
+    public function getUserAttemptsCount($userId)
+    {
+        return $this->attempts()
+            ->where('user_id', $userId)
+            ->where('status', 'completed')
+            ->count();
+    }
+
+    public function canUserAttempt($userId)
+    {
+        $attemptCount = $this->getUserAttemptsCount($userId);
+        return $attemptCount < $this->attempts_allowed;
+    }
+
+    public function getQuestionsByPart($partNumber)
+    {
+        return $this->questions()
+            ->where('part_number', $partNumber)
+            ->orderBy('question_number')
+            ->get();
+    }
+
+    public function getAudioByPart($partNumber)
+    {
+        return $this->audioFiles()
+            ->where('part_number', $partNumber)
+            ->orderBy('play_order')
+            ->get();
     }
 }

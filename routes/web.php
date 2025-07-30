@@ -1,209 +1,379 @@
 <?php
 
-
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AudioController;
+use App\Http\Controllers\EnumController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ListeningTestController;
+use App\Http\Controllers\ReadingTestController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TeacherController;
-use App\Http\Controllers\TestController;
 use App\Http\Controllers\TestCategoryController;
+use App\Http\Controllers\TestController;
+use App\Http\Controllers\TestManagementController;
+use App\Http\Controllers\TestResultController;
+use App\Http\Controllers\TestTypeController;
+use App\Http\Controllers\WritingTestController;
+use App\Models\Category;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__ . '/auth.php';
 
-// Admin routes
-Route::prefix('admin')->name('admin.')
-    ->middleware(['auth', 'verified', \App\Http\Middleware\CheckRole::class . ':' . User::ROLE_ADMIN])
-    ->controller(AdminController::class)
-    ->group(function () {
-        Route::get('/dashboard', 'dashboard')->name('dashboard');
-        Route::get('/users', 'index')->name('users');
-        Route::post('/users', 'store')->name('users.store');
-        Route::put('/users/{id}', 'update')->name('users.update');
-        Route::delete('/users/{id}', 'destroy')->name('users.destroy');
-        Route::get('/tests', 'tests')->name('tests');
-    });
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
 
-// Teacher routes
-Route::prefix('teacher')
-    ->name('teacher.')
-    ->middleware(['auth', 'verified', \App\Http\Middleware\CheckRole::class . ':' . User::ROLE_ADMIN . ',' . User::ROLE_TEACHER])
-    ->group(function () {
-        Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('dashboard');
-        Route::get('/students', [TeacherController::class, 'students'])->name('students');
-        Route::get('/results', [TeacherController::class, 'results'])->name('results');
-        Route::get('/export/user/{user}', [TeacherController::class, 'exportUser'])->name('export.user');
-    });
+// ==========================================
+// PUBLIC ROUTES
+// ==========================================
 
-// Student routes
-Route::prefix('student')
-    ->name('student.')
-    ->middleware(['auth', 'verified', \App\Http\Middleware\CheckRole::class . ':' . User::ROLE_ADMIN . ',' . User::ROLE_STUDENT])
-    ->group(function () {
-        Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('dashboard');
-        Route::get('/tests', [StudentController::class, 'tests'])->name('tests');
-        Route::get('/results', [StudentController::class, 'results'])->name('results');
-    });
-
-// Asosiy sahifa
+// Home page
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Test kategoriyalari
-Route::prefix('categories')
-    ->name('categories.')
-    ->controller(TestCategoryController::class)
-    ->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::get('{category:slug}', 'show')->name('show');
-    });
+// Static pages
+Route::get('/about', [HomeController::class, 'about'])->name('about');
+Route::get('/help', [HomeController::class, 'help'])->name('help');
+Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
 
-// Statik sahifalar
-Route::get('/about', function () {
-    return view('pages.about');
-})->name('about');
+// Test information pages
+Route::get('/ielts-info', [HomeController::class, 'ieltsInfo'])->name('ielts.info');
+Route::get('/test-format', [HomeController::class, 'testFormat'])->name('test.format');
 
-Route::get('/help', function () {
-    return view('pages.help');
-})->name('help');
+// Public demo/familiarisation tests (no auth required)
+Route::prefix('demo')->name('demo.')->group(function () {
+    Route::get('/listening', [TestController::class, 'showListeningFamiliarisation'])->name('listening');
+    Route::get('/reading', [TestController::class, 'showReadingFamiliarisation'])->name('reading');
+    Route::get('/writing', [TestController::class, 'showWritingFamiliarisation'])->name('writing');
+});
 
-// Testlar
-Route::prefix('tests')
-    ->name('tests.')
-    ->group(function () {
-        Route::get('/{test:slug}', [TestController::class, 'show'])->name('show');
-        Route::post('/{test:slug}/start', [TestController::class, 'start'])->name('start');
-        Route::get('/{test:slug}/take/{attempt}', [TestController::class, 'take'])->name('take');
-        Route::post('/{test:slug}/attempt/{attempt}/answer', [TestController::class, 'submitAnswer'])->name('submit-answer');
-        Route::post('/{test:slug}/attempt/{attempt}/submit', [TestController::class, 'submitTest'])->name('submit');
-        Route::post('/{test:slug}/attempt/{attempt}/complete', [TestController::class, 'complete'])->name('complete');
-        Route::get('/{test:slug}/attempt/{attempt}/results', [TestController::class, 'results'])->name('results');
-    });
+// Test categories (public browsing)
+Route::prefix('categories')->name('categories.')->group(function () {
+    Route::get('/', [TestCategoryController::class, 'index'])->name('index');
+    Route::get('/{category:slug}', [TestCategoryController::class, 'show'])->name('show');
+});
 
-// Listening Test Parts
-use App\Http\Controllers\ListeningTestController;
+// Test types (public)
+Route::get('/tests/by-type/{type?}', [TestTypeController::class, 'showByType'])->name('tests.by-type');
 
-Route::prefix('listening')
-    ->name('listening.')
-    ->group(function () {
-        Route::get('/{test:slug}/start', [ListeningTestController::class, 'start'])->name('start');
-        Route::get('/{test:slug}/part1/{attempt}', [ListeningTestController::class, 'part1'])->name('part1');
-        Route::get('/{test:slug}/part2/{attempt}', [ListeningTestController::class, 'part2'])->name('part2');
-        Route::get('/{test:slug}/part3/{attempt}', [ListeningTestController::class, 'part3'])->name('part3');
-        Route::get('/{test:slug}/part4/{attempt}', [ListeningTestController::class, 'part4'])->name('part4');
-        Route::get('/{test:slug}/unified/{attempt}', [ListeningTestController::class, 'unifiedTest'])->name('unified');
-        Route::post('/{test:slug}/attempt/{attempt}/submit', [ListeningTestController::class, 'submitAnswers'])->name('submit-answers');
-        Route::post('/{test:slug}/attempt/{attempt}/save', [ListeningTestController::class, 'saveAnswer'])->name('save-answer');
-        Route::get('/{test:slug}/attempt/{attempt}/complete', [ListeningTestController::class, 'complete'])->name('complete');
-    });
+// Enum data (public)
+Route::get('/enums', [EnumController::class, 'index'])->name('enums.index');
 
-// Reading Test Parts
-use App\Http\Controllers\ReadingTestController;
-
-Route::prefix('reading')
-    ->name('reading.')
-    ->group(function () {
-        Route::get('/{test:slug}/start', [ReadingTestController::class, 'start'])->name('start');
-        Route::get('/{test:slug}/part1/{attempt}', [ReadingTestController::class, 'part1'])->name('part1');
-        Route::get('/{test:slug}/part2/{attempt}', [ReadingTestController::class, 'part2'])->name('part2');
-        Route::get('/{test:slug}/part3/{attempt}', [ReadingTestController::class, 'part3'])->name('part3');
-        Route::get('/{test:slug}/unified/{attempt}', [ReadingTestController::class, 'unifiedTest'])->name('unified');
-        Route::match(['get', 'post'], '/{test:slug}/attempt/{attempt}/answers', [ReadingTestController::class, 'submitAnswers'])->name('submit-answers');
-        Route::get('/{test:slug}/attempt/{attempt}/complete', [ReadingTestController::class, 'complete'])->name('complete');
-    });
-
-// Writing Test Parts
-use App\Http\Controllers\WritingTestController;
-
-Route::prefix('writing')
-    ->name('writing.')
-    ->group(function () {
-        Route::get('/{test:slug}/start', [WritingTestController::class, 'start'])->name('start');
-        Route::get('/{test:slug}/task1/{attempt}', [WritingTestController::class, 'task1'])->name('task1');
-        Route::get('/{test:slug}/task2/{attempt}', [WritingTestController::class, 'task2'])->name('task2');
-        Route::post('/{test:slug}/attempt/{attempt}/answers', [WritingTestController::class, 'submitAnswers'])->name('submit-answers');
-        Route::get('/{test:slug}/attempt/{attempt}/complete', [WritingTestController::class, 'complete'])->name('complete');
-    });
-
-// Interactive test sahifalari - yangi partlar bo'yicha testlar
-Route::get('/listening-test', function () {
-    // Listening test kategoriyasini topish
-    $category = \App\Models\TestCategory::where('name', 'Listening')->first();
-    $test = $category ? $category->activeTests->first() : null;
-
-    if ($test) {
-        return redirect()->route('listening.start', ['test' => $test->slug]);
-    }
-
-    return view('tests.listening');
-})->name('tests.listening');
-
-Route::get('/reading-test', function () {
-    // Reading test kategoriyasini topish
-    $category = \App\Models\TestCategory::where('name', 'Academic Reading')->first();
-    $test = $category ? $category->activeTests->first() : null;
-
-    if ($test) {
-        return redirect()->route('reading.start', ['test' => $test->slug]);
-    }
-
-    return view('tests.reading');
-})->name('tests.reading');
-
-Route::get('/writing-test', function () {
-    // Writing test kategoriyasini topish
-    $category = \App\Models\TestCategory::where('name', 'Academic Writing')->first();
-    $test = $category ? $category->activeTests->first() : null;
-
-    if ($test) {
-        return redirect()->route('writing.start', ['test' => $test->slug]);
-    }
-
-    return view('tests.writing');
-})->name('tests.writing');
-
-// Public familiarisation test routes (dynamic data from database)
-Route::get('/tests/ielts-listening-familiarisation', [TestController::class, 'showListeningFamiliarisation'])->name('tests.public.listening');
-
-Route::get('/tests/ielts-reading-familiarisation', [TestController::class, 'showReadingFamiliarisation'])->name('tests.public.reading');
-
-Route::get('/tests/ielts-writing-familiarisation', [TestController::class, 'showWritingFamiliarisation'])->name('tests.public.writing');
-
-// Enum routes
-Route::get('/enums', [App\Http\Controllers\EnumController::class, 'index'])->name('enums.index');
-
-// Test type routes
-Route::get('/tests/by-type/{type?}', [App\Http\Controllers\TestTypeController::class, 'showByType'])->name('tests.by-type');
+// ==========================================
+// AUTHENTICATION & DASHBOARD
+// ==========================================
 
 // Role-based dashboard redirect
-// Test boshqaruvi (admin va o'qituvchilar uchun)
-use App\Http\Controllers\TestManagementController;
+Route::get('/dashboard', [AdminController::class, 'dashboardRedirect'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
-Route::middleware(['auth'])->prefix('test-management')->name('test-management.')
+// Direct admin access (development only - remove in production)
+Route::get('/admin-direct', [AdminController::class, 'adminDirect'])->name('admin.direct');
+
+// ==========================================
+// ADMIN ROUTES
+// ==========================================
+Route::prefix('admin')->name('admin.')
+    ->middleware(['auth', 'verified', 'role:admin'])
     ->group(function () {
-        Route::middleware([\App\Http\Middleware\CheckRole::class . ':' . User::ROLE_ADMIN . ',' . User::ROLE_TEACHER])
-            ->group(function () {
-                Route::get('/', [TestManagementController::class, 'index'])->name('index');
-                Route::get('/create', [TestManagementController::class, 'create'])->name('create');
-                Route::post('/', [TestManagementController::class, 'store'])->name('store');
-                Route::get('/{test}/edit', [TestManagementController::class, 'edit'])->name('edit')->where('test', '[0-9]+');
-                Route::put('/{test}', [TestManagementController::class, 'update'])->name('update')->where('test', '[0-9]+');
-                Route::delete('/{test}', [TestManagementController::class, 'destroy'])->name('destroy')->where('test', '[0-9]+');
-
-                // Savollar boshqaruvi
-                Route::get('/{test}/questions/create', [TestManagementController::class, 'createQuestions'])->name('questions.create')->where('test', '[0-9]+');
-                Route::get('/{test}/questions/add', [TestManagementController::class, 'addQuestion'])->name('questions.add')->where('test', '[0-9]+');
-                Route::match(['get', 'post'], '/{test}/questions', [TestManagementController::class, 'storeQuestions'])->name('questions.store')->where('test', '[0-9]+');
-                Route::post('/{test}/question', [TestManagementController::class, 'storeQuestion'])->name('question.store')->where('test', '[0-9]+');
-                Route::get('/{test}/questions/edit', [TestManagementController::class, 'editQuestions'])->name('questions.edit')->where('test', '[0-9]+');
-                Route::put('/{test}/questions', [TestManagementController::class, 'updateQuestions'])->name('questions.update')->where('test', '[0-9]+');
-                
-                // Enum jadvalini ko'rsatish
-                Route::get('/enums', [TestManagementController::class, 'showEnums'])->name('enums');
-            });
+        
+        // Dashboard
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        
+        // User management
+        Route::controller(AdminController::class)->group(function () {
+            Route::get('/users', 'index')->name('users.index');
+            Route::post('/users', 'store')->name('users.store');
+            Route::put('/users/{user}', 'update')->name('users.update');
+            Route::delete('/users/{user}', 'destroy')->name('users.destroy');
+            Route::get('/users/{user}/export', 'exportUser')->name('users.export');
+        });
+        
+        // Test overview
+        Route::get('/tests', [AdminController::class, 'tests'])->name('tests');
+        
+        // System settings
+        Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
+        Route::post('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
     });
 
-Route::get('/dashboard', [App\Http\Controllers\AdminController::class, 'dashboardRedirect'])->middleware(['auth', 'verified'])->name('dashboard');
+// ==========================================
+// TEACHER ROUTES
+// ==========================================
+Route::prefix('teacher')->name('teacher.')
+    ->middleware(['auth', 'verified', 'role:admin,teacher'])
+    ->group(function () {
+        
+        // Dashboard
+        Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('dashboard');
+        
+        // Students management
+        Route::get('/students', [TeacherController::class, 'students'])->name('students');
+        Route::get('/students/{user}/export', [TeacherController::class, 'exportUser'])->name('students.export');
+        
+        // Test results management
+        Route::controller(TestResultController::class)->group(function () {
+            Route::get('/results', 'index')->name('results.index');
+            Route::get('/results/{attempt}', 'show')->name('results.show');
+            Route::get('/results/test/{test}/statistics', 'statistics')->name('results.statistics');
+            Route::get('/results/export', 'export')->name('results.export');
+            Route::post('/results/{attempt}/grade', 'grade')->name('results.grade');
+        });
+        
+        // Class management
+        Route::get('/classes', [TeacherController::class, 'classes'])->name('classes');
+        Route::post('/classes', [TeacherController::class, 'createClass'])->name('classes.store');
+    });
 
-// Direct admin access (development only)
-Route::get('/admin-direct', [App\Http\Controllers\AdminController::class, 'adminDirect'])->name('admin.direct');
+// ==========================================
+// STUDENT ROUTES
+// ==========================================
+Route::prefix('student')->name('student.')
+    ->middleware(['auth', 'verified', 'role:student'])
+    ->group(function () {
+        
+        // Dashboard
+        Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('dashboard');
+        
+        // Student results
+        Route::get('/results', [StudentController::class, 'results'])->name('results');
+        Route::get('/progress', [StudentController::class, 'progress'])->name('progress');
+        
+        // Available tests
+        Route::controller(TestController::class)->group(function () {
+            Route::get('/tests', 'index')->name('tests.index');
+            Route::get('/tests/{test:slug}', 'show')->name('tests.show');
+            Route::post('/tests/{test:slug}/start', 'start')->name('tests.start');
+            Route::get('/tests/{test:slug}/attempt/{attempt}', 'take')->name('tests.take');
+            Route::get('/tests/{test:slug}/attempt/{attempt}/result', 'result')->name('tests.result');
+            Route::get('/test-history', 'history')->name('tests.history');
+        });
+        
+        // AJAX routes for test taking
+        Route::post('/tests/{test:slug}/attempt/{attempt}/save-answer', [TestController::class, 'saveAnswer'])->name('tests.save-answer');
+        Route::post('/tests/{test:slug}/attempt/{attempt}/submit', [TestController::class, 'submit'])->name('tests.submit');
+        Route::post('/tests/{test:slug}/attempt/{attempt}/auto-save', [TestController::class, 'autoSave'])->name('tests.auto-save');
+    });
+
+// ==========================================
+// TEST MANAGEMENT (Admin & Teacher)
+// ==========================================
+Route::prefix('test-management')->name('test-management.')
+    ->middleware(['auth', 'verified', 'role:admin,teacher'])
+    ->group(function () {
+        
+        // Main test CRUD
+        Route::controller(TestManagementController::class)->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+            Route::get('/{test}/edit', 'edit')->name('edit');
+            Route::put('/{test}', 'update')->name('update');
+            Route::delete('/{test}', 'destroy')->name('destroy');
+            
+            // Test operations
+            Route::get('/{test}/preview', 'preview')->name('preview');
+            Route::post('/{test}/duplicate', 'duplicate')->name('duplicate');
+            Route::post('/{test}/publish', 'publish')->name('publish');
+            Route::post('/{test}/unpublish', 'unpublish')->name('unpublish');
+            
+            // Question management
+            Route::get('/{test}/questions/create', 'createQuestions')->name('questions.create');
+            Route::post('/{test}/questions', 'storeQuestions')->name('questions.store');
+            Route::get('/{test}/questions/add', 'addQuestion')->name('questions.add');
+            Route::put('/{test}/questions/{question}', 'updateQuestion')->name('questions.update');
+            Route::delete('/{test}/questions/{question}', 'deleteQuestion')->name('questions.delete');
+            
+            // Bulk operations
+            Route::post('/{test}/questions/import', 'importQuestions')->name('questions.import');
+            Route::get('/{test}/questions/export', 'exportQuestions')->name('questions.export');
+            
+            // Test results
+            Route::get('/{test}/results', 'results')->name('results');
+            Route::get('/{test}/analytics', 'analytics')->name('analytics');
+            
+            // Settings
+            Route::get('/enums', 'showEnums')->name('enums');
+        });
+    });
+
+// ==========================================
+// SPECIFIC TEST TYPE ROUTES
+// ==========================================
+
+// Listening Tests
+Route::prefix('listening')->name('listening.')
+    ->middleware(['auth', 'verified'])
+    ->controller(ListeningTestController::class)
+    ->group(function () {
+        Route::get('/{test:slug}/start', 'start')->name('start');
+        Route::get('/{test:slug}/instructions/{attempt}', 'instructions')->name('instructions');
+        Route::get('/{test:slug}/part1/{attempt}', 'part1')->name('part1');
+        Route::get('/{test:slug}/part2/{attempt}', 'part2')->name('part2');
+        Route::get('/{test:slug}/part3/{attempt}', 'part3')->name('part3');
+        Route::get('/{test:slug}/part4/{attempt}', 'part4')->name('part4');
+        Route::get('/{test:slug}/unified/{attempt}', 'unifiedTest')->name('unified');
+        Route::get('/{test:slug}/attempt/{attempt}/complete', 'complete')->name('complete');
+        
+        // AJAX endpoints
+        Route::post('/{test:slug}/attempt/{attempt}/submit', 'submitAnswers')->name('submit-answers');
+        Route::post('/{test:slug}/attempt/{attempt}/save', 'saveAnswer')->name('save-answer');
+        Route::get('/{test:slug}/attempt/{attempt}/time-remaining', 'getTimeRemaining')->name('time-remaining');
+    });
+
+// Reading Tests
+Route::prefix('reading')->name('reading.')
+    ->middleware(['auth', 'verified'])
+    ->controller(ReadingTestController::class)
+    ->group(function () {
+        Route::get('/{test:slug}/start', 'start')->name('start');
+        Route::get('/{test:slug}/instructions/{attempt}', 'instructions')->name('instructions');
+        Route::get('/{test:slug}/part1/{attempt}', 'part1')->name('part1');
+        Route::get('/{test:slug}/part2/{attempt}', 'part2')->name('part2');
+        Route::get('/{test:slug}/part3/{attempt}', 'part3')->name('part3');
+        Route::get('/{test:slug}/unified/{attempt}', 'unifiedTest')->name('unified');
+        Route::get('/{test:slug}/attempt/{attempt}/complete', 'complete')->name('complete');
+        
+        // AJAX endpoints
+        Route::match(['get', 'post'], '/{test:slug}/attempt/{attempt}/answers', 'submitAnswers')->name('submit-answers');
+        Route::post('/{test:slug}/attempt/{attempt}/save', 'saveAnswer')->name('save-answer');
+    });
+
+// Writing Tests
+Route::prefix('writing')->name('writing.')
+    ->middleware(['auth', 'verified'])
+    ->controller(WritingTestController::class)
+    ->group(function () {
+        Route::get('/{test:slug}/start', 'start')->name('start');
+        Route::get('/{test:slug}/instructions/{attempt}', 'instructions')->name('instructions');
+        Route::get('/{test:slug}/task1/{attempt}', 'task1')->name('task1');
+        Route::get('/{test:slug}/task2/{attempt}', 'task2')->name('task2');
+        Route::get('/{test:slug}/attempt/{attempt}/complete', 'complete')->name('complete');
+        
+        // AJAX endpoints
+        Route::post('/{test:slug}/attempt/{attempt}/answers', 'submitAnswers')->name('submit-answers');
+        Route::post('/{test:slug}/attempt/{attempt}/save', 'saveAnswer')->name('save-answer');
+        Route::post('/{test:slug}/attempt/{attempt}/auto-save', 'autoSave')->name('auto-save');
+    });
+
+// ==========================================
+// QUICK ACCESS ROUTES
+// ==========================================
+
+// Interactive test shortcuts
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/listening-test', function () {
+        $category = Category::where('name', 'Listening')->first();
+        $test = $category?->activeTests()->first();
+        
+        return $test 
+            ? redirect()->route('listening.start', ['test' => $test->slug])
+            : redirect()->route('student.tests.index')->with('error', 'No listening tests available');
+    })->name('tests.listening');
+
+    Route::get('/reading-test', function () {
+        $category = Category::where('name', 'Academic Reading')->first();
+        $test = $category?->activeTests()->first();
+        
+        return $test 
+            ? redirect()->route('reading.start', ['test' => $test->slug])
+            : redirect()->route('student.tests.index')->with('error', 'No reading tests available');
+    })->name('tests.reading');
+
+    Route::get('/writing-test', function () {
+        $category = Category::where('name', 'Academic Writing')->first();
+        $test = $category?->activeTests()->first();
+        
+        return $test 
+            ? redirect()->route('writing.start', ['test' => $test->slug])
+            : redirect()->route('student.tests.index')->with('error', 'No writing tests available');
+    })->name('tests.writing');
+});
+
+// ==========================================
+// AUDIO & FILE HANDLING
+// ==========================================
+
+// Audio upload (Admin & Teacher only)
+Route::post('/upload-audio', [AudioController::class, 'upload'])
+    ->middleware(['auth', 'verified', 'role:admin,teacher'])
+    ->name('upload.audio');
+
+// Audio streaming (authenticated users)
+Route::get('/audio/{path}', [AudioController::class, 'stream'])
+    ->middleware(['auth', 'verified'])
+    ->where('path', '.*')
+    ->name('audio.stream');
+
+// File downloads
+Route::get('/download/{type}/{id}', [HomeController::class, 'download'])
+    ->middleware(['auth', 'verified'])
+    ->name('download.file');
+
+// ==========================================
+// API ROUTES (v1)
+// ==========================================
+Route::prefix('api/v1')->name('api.v1.')
+    ->middleware(['auth', 'verified'])
+    ->group(function () {
+        
+        // Public API endpoints (all authenticated users)
+        Route::get('/test-categories', [TestCategoryController::class, 'getCategories'])->name('test-categories');
+        Route::get('/user/profile', [StudentController::class, 'getProfile'])->name('user.profile');
+        
+        // Test taking API
+        Route::prefix('tests')->name('tests.')->group(function () {
+            Route::get('/{test:slug}/questions', [TestController::class, 'getQuestions'])->name('questions');
+            Route::post('/{test:slug}/attempt/{attempt}/progress', [TestController::class, 'saveProgress'])->name('save-progress');
+            Route::get('/{test:slug}/attempt/{attempt}/status', [TestController::class, 'getStatus'])->name('status');
+        });
+        
+        // Admin & Teacher only API endpoints
+        Route::middleware(['role:admin,teacher'])->group(function () {
+            // Test management API
+            Route::prefix('test-management')->name('test-management.')->group(function () {
+                Route::get('/tests/{test}/questions', [TestManagementController::class, 'getQuestions'])->name('questions');
+                Route::post('/tests/{test}/questions/reorder', [TestManagementController::class, 'reorderQuestions'])->name('questions.reorder');
+                Route::get('/tests/{test}/statistics', [TestManagementController::class, 'getStatistics'])->name('statistics');
+            });
+            
+            // Audio API
+            Route::prefix('audio')->name('audio.')->group(function () {
+                Route::get('/upload-status/{id}', [AudioController::class, 'uploadStatus'])->name('upload-status');
+                Route::post('/process', [AudioController::class, 'processAudio'])->name('process');
+            });
+            
+            // Analytics API
+            Route::prefix('analytics')->name('analytics.')->group(function () {
+                Route::get('/dashboard', [AdminController::class, 'getDashboardData'])->name('dashboard');
+                Route::get('/test/{test}/performance', [TestResultController::class, 'getPerformanceData'])->name('test.performance');
+            });
+        });
+    });
+
+// ==========================================
+// FALLBACK & ERROR ROUTES
+// ==========================================
+
+// Handle 404 for test routes specifically
+Route::fallback(function () {
+    return response()->view('errors.404', [], 404);
+});
+
+// Development routes (remove in production)
+if (app()->environment('local', 'testing')) {
+    Route::get('/test-routes', function () {
+        return response()->json([
+            'message' => 'Routes loaded successfully',
+            'routes_count' => count(Route::getRoutes()),
+            'timestamp' => now(),
+        ]);
+    })->name('test.routes');
+}

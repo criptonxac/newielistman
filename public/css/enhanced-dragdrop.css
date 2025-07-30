@@ -1,0 +1,312 @@
+/* Enhanced Drag & Drop Styles for IELTS Test */
+.enhanced-drag-drop-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    padding: 25px;
+    margin: 20px 0;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    border: 1px solid #dee2e6;
+}
+
+.enhanced-question-header {
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    border-left: 5px solid #3498db;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.enhanced-question-number {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #3498db;
+    margin-right: 10px;
+}
+
+.enhanced-question-text {
+    font-size: 1.1rem;
+    color: #2c3e50;
+    line-height: 1.6;
+}
+
+.enhanced-drag-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.enhanced-answers-bank {
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.enhanced-drop-zones {
+    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.enhanced-section-title {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.enhanced-section-title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, #3498db, #2980b9);
+    border-radius: 2px;
+}
+
+.enhanced-draggable {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    padding: 12px 18px;
+    margin: 8px 0;
+    border-radius: 20px;
+    cursor: grab;
+    user-select: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    font-weight: 500;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.enhanced-draggable::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.enhanced-draggable:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+}
+
+.enhanced-draggable:hover::before {
+    left: 100%;
+}
+
+.enhanced-draggable:active {
+    cursor: grabbing;
+    transform: scale(0.98);
+}
+
+.enhanced-draggable.dragging {
+    opacity: 0.7;
+    transform: rotate(5deg) scale(1.05);
+    z-index: 1000;
+    box-shadow: 0 15px 30px rgba(52, 152, 219, 0.5);
+}
+
+.enhanced-draggable.used {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: scale(0.95);
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+}
+
+.enhanced-drop-zone-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 15px;
+}
+
+.enhanced-drop-zone-label {
+    flex: 1;
+    font-weight: 500;
+    color: #2c3e50;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 3px solid #3498db;
+}
+
+.enhanced-drop-zone {
+    width: 200px;
+    height: 50px;
+    border: 3px dashed #bdc3c7;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: linear-gradient(135deg, #fdfdfd 0%, #f8f9fa 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.enhanced-drop-zone::before {
+    content: attr(data-placeholder);
+    color: #95a5a6;
+    font-style: italic;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.enhanced-drop-zone.drag-over {
+    border-color: #3498db;
+    background: linear-gradient(135deg, #ebf3fd 0%, #d6eaff 100%);
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+}
+
+.enhanced-drop-zone.drag-over::before {
+    color: #3498db;
+    font-weight: 600;
+}
+
+.enhanced-drop-zone.filled {
+    border-color: #27ae60;
+    background: linear-gradient(135deg, #d5f4e6 0%, #c8e6c9 100%);
+    border-style: solid;
+}
+
+.enhanced-drop-zone.filled::before {
+    display: none;
+}
+
+.enhanced-drop-zone.correct {
+    border-color: #27ae60;
+    background: linear-gradient(135deg, #d5f4e6 0%, #c8e6c9 100%);
+    animation: correctPulse 0.6s ease;
+}
+
+.enhanced-drop-zone.incorrect {
+    border-color: #e74c3c;
+    background: linear-gradient(135deg, #fadbd8 0%, #f5b7b1 100%);
+    animation: incorrectShake 0.6s ease;
+}
+
+@keyframes correctPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes incorrectShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+}
+
+.enhanced-dropped-answer {
+    background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 15px;
+    width: 100%;
+    text-align: center;
+    font-weight: 500;
+    position: relative;
+    box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3);
+    font-size: 0.9rem;
+}
+
+.enhanced-remove-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+}
+
+.enhanced-remove-btn:hover {
+    background: #c0392b;
+    transform: scale(1.1);
+    box-shadow: 0 3px 12px rgba(231, 76, 60, 0.5);
+}
+
+/* Progress indicator styles */
+.enhanced-progress-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.enhanced-progress-bar {
+    background: #dee2e6;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.enhanced-progress-fill {
+    background: linear-gradient(90deg, #3498db, #2980b9);
+    height: 100%;
+    width: 0%;
+    transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-radius: 4px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .enhanced-drag-area {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .enhanced-drop-zone {
+        width: 100%;
+    }
+    
+    .enhanced-drop-zone-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .enhanced-drag-drop-container {
+        padding: 15px;
+        margin: 10px 0;
+    }
+    
+    .enhanced-question-header {
+        padding: 15px;
+    }
+    
+    .enhanced-answers-bank,
+    .enhanced-drop-zones {
+        padding: 15px;
+    }
+}

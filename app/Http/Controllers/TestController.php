@@ -2,220 +2,259 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\TestType;
+use App\Http\Controllers\Controller;
 use App\Models\Test;
+use App\Models\TestAttempt;
+use App\Models\TestAnswer;
 use App\Models\TestCategory;
-use App\Models\TestQuestion;
-use App\Models\UserTestAttempt;
-use App\Models\UserAnswer;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TestController extends Controller
 {
-    public function show(Test $test, Request $request)
+    public function __construct()
     {
-        $test->load(['category', 'questions']);
-        
-        return view('tests.show', compact('test'));
+        $this->middleware('auth');
+        $this->middleware(function ($request, $next) {
+            if (!Auth::user()->isStudent()) {
+                abort(403, 'Faqat talabalar test topshira oladi');
+            }
+            return $next($request);
+        });
     }
 
-    public function start(Test $test, Request $request)
+    /**
+     * Mavjud testlar ro'yxati
+     */
+    public function index()
     {
-        $sessionId = session()->getId();
-        
-        // Agar user login qilgan bo'lsa, user_id dan foydalanish
-        $userId = auth()->id();
-        
-        // Avval mavjud attempt borligini tekshirish
-        $existingAttempt = UserTestAttempt::where('test_id', $test->id)
-            ->where(function ($query) use ($userId, $sessionId) {
-                if ($userId) {
-                    $query->where('user_id', $userId);
-                } else {
-                    $query->where('session_id', $sessionId);
-                }
-            })
-            ->where('status', 'in_progress')
-            ->first();
+        $categories = TestCategory::active()
+            ->with(['tests' => function($query) {
+                $query->active()
+                    ->withCount('questions')
+                    ->with('audioFiles');
+            }])
+            ->get();
 
-        if ($existingAttempt) {
-            return redirect()->route('tests.take', ['test' => $test, 'attempt' => $existingAttempt]);
+        $userAttempts = Auth::user()->listeningTestAttempts()
+            ->with('test')
+            ->get()
+            ->groupBy('test_id');
+
+        return view('student.tests.index', compact('categories', 'userAttempts'));
+    }
+
+    /**
+     * Test haqida ma'lumot
+     */
+    public function show(Test $test)
+    {
+        if (!$test->is_active) {
+            abort(404);
+        }
+
+        $test->load(['category', 'questions', 'audioFiles']);
+        
+        $userAttempts = Auth::user()->listeningTestAttempts()
+            ->where('test_id', $test->id)
+            ->latest()
+            ->get();
+
+        $canAttempt = Auth::user()->canAttemptTest($test->id);
+        $inProgressAttempt = Auth::user()->getCurrentAttempt($test->id);
+
+        return view('student.tests.show', compact('test', 'userAttempts', 'canAttempt', 'inProgressAttempt'));
+    }
+
+    /**
+     * Testni boshlash
+     */
+    public function start(Test $test)
+    {
+        if (!$test->is_active) {
+            abort(404);
+        }
+
+        // Ruxsat tekshirish
+        if (!Auth::user()->canAttemptTest($test->id)) {
+            return redirect()
+                ->route('student.tests.show', $test)
+                ->with('error', 'Sizning urinishlar limitingiz tugagan.');
+        }
+
+        // Davom etayotgan test bormi tekshirish
+        $inProgressAttempt = Auth::user()->getCurrentAttempt($test->id);
+        if ($inProgressAttempt) {
+            return redirect()->route('student.tests.take', [
+                'test' => $test->id,
+                'attempt' => $inProgressAttempt->id
+            ]);
         }
 
         // Yangi attempt yaratish
-        $attempt = UserTestAttempt::create([
-            'user_id' => $userId,
-            'session_id' => $sessionId,
+        $attempt = TestAttempt::create([
+            'user_id' => Auth::id(),
             'test_id' => $test->id,
             'started_at' => now(),
-            'total_questions' => $test->questions()->count(),
             'status' => 'in_progress'
         ]);
 
-        return redirect()->route('tests.take', ['test' => $test, 'attempt' => $attempt]);
+        return redirect()->route('student.tests.take', [
+            'test' => $test->id,
+            'attempt' => $attempt->id
+        ]);
     }
 
-    public function take(Test $test, UserTestAttempt $attempt, Request $request)
+    /**
+     * Test topshirish sahifasi
+     */
+    public function take(Test $test, TestAttempt $attempt)
     {
-        // Authorization check
-        if (!$this->canAccessAttempt($attempt)) {
-            abort(403, 'Bu testga kirishga ruxsatingiz yo\'q.');
+        // Tekshirishlar
+        if ($attempt->user_id !== Auth::id()) {
+            abort(403);
         }
 
-        $test->load(['questions']);
-        $attempt->load(['userAnswers']);
+        if ($attempt->status !== 'in_progress') {
+            return redirect()
+                ->route('student.tests.result', ['test' => $test->id, 'attempt' => $attempt->id])
+                ->with('info', 'Bu test allaqachon yakunlangan.');
+        }
 
-        // Javoblarni organish
-        $answers = $attempt->userAnswers->keyBy('test_question_id');
+        // Vaqt tugaganmi tekshirish
+        if ($attempt->getRemainingTime() <= 0) {
+            $this->submitTest($test, $attempt, request());
+            return redirect()
+                ->route('student.tests.result', ['test' => $test->id, 'attempt' => $attempt->id])
+                ->with('warning', 'Test vaqti tugadi va avtomatik yakunlandi.');
+        }
 
-        return view('tests.take', compact('test', 'attempt', 'answers'));
+        $test->load(['questions' => function($query) {
+            $query->orderBy('part_number')->orderBy('question_number');
+        }, 'audioFiles', 'category']);
+
+        // Saqlangan javoblarni yuklash
+        $savedAnswers = $attempt->testAnswers()
+            ->pluck('user_answer', 'test_question_id')
+            ->toArray();
+
+        return view('student.tests.take', compact('test', 'attempt', 'savedAnswers'));
     }
 
-    public function submitAnswer(Request $request, Test $test, UserTestAttempt $attempt)
+    /**
+     * Javobni saqlash (AJAX)
+     */
+    public function saveAnswer(Request $request, Test $test, TestAttempt $attempt)
     {
-        if (!$this->canAccessAttempt($attempt)) {
-            return response()->json(['error' => 'Ruxsat berilmagan'], 403);
+        if ($attempt->user_id !== Auth::id() || $attempt->status !== 'in_progress') {
+            return response()->json(['success' => false, 'message' => 'Ruxsat berilmagan'], 403);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'question_id' => 'required|exists:test_questions,id',
-            'answer' => 'required|string'
+            'answer' => 'nullable|string'
         ]);
 
-        $question = TestQuestion::findOrFail($request->question_id);
-        
-        // Javobning to'g'riligini tekshirish
-        $isCorrect = $question->isCorrectAnswer($request->answer);
-        $pointsEarned = $isCorrect ? $question->points : 0;
-
         // Javobni saqlash yoki yangilash
-        UserAnswer::updateOrCreate(
+        TestAnswer::updateOrCreate(
             [
-                'user_test_attempt_id' => $attempt->id,
-                'test_question_id' => $question->id
+                'test_attempt_id' => $attempt->id,
+                'test_question_id' => $validated['question_id']
             ],
             [
-                'user_answer' => $request->answer,
-                'is_correct' => $isCorrect,
-                'points_earned' => $pointsEarned,
-                'answered_at' => now()
+                'user_answer' => $validated['answer']
             ]
         );
 
-        return response()->json([
-            'success' => true,
-            'is_correct' => $isCorrect,
-            'points_earned' => $pointsEarned
-        ]);
+        return response()->json(['success' => true]);
     }
 
-    public function submitTest(Test $test, UserTestAttempt $attempt, Request $request)
+    /**
+     * Testni yakunlash
+     */
+    public function submit(Request $request, Test $test, TestAttempt $attempt)
     {
-        if (!$this->canAccessAttempt($attempt)) {
+        if ($attempt->user_id !== Auth::id() || $attempt->status !== 'in_progress') {
             abort(403);
         }
 
-        $attempt->update([
-            'completed_at' => now(),
-            'status' => 'completed'
-        ]);
+        DB::beginTransaction();
 
-        $attempt->calculateScore();
+        try {
+            // Barcha javoblarni saqlash
+            if ($request->has('answers')) {
+                foreach ($request->answers as $questionId => $answer) {
+                    if (empty($answer)) continue;
+                    
+                    TestAnswer::updateOrCreate(
+                        [
+                            'test_attempt_id' => $attempt->id,
+                            'test_question_id' => $questionId
+                        ],
+                        [
+                            'user_answer' => $answer
+                        ]
+                    );
+                }
+            }
 
-        return redirect()->route('tests.results', ['test' => $test, 'attempt' => $attempt]);
+            // Javoblarni tekshirish va ball hisoblash
+            foreach ($attempt->testAnswers as $testAnswer) {
+                $testAnswer->checkAndScore();
+            }
+
+            // Attemptni yakunlash
+            $attempt->complete();
+
+            DB::commit();
+
+            return redirect()
+                ->route('student.tests.result', ['test' => $test->id, 'attempt' => $attempt->id])
+                ->with('success', 'Test muvaffaqiyatli yakunlandi!');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            
+            return redirect()
+                ->back()
+                ->with('error', 'Xatolik yuz berdi: ' . $e->getMessage());
+        }
     }
 
-    public function complete(Test $test, UserTestAttempt $attempt)
+    /**
+     * Test natijasi
+     */
+    public function result(Test $test, TestAttempt $attempt)
     {
-        if (!$this->canAccessAttempt($attempt)) {
+        if ($attempt->user_id !== Auth::id()) {
             abort(403);
         }
 
-        $attempt->update([
-            'completed_at' => now(),
-            'status' => 'completed'
-        ]);
-
-        $attempt->calculateScore();
-
-        return redirect()->route('tests.results', ['test' => $test, 'attempt' => $attempt]);
-    }
-
-    public function results(Test $test, UserTestAttempt $attempt)
-    {
-        if (!$this->canAccessAttempt($attempt) || $attempt->status !== 'completed') {
-            abort(403);
+        if ($attempt->status !== 'completed') {
+            return redirect()
+                ->route('student.tests.take', ['test' => $test->id, 'attempt' => $attempt->id])
+                ->with('warning', 'Test hali yakunlanmagan.');
         }
 
-        $attempt->load(['userAnswers.testQuestion', 'test.category']);
+        $attempt->load(['testAnswers.testQuestion']);
 
-        return view('tests.results', compact('test', 'attempt'));
+        return view('student.tests.result', compact('test', 'attempt'));
     }
 
-    private function canAccessAttempt(UserTestAttempt $attempt): bool
+    /**
+     * Test tarixim
+     */
+    public function history()
     {
-        $userId = auth()->id();
-        $sessionId = session()->getId();
+        $attempts = Auth::user()->listeningTestAttempts()
+            ->with(['test.category'])
+            ->completed()
+            ->latest()
+            ->paginate(15);
 
-        return ($userId && $attempt->user_id == $userId) || 
-               (!$userId && $attempt->session_id == $sessionId);
-    }
-    
-    /**
-     * Listening familiarisation testlarni ko'rsatish
-     */
-    public function showListeningFamiliarisation()
-    {
-        $category = TestCategory::where('name', 'Listening')->first();
-        
-        $tests = Test::where('test_category_id', $category->id)
-            ->where('type', TestType::FAMILIARISATION)
-            ->where('is_active', true)
-            ->get();
-            
-        return view('tests.public-familiarisation', [
-            'tests' => $tests,
-            'category' => 'Listening',
-            'pageTitle' => 'IELTS Listening Familiarisation Tests'
-        ]);
-    }
-    
-    /**
-     * Reading familiarisation testlarni ko'rsatish
-     */
-    public function showReadingFamiliarisation()
-    {
-        $category = TestCategory::where('name', 'Academic Reading')->first();
-        
-        $tests = Test::where('test_category_id', $category->id)
-            ->where('type', TestType::FAMILIARISATION)
-            ->where('is_active', true)
-            ->get();
-            
-        return view('tests.public-familiarisation', [
-            'tests' => $tests,
-            'category' => 'Reading',
-            'pageTitle' => 'IELTS Academic Reading Familiarisation Tests'
-        ]);
-    }
-    
-    /**
-     * Writing familiarisation testlarni ko'rsatish
-     */
-    public function showWritingFamiliarisation()
-    {
-        $category = TestCategory::where('name', 'Academic Writing')->first();
-        
-        $tests = Test::where('test_category_id', $category->id)
-            ->where('type', TestType::FAMILIARISATION)
-            ->where('is_active', true)
-            ->get();
-            
-        return view('tests.public-familiarisation', [
-            'tests' => $tests,
-            'category' => 'Writing',
-            'pageTitle' => 'IELTS Academic Writing Familiarisation Tests'
-        ]);
+        $stats = Auth::user()->getListeningStats();
+
+        return view('student.tests.history', compact('attempts', 'stats'));
     }
 }

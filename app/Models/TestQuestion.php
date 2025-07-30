@@ -2,62 +2,100 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TestQuestion extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'test_id',
+        'part_number',
         'question_number',
-        'question_type',
         'question_text',
+        'question_type',
         'options',
         'correct_answer',
-        'acceptable_answers',
+        'correct_answers',
         'points',
         'explanation',
-        'resources',
-        'sort_order'
+        'image_path'
     ];
 
     protected $casts = [
         'options' => 'array',
-        'acceptable_answers' => 'array',
-        'resources' => 'array',
+        'correct_answers' => 'array',
         'points' => 'integer',
-        'question_number' => 'integer',
-        'sort_order' => 'integer'
+        'part_number' => 'integer',
+        'question_number' => 'integer'
     ];
 
-    public function test(): BelongsTo
+    // Relationships
+    public function test()
     {
         return $this->belongsTo(Test::class);
     }
 
-    public function userAnswers(): HasMany
+    public function answers()
     {
-        return $this->hasMany(UserAnswer::class);
+        return $this->hasMany(TestAnswer::class);
     }
 
-    public function scopeOrdered($query)
+    // Methods
+    public function checkAnswer($userAnswer)
     {
-        return $query->orderBy('sort_order')->orderBy('question_number');
+        if ($this->question_type === 'multiple_choice' || $this->question_type === 'true_false') {
+            return strtolower(trim($userAnswer)) === strtolower(trim($this->correct_answer));
+        }
+        
+        if ($this->question_type === 'fill_blank' || $this->question_type === 'short_answer') {
+            // Case insensitive comparison for fill blank
+            $correctAnswer = strtolower(trim($this->correct_answer));
+            $userAnswer = strtolower(trim($userAnswer));
+            
+            // Check for alternative answers if stored as JSON
+            if ($this->correct_answers && is_array($this->correct_answers)) {
+                $alternatives = array_map(function($ans) {
+                    return strtolower(trim($ans));
+                }, $this->correct_answers);
+                
+                return in_array($userAnswer, $alternatives) || $userAnswer === $correctAnswer;
+            }
+            
+            return $userAnswer === $correctAnswer;
+        }
+        
+        if ($this->question_type === 'matching' || $this->question_type === 'table_completion') {
+            // For complex question types, implement custom logic
+            return $this->checkComplexAnswer($userAnswer);
+        }
+        
+        return false;
     }
 
-    public function isCorrectAnswer($userAnswer): bool
+    private function checkComplexAnswer($userAnswer)
     {
-        if (empty($userAnswer)) {
+        // Implement logic for complex question types
+        // This could involve JSON comparison, partial matching, etc.
+        if (!is_array($userAnswer) || !is_array($this->correct_answers)) {
             return false;
         }
+        
+        // Simple array comparison for now
+        return $userAnswer == $this->correct_answers;
+    }
 
-        // Agar acceptable_answers mavjud bo'lsa, ularni tekshir
-        if (!empty($this->acceptable_answers)) {
-            return in_array(strtolower(trim($userAnswer)), array_map('strtolower', $this->acceptable_answers));
+    public function getFormattedQuestionNumber()
+    {
+        return sprintf("Question %d", $this->question_number);
+    }
+
+    public function getImageUrlAttribute()
+    {
+        if (!$this->image_path) {
+            return null;
         }
-
-        // Aks holda, correct_answer bilan solishtir
-        return strtolower(trim($userAnswer)) === strtolower(trim($this->correct_answer ?? ''));
+        return Storage::url($this->image_path);
     }
 }

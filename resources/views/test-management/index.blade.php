@@ -5,9 +5,6 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Test boshqaruvi</h1>
         <div class="flex space-x-2">
-            <a href="{{ route('test-management.enums') }}" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded">
-                Enumlar jadvali
-            </a>
             <a href="{{ route('test-management.create') }}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
                 Yangi test qo'shish
             </a>

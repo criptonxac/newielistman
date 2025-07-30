@@ -1,13 +1,25 @@
+{{-- resources/views/tests/listening/listening-test.blade.php da qo'shish kerak --}}
+
 @extends('layouts.student')
 
 @section('title', $test->title . ' - IELTS Listening Test')
 @section('description', 'IELTS Listening Test - All Parts')
 
+{{-- CSS Files --}}
+@push('styles')
+   
+@endpush
 
+{{-- JavaScript Files --}}
+@push('scripts')
+  
+@endpush
 
 @section('content')
-
 <link rel="stylesheet" href="{{ asset('css/listening-test.css') }}">
+<link rel="stylesheet" href="{{ asset('css/enhanced-dragdrop.css') }}">
+
+
 <div class="container listening-test-container">
     <!-- Test Categories Navigation -->
     <div class="bg-blue-600 text-white py-4 mb-4">
@@ -181,6 +193,8 @@
     </form>
 </div>
 <script src="{{ asset('js/listening-test.js') }}"></script>
+<script src="{{ asset('js/enhanced-dragdrop.js') }}"></script>
+
 <script>
     // Pass Laravel variables to JavaScript
     window.audioFiles = {
@@ -195,6 +209,23 @@
     };
     
     window.csrf_token = "{{ csrf_token() }}";
-</script>
-@endsection
 
+    // Enhanced Drag Drop Event Listeners
+    document.addEventListener('enhancedDragDropAnswer', function(e) {
+        console.log('Drag & Drop Answer:', e.detail);
+        // Additional handling if needed
+    });
+
+    document.addEventListener('enhancedDragDropProgress', function(e) {
+        console.log('Drag & Drop Progress:', e.detail);
+        // Update global progress if needed
+        updateProgress();
+    });
+
+    document.addEventListener('enhancedDragDropCheck', function(e) {
+        console.log('Drag & Drop Check Results:', e.detail);
+        // Handle check results
+    });
+</script>
+
+@endsection
