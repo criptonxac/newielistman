@@ -23,7 +23,7 @@
                         <i class="fas fa-chart-line mr-1"></i> Natijalar
                     </a>
                 </div>
-                <div class="text-xl font-bold text-white" id="timer">60:00</div>
+                <div class="text-xl font-bold text-white" id="timer" data-time-seconds="{{ $test->time_limit * 60 }}">{{ sprintf('%02d:%02d', $test->time_limit, 0) }}</div>
             </div>
         </div>
     </div>
@@ -51,21 +51,10 @@
             <!-- Passage Panel (Left Side) -->
             <div class=" bg-white rounded-lg shadow-md p-4 passage-container">
                 <div class="overflow-y-auto" style="height: calc(100vh - 220px);">
-                    <h2 class="text-xl font-bold mb-4">The Importance of Sleep</h2>
+                    <h2 class="text-xl font-bold mb-4">{{ $test->title }}</h2>
                     
                     <div class="prose max-w-none">
-                            <p>Sleep is a naturally recurring state characterized by reduced or absent consciousness, relatively suspended sensory activity, and inactivity of nearly all voluntary muscles. It is distinguished from quiet wakefulness by a decreased ability to react to stimuli, and it is more easily reversible than hibernation or coma. Sleep is a heightened anabolic state, accentuating the growth and rejuvenation of the immune, nervous, skeletal, and muscular systems; it is observed in all birds, and many reptiles, amphibians, and fish.</p>
-
-                            <p>The purposes and mechanisms of sleep are only partially clear and are the subject of intense research. Sleep is often thought to help conserve energy, though this theory is not fully adequate as it only decreases metabolism by about 5–10%. Additionally, it is observed that the brain is still active during the hypothalamic-driven state of mammalian sleep, whether it actually requires more energy to stay awake or to fall asleep in order to sleep.</p>
-
-                            <p>In mammals and birds, sleep is divided into two broad types: rapid eye movement (REM) and non-rapid eye movement (NREM) sleep. Each type has a distinct set of associated physiological, neurological, and psychological features. The American Academy of Sleep Medicine (AASM) divides NREM into three stages: N1, N2, and N3, the last of which is also called delta sleep or slow-wave sleep.</p>
-
-                            <p>During sleep, especially REM sleep, people tend to experience dreams: images and sensations that are experienced while sleeping and seem real while happening. These are studied and described as dream imagery. People may not remember the dreams that they have during sleep. This lack of memory may be explained by the changes in brain activity that occur during different stages of sleep.</p>
-
-                            <p>The most pronounced physiological changes in sleep occur in the brain. The brain uses significantly less energy during sleep than it does when awake, especially during NREM sleep. In areas with reduced activity, the brain restores its supply of adenosine triphosphate (ATP), the molecule used for short-term storage and transport of energy. During slow-wave sleep, humans secrete growth hormone. The secretion of prolactin is increased and its effects are augmented.</p>
-
-                            <p>In recent years, these claims have gained support from empirical evidence collected in human and animal studies. The most striking of these is that animals deprived of sleep die within a few weeks. Sleep deprivation affects the immune system in detrimental ways. Sleep deprivation makes the body susceptible to many different diseases. The mechanism for this is unknown but it is known that sleep deprivation decreases the immune system's ability to respond to invaders.</p>
-                        
+                        {!! $test->description !!}                                                 
                     </div>
                 </div>
             </div>
@@ -106,250 +95,174 @@
         </div>
     </div>
     
-    <!-- Remove tab switching JavaScript -->
-    @push('scripts')
+    <!-- JavaScript for timer and drag-and-drop functionality -->
     <script>
-    // Timer functionality
-    function startTimer() {
-        const timerElement = document.getElementById('timer');
-        if (!timerElement) return;
-        
-        let totalSeconds = parseInt(timerElement.getAttribute('data-time-seconds')) || 3600;
-        let minutes, seconds;
-        
-        const timerInterval = setInterval(function() {
-            if (totalSeconds <= 0) {
-                clearInterval(timerInterval);
-                document.getElementById('reading-form').submit();
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Part 1 page loaded');
+        // Timer functionality
+        function startTimer() {
+            console.log('Timer ishga tushirilmoqda...');
+            const timerElement = document.getElementById('timer');
+            if (!timerElement) {
+                console.error('Timer elementi topilmadi!');
                 return;
             }
             
-            minutes = Math.floor(totalSeconds / 60);
-            seconds = totalSeconds % 60;
+            // Get time from data attribute
+            const totalSeconds = parseInt(timerElement.dataset.timeSeconds) || 3600; // Default to 60 minutes
+            console.log('Jami vaqt (sekund):', totalSeconds);
+            let minutes, seconds;
+            let remainingSeconds = totalSeconds;
             
-            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            totalSeconds--;
-        }, 1000);
-    }
-    
-    document.addEventListener('DOMContentLoaded', function() {
+            // Only start the timer if it hasn't been started yet
+            if (!window.timerInterval) {
+                window.timerInterval = setInterval(function() {
+                    if (remainingSeconds <= 0) {
+                        clearInterval(window.timerInterval);
+                        console.log('Vaqt tugadi!');
+                        
+                        // Submit the form when time expires
+                        const form = document.querySelector('form');
+                        if (form) {
+                            console.log('Forma avtomatik topshirilmoqda...');
+                            form.submit();
+                        }
+                        return;
+                    }
+                    
+                    minutes = Math.floor(remainingSeconds / 60);
+                    seconds = remainingSeconds % 60;
+                    
+                    // Change color based on time remaining
+                    if (minutes < 10) {
+                        timerElement.style.color = '#e74c3c'; // Red when less than 10 minutes
+                    } else if (minutes < 20) {
+                        timerElement.style.color = '#f39c12'; // Orange when less than 20 minutes
+                    }
+                    
+                    timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    remainingSeconds--;
+                    
+                    // Save remaining time to localStorage to persist between page navigations
+                    localStorage.setItem('readingTestRemainingTime', remainingSeconds);
+                }, 1000);
+            }
+        }
+        
+        // Check if there's a saved timer value in localStorage
+        const savedTime = localStorage.getItem('readingTestRemainingTime');
+        if (savedTime) {
+            const timerElement = document.getElementById('timer');
+            if (timerElement) {
+                timerElement.dataset.timeSeconds = savedTime;
+                console.log('Saved time found:', savedTime);
+            }
+        }
+        
+        // Start the timer
         startTimer();
-    });
-    
-    window.addEventListener('load', function() {
-        startTimer();
-    });
         
-    // Drag and Drop functionality
-    const draggables = document.querySelectorAll('.draggable');
-    const dropZones = document.querySelectorAll('.drop-zone');
-    
-    // Initialize drag events for draggable elements
-    draggables.forEach(draggable => {
-        draggable.addEventListener('dragstart', () => {
-            draggable.classList.add('dragging');
+        // Drag and Drop functionality
+        const draggables = document.querySelectorAll('.draggable');
+        const dropZones = document.querySelectorAll('.drop-zone');
+        
+        // Initialize drag events for draggable elements
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => {
+                draggable.classList.add('dragging');
+            });
+            
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('dragging');
+            });
         });
         
-        draggable.addEventListener('dragend', () => {
-            draggable.classList.remove('dragging');
-        });
-    });
-    
-    // Initialize drop events for drop zones
-    dropZones.forEach(dropZone => {
-        dropZone.addEventListener('dragover', e => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-        });
-        
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('drag-over');
-        });
-        
-        dropZone.addEventListener('drop', e => {
-            e.preventDefault();
-            const dragging = document.querySelector('.dragging');
-            if (dragging) {
-                // Clear existing content except the hidden input
-                const hiddenInput = dropZone.querySelector('input[type="hidden"]');
-                dropZone.innerHTML = '';
-                dropZone.appendChild(hiddenInput);
-                
-                // Create a clone of the dragged element
-                const clone = dragging.cloneNode(true);
-                clone.classList.remove('dragging');
-                clone.setAttribute('draggable', 'false');
-                
-                // Add a remove button
-                const removeBtn = document.createElement('button');
-                removeBtn.innerHTML = '&times;';
-                removeBtn.className = 'absolute top-1 right-1 text-gray-500 hover:text-red-500';
-                removeBtn.addEventListener('click', () => {
+        // Initialize drop events for drop zones
+        dropZones.forEach(dropZone => {
+            dropZone.addEventListener('dragover', e => {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+            
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('drag-over');
+            });
+            
+            dropZone.addEventListener('drop', e => {
+                e.preventDefault();
+                const dragging = document.querySelector('.dragging');
+                if (dragging) {
+                    // Clear existing content except the hidden input
+                    const hiddenInput = dropZone.querySelector('input[type="hidden"]');
                     dropZone.innerHTML = '';
                     dropZone.appendChild(hiddenInput);
-                    hiddenInput.value = '';
-                    dropZone.classList.remove('has-item');
-                    const placeholder = document.createElement('div');
-                    placeholder.className = 'placeholder';
-                    placeholder.textContent = 'Drop answer here';
-                    dropZone.appendChild(placeholder);
-                });
-                
-                // Set the value of the hidden input
-                hiddenInput.value = dragging.getAttribute('data-value');
-                
-                // Append the clone and remove button
-                dropZone.appendChild(clone);
-                dropZone.appendChild(removeBtn);
-                dropZone.classList.add('has-item');
-                dropZone.classList.remove('drag-over');
-            }
+                    
+                    // Create a clone of the dragged element
+                    const clone = dragging.cloneNode(true);
+                    clone.classList.remove('dragging');
+                    clone.setAttribute('draggable', 'false');
+                    
+                    // Add a remove button
+                    const removeBtn = document.createElement('button');
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.className = 'absolute top-1 right-1 text-gray-500 hover:text-red-500';
+                    removeBtn.addEventListener('click', () => {
+                        dropZone.innerHTML = '';
+                        dropZone.appendChild(hiddenInput);
+                        hiddenInput.value = '';
+                        dropZone.classList.remove('has-item');
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'placeholder';
+                        placeholder.textContent = 'Drop your answer here';
+                        dropZone.appendChild(placeholder);
+                    });
+                    
+                    // Update the hidden input value
+                    hiddenInput.value = dragging.getAttribute('data-value');
+                    
+                    // Add the clone to the drop zone
+                    dropZone.appendChild(clone);
+                    dropZone.appendChild(removeBtn);
+                    dropZone.classList.add('has-item');
+                    dropZone.classList.remove('drag-over');
+                }
+            });
         });
+        
+        // Fix for radio buttons and inputs
+        document.querySelectorAll('.form-radio').forEach(radio => {
+            radio.style.display = 'inline-block';
+            radio.style.opacity = '1';
+            radio.style.pointerEvents = 'auto';
+            radio.style.width = '1rem';
+            radio.style.height = '1rem';
+        });
+        
+        document.querySelectorAll('input[type="text"]').forEach(input => {
+            input.style.display = 'block';
+            input.style.opacity = '1';
+            input.style.pointerEvents = 'auto';
+        });
+        
+        // Load the highlighting functionality from reading-test.js
+        if (typeof initializeHighlighting === 'function') {
+            initializeHighlighting();
+        } else {
+            console.error('Highlighting functionality not available');
+            // Load the script if not already loaded
+            if (!document.querySelector('script[src="/js/reading-test.js"]')) {
+                const script = document.createElement('script');
+                script.src = '/js/reading-test.js';
+                document.head.appendChild(script);
+                script.onload = function() {
+                    if (typeof initializeHighlighting === 'function') {
+                        initializeHighlighting();
+                    }
+                };
+            }
+        }
     });
-</script>
-@endpush
+    </script>
 </div>
 
-@push('scripts')
-<script>
-    // Timer functionality
-    let timerStarted = false;
-    
-    function startTimer() {
-        if (timerStarted) return;
-        timerStarted = true;
-        
-        let timeLeft = 60 * 60; // 60 minutes in seconds
-        const timerDisplay = document.getElementById('timer');
-        
-        const timer = setInterval(function() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            
-            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                document.querySelector('form').submit();
-            }
-            
-            timeLeft -= 1;
-        }, 1000);
-    }
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        startTimer();
-    });
-    
-    window.addEventListener('load', function() {
-        startTimer();
-    });
-        
-        // Tab switching functionality
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabPanes = document.querySelectorAll('.tab-pane');
-    
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const tabId = button.getAttribute('data-tab');
-            
-            tabButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-600', 'text-white'));
-            tabButtons.forEach(btn => btn.classList.add('bg-gray-200', 'text-gray-700'));
-            
-            button.classList.remove('bg-gray-200', 'text-gray-700');
-            button.classList.add('active', 'bg-blue-600', 'text-white');
-            
-            tabPanes.forEach(pane => {
-                pane.classList.add('hidden');
-                pane.classList.remove('active');
-            });
-            const activeTab = document.getElementById(`${tabId}-tab`);
-            activeTab.classList.remove('hidden');
-            activeTab.classList.add('active');
-        });
-    });
-    
-    // Fix for radio buttons and inputs
-    document.querySelectorAll('.form-radio').forEach(radio => {
-        radio.style.display = 'inline-block';
-        radio.style.opacity = '1';
-        radio.style.pointerEvents = 'auto';
-        radio.style.width = '1rem';
-        radio.style.height = '1rem';
-    });
-    
-    document.querySelectorAll('input[type="text"]').forEach(input => {
-        input.style.display = 'block';
-        input.style.opacity = '1';
-        input.style.pointerEvents = 'auto';
-    });
-    
-    // Drag and Drop functionality
-    const draggables = document.querySelectorAll('.draggable');
-    const dropZones = document.querySelectorAll('.drop-zone');
-    
-    // Initialize drag events for draggable elements
-    draggables.forEach(draggable => {
-        draggable.addEventListener('dragstart', () => {
-            draggable.classList.add('dragging');
-        });
-        
-        draggable.addEventListener('dragend', () => {
-            draggable.classList.remove('dragging');
-        });
-    });
-    
-    // Initialize drop events for drop zones
-    dropZones.forEach(dropZone => {
-        dropZone.addEventListener('dragover', e => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-        });
-        
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('drag-over');
-        });
-        
-        dropZone.addEventListener('drop', e => {
-            e.preventDefault();
-            const dragging = document.querySelector('.dragging');
-            if (dragging) {
-                // Clear existing content except the hidden input
-                const hiddenInput = dropZone.querySelector('input[type="hidden"]');
-                dropZone.innerHTML = '';
-                dropZone.appendChild(hiddenInput);
-                
-                // Create a clone of the dragged element
-                const clone = dragging.cloneNode(true);
-                clone.classList.remove('dragging');
-                clone.setAttribute('draggable', 'false');
-                
-                // Add a remove button
-                const removeBtn = document.createElement('button');
-                removeBtn.innerHTML = '&times;';
-                removeBtn.className = 'absolute top-1 right-1 text-gray-500 hover:text-red-500';
-                removeBtn.addEventListener('click', () => {
-                    dropZone.innerHTML = '';
-                    dropZone.appendChild(hiddenInput);
-                    hiddenInput.value = '';
-                    dropZone.classList.remove('has-item');
-                    const placeholder = document.createElement('div');
-                    placeholder.className = 'placeholder';
-                    placeholder.textContent = 'Drop your answer here';
-                    dropZone.appendChild(placeholder);
-                });
-                
-                // Update the hidden input value
-                hiddenInput.value = dragging.getAttribute('data-value');
-                
-                // Add the clone to the drop zone
-                dropZone.appendChild(clone);
-                dropZone.appendChild(removeBtn);
-                dropZone.classList.add('has-item');
-                dropZone.classList.remove('drag-over');
-            }
-        });
-    });
-</script>
-@endpush
 @endsection

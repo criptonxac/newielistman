@@ -9,41 +9,82 @@ use Illuminate\Http\Request;
 
 class ListeningTestController extends Controller
 {
-    public function start(Test $test, Request $request)
+    /**
+     * Unified listening test view that shows all parts in one page
+     */
+    public function unifiedTest(Test $test, $attempt)
     {
-        // Foydalanuvchi autentifikatsiyadan o'tgan bo'lsa, user_id ni olish
-        $userId = auth()->id();
-        $sessionId = session()->getId();
+        $attempt = UserTestAttempt::findOrFail($attempt);
         
-        // Yangi test urinishini yaratish
-        $attempt = UserTestAttempt::create([
-            'user_id' => $userId,
-            'test_id' => $test->id,
-            'session_id' => $sessionId,
-            'started_at' => now(),
-            'total_questions' => $test->total_questions,
-            'status' => 'in_progress'
-        ]);
-
-        // Part 1 ga yo'naltirish
-        return redirect()->route('listening.part1', ['test' => $test->slug, 'attempt' => $attempt->id]);
-    }
-
-    public function part1(Test $test, UserTestAttempt $attempt)
-    {
-        if (!$this->canAccessAttempt($attempt)) {
-            abort(403, 'Bu testga kirishga ruxsatingiz yo\'q.');
-        }
+        // Get all questions for the test
+        $allQuestions = $test->questions()->orderBy('sort_order')->get();
         
-        // Get questions for part 1 (first 10 questions)
-        $questions = $test->questions()->where('part', 1)->orWhere('sort_order', '<=', 10)->orderBy('sort_order')->get();
+        // Divide questions into parts
+        $part1Questions = $allQuestions->take(10);
+        $part2Questions = $allQuestions->skip(10)->take(10);
+        $part3Questions = $allQuestions->skip(20)->take(10);
+        $part4Questions = $allQuestions->skip(30)->take(10);
+        
+        // Get audio files for the test
+        $audioFiles = [
+            'part1' => asset('audio/listening-part1.mp3'),
+            'part2' => asset('audio/listening-part2.mp3'),
+            'part3' => asset('audio/listening-part3.mp3'),
+            'part4' => asset('audio/listening-part4.mp3'),
+        ];
+        
         $userAnswers = json_decode($attempt->answers, true) ?? [];
         
         // QuestionRenderer servisini ishlatish
         $questionRenderer = new QuestionRenderer();
         
-        return view('tests.listening.part1', compact('test', 'attempt', 'questions', 'userAnswers', 'questionRenderer'));
+        return view('tests.listening.listening-test', compact(
+            'test', 
+            'attempt', 
+            'part1Questions', 
+            'part2Questions', 
+            'part3Questions', 
+            'part4Questions',
+            'userAnswers', 
+            'questionRenderer',
+            'audioFiles'
+        ));
     }
+    public function start(Test $test, Request $request)
+{
+    // Foydalanuvchi autentifikatsiyadan o'tgan bo'lsa, user_id ni olish
+    $userId = auth()->id();
+    $sessionId = session()->getId();
+    
+    // Yangi test urinishini yaratish
+    $attempt = UserTestAttempt::create([
+        'user_id' => $userId,
+        'test_id' => $test->id,
+        'session_id' => $sessionId,
+        'started_at' => now(),
+        'total_questions' => $test->total_questions,
+        'status' => 'in_progress'
+    ]);
+
+    // Unified test view ga yo'naltirish
+    return redirect()->route('listening.unified', ['test' => $test->slug, 'attempt' => $attempt->id]);
+}
+
+    public function part1(Test $test, UserTestAttempt $attempt)
+{
+    if (!$this->canAccessAttempt($attempt)) {
+        abort(403, 'Bu testga kirishga ruxsatingiz yo\'q.');
+    }
+    
+    // Get questions for part 1 (first 10 questions)
+    $questions = $test->questions()->where('sort_order', '<=', 10)->orderBy('sort_order')->get();
+    $userAnswers = json_decode($attempt->answers, true) ?? [];
+    
+    // QuestionRenderer servisini ishlatish
+    $questionRenderer = new QuestionRenderer();
+    
+    return view('tests.listening.part1', compact('test', 'attempt', 'questions', 'userAnswers', 'questionRenderer'));
+}
 
     public function part2(Test $test, UserTestAttempt $attempt)
     {
@@ -100,25 +141,21 @@ class ListeningTestController extends Controller
     }
 
     public function submitAnswers(Request $request, Test $test, UserTestAttempt $attempt)
-    {
-        if (!$this->canAccessAttempt($attempt)) {
-            return response()->json(['error' => 'Ruxsat berilmagan'], 403);
-        }
-
-        $request->validate([
-            'answers' => 'required|array',
-        ]);
-
-        $answers = $request->answers;
-        
-        // Javoblarni saqlash logikasi
-        // Bu yerda javoblarni saqlash uchun kod yoziladi
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Javoblar saqlandi'
-        ]);
+{
+    if (!$this->canAccessAttempt($attempt)) {
+        return redirect()->back()->with('error', 'Ruxsat berilmagan');
     }
+    // Attempt yakunlandi deb belgilash
+    $attempt->status = 'completed';
+    $attempt->completed_at = now();
+    $attempt->save();
+    
+    // Natijalar sahifasiga yo'naltirish
+    return redirect()->route('tests.results', [
+        'test' => $test->slug,
+        'attempt' => $attempt->id
+    ])->with('success', 'Test muvaffaqiyatli yakunlandi!');
+}
 
     public function saveAnswer(Request $request, Test $test, UserTestAttempt $attempt)
     {
@@ -127,18 +164,24 @@ class ListeningTestController extends Controller
         }
 
         $request->validate([
-            'question_number' => 'required',
+            'question_id' => 'required',
             'answer' => 'required|string'
         ]);
 
-        // Javobni saqlash logikasi
-        // Bu yerda ma'lumotlar bazasiga saqlash kodi bo'lishi kerak
-        // Hozircha faqat muvaffaqiyatli javob qaytaramiz
+        // Mavjud javoblarni olish
+        $answers = json_decode($attempt->answers, true) ?: [];
+        
+        // Yangi javobni qo'shish yoki mavjud javobni yangilash
+        $answers[$request->question_id] = $request->answer;
+        
+        // Javoblarni saqlash
+        $attempt->answers = json_encode($answers);
+        $attempt->save();
 
         return response()->json([
             'success' => true,
             'message' => 'Javob saqlandi',
-            'question' => $request->question_number,
+            'question_id' => $request->question_id,
             'answer' => $request->answer
         ]);
     }

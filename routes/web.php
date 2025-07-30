@@ -91,8 +91,9 @@ Route::prefix('listening')
         Route::get('/{test:slug}/part2/{attempt}', [ListeningTestController::class, 'part2'])->name('part2');
         Route::get('/{test:slug}/part3/{attempt}', [ListeningTestController::class, 'part3'])->name('part3');
         Route::get('/{test:slug}/part4/{attempt}', [ListeningTestController::class, 'part4'])->name('part4');
-        Route::post('/{test:slug}/attempt/{attempt}/answers', [ListeningTestController::class, 'submitAnswers'])->name('submit-answers');
-        Route::post('/{test:slug}/attempt/{attempt}/save-answer', [ListeningTestController::class, 'saveAnswer'])->name('save-answer');
+        Route::get('/{test:slug}/unified/{attempt}', [ListeningTestController::class, 'unifiedTest'])->name('unified');
+        Route::post('/{test:slug}/attempt/{attempt}/submit', [ListeningTestController::class, 'submitAnswers'])->name('submit-answers');
+        Route::post('/{test:slug}/attempt/{attempt}/save', [ListeningTestController::class, 'saveAnswer'])->name('save-answer');
         Route::get('/{test:slug}/attempt/{attempt}/complete', [ListeningTestController::class, 'complete'])->name('complete');
     });
 
@@ -106,6 +107,7 @@ Route::prefix('reading')
         Route::get('/{test:slug}/part1/{attempt}', [ReadingTestController::class, 'part1'])->name('part1');
         Route::get('/{test:slug}/part2/{attempt}', [ReadingTestController::class, 'part2'])->name('part2');
         Route::get('/{test:slug}/part3/{attempt}', [ReadingTestController::class, 'part3'])->name('part3');
+        Route::get('/{test:slug}/unified/{attempt}', [ReadingTestController::class, 'unifiedTest'])->name('unified');
         Route::match(['get', 'post'], '/{test:slug}/attempt/{attempt}/answers', [ReadingTestController::class, 'submitAnswers'])->name('submit-answers');
         Route::get('/{test:slug}/attempt/{attempt}/complete', [ReadingTestController::class, 'complete'])->name('complete');
     });
@@ -191,8 +193,10 @@ Route::middleware(['auth'])->prefix('test-management')->name('test-management.')
                 // Savollar boshqaruvi
                 Route::get('/{test}/questions/create', [TestManagementController::class, 'createQuestions'])->name('questions.create')->where('test', '[0-9]+');
                 Route::get('/{test}/questions/add', [TestManagementController::class, 'addQuestion'])->name('questions.add')->where('test', '[0-9]+');
-                Route::post('/{test}/questions', [TestManagementController::class, 'storeQuestions'])->name('questions.store')->where('test', '[0-9]+');
+                Route::match(['get', 'post'], '/{test}/questions', [TestManagementController::class, 'storeQuestions'])->name('questions.store')->where('test', '[0-9]+');
+                Route::post('/{test}/question', [TestManagementController::class, 'storeQuestion'])->name('question.store')->where('test', '[0-9]+');
                 Route::get('/{test}/questions/edit', [TestManagementController::class, 'editQuestions'])->name('questions.edit')->where('test', '[0-9]+');
+                Route::put('/{test}/questions', [TestManagementController::class, 'updateQuestions'])->name('questions.update')->where('test', '[0-9]+');
                 
                 // Enum jadvalini ko'rsatish
                 Route::get('/enums', [TestManagementController::class, 'showEnums'])->name('enums');

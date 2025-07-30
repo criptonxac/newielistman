@@ -15,22 +15,11 @@
             <p class="text-gray-600">{{ $test->title }}</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-blue-50 rounded-lg p-6">
-                <div class="text-3xl font-bold text-blue-600 mb-2">{{ $attempt->score ?? 0 }}%</div>
-                <div class="text-blue-800 font-medium">Umumiy Ball</div>
-            </div>
-            <div class="bg-green-50 rounded-lg p-6">
-                <div class="text-3xl font-bold text-green-600 mb-2">
-                    {{ $attempt->userAnswers->where('is_correct', true)->count() }}
-                </div>
-                <div class="text-green-800 font-medium">To'g'ri Javoblar</div>
-            </div>
-            <div class="bg-red-50 rounded-lg p-6">
-                <div class="text-3xl font-bold text-red-600 mb-2">
-                    {{ $attempt->userAnswers->where('is_correct', false)->count() }}
-                </div>
-                <div class="text-red-800 font-medium">Noto'g'ri Javoblar</div>
+        <!-- To'g'ri/noto'g'ri javoblar statistikasini ko'rsatmaslik -->
+        <div class="grid grid-cols-1 md:grid-cols-1 gap-6 mb-8">
+            <div class="bg-blue-50 rounded-lg p-6 text-center">
+                <div class="text-3xl font-bold text-blue-600 mb-2">Test yakunlandi</div>
+                <div class="text-blue-800 font-medium">Javoblaringiz saqlandi</div>
             </div>
         </div>
 
@@ -63,7 +52,8 @@
                         <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium mr-3">
                             Savol {{ $index + 1 }}
                         </span>
-                        <div class="flex items-center">
+                        <!-- To'g'ri/Noto'g'ri belgilarini ko'rsatmaslik -->
+                        <!-- <div class="flex items-center">
                             @if($isCorrect)
                                 <i class="fas fa-check-circle text-green-600 mr-2"></i>
                                 <span class="text-green-600 font-medium">To'g'ri</span>
@@ -71,7 +61,7 @@
                                 <i class="fas fa-times-circle text-red-600 mr-2"></i>
                                 <span class="text-red-600 font-medium">Noto'g'ri</span>
                             @endif
-                        </div>
+                        </div> -->
                     </div>
                     
                     <div class="text-gray-900 mb-4">
@@ -100,20 +90,7 @@
                     </div>
                 </div>
                 
-                <div>
-                    <h4 class="font-semibold text-gray-900 mb-2">To'g'ri Javob:</h4>
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-3">
-                        @if($question->question_type === 'multiple_choice')
-                            @php 
-                                $options = json_decode($question->options, true) ?? [];
-                                $correctChoice = $options[$question->correct_answer] ?? $question->correct_answer;
-                            @endphp
-                            <span class="text-green-800">{{ $correctChoice }}</span>
-                        @else
-                            <span class="text-green-800">{{ $question->correct_answer }}</span>
-                        @endif
-                    </div>
-                </div>
+               
             </div>
 
             @if($question->explanation)

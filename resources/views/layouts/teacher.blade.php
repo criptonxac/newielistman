@@ -41,10 +41,7 @@
                 <i class="fas fa-tasks mr-3 text-blue-400"></i>
                 Test Boshqaruvi
             </a>
-            <a href="{{ route('test-management.index') }}" class="flex items-center px-6 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-800 transition-all duration-300 {{ request()->routeIs('test-management.*') ? 'text-white bg-gradient-to-r from-blue-600 to-blue-800 border-r-4 border-blue-400 shadow-lg' : '' }}">
-                <i class="fas fa-file-alt mr-3 text-blue-400"></i>
-                Testlar
-            </a>
+          
             <a href="{{ route('teacher.students') }}" class="flex items-center px-6 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-800 transition-all duration-300 {{ request()->routeIs('teacher.students') ? 'text-white bg-gradient-to-r from-blue-600 to-blue-800 border-r-4 border-blue-400 shadow-lg' : '' }}">
                 <i class="fas fa-users mr-3 text-blue-400"></i>
                 Talabalar

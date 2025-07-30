@@ -23,7 +23,7 @@
                         <i class="fas fa-chart-line mr-1"></i> Natijalar
                     </a>
                 </div>
-                <div class="text-xl font-bold text-white" id="timer">60:00</div>
+                <div class="text-xl font-bold text-white" id="timer" data-time-seconds="{{ $test->time_limit * 60 }}">{{ sprintf('%02d:%02d', $test->time_limit, 0) }}</div>
             </div>
         </div>
     </div>
@@ -39,7 +39,6 @@
                 <div class="flex space-x-2">
                     <a href="{{ route('reading.part1', ['test' => $test->slug, 'attempt' => $attempt->id]) }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md">Part 1</a>
                     <a href="{{ route('reading.part2', ['test' => $test->slug, 'attempt' => $attempt->id]) }}" class="px-4 py-2 bg-blue-600 text-white rounded-md">Part 2</a>
-                    <a href="{{ route('reading.part3', ['test' => $test->slug, 'attempt' => $attempt->id]) }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md">Part 3</a>
                 </div>
             </div>
         </div>
@@ -51,21 +50,10 @@
             <!-- Passage Panel (Left Side) -->
             <div class="bg-white rounded-lg shadow-md p-4 passage-container">
                 <div class="overflow-y-auto" style="height: calc(100vh - 220px);">
-                    <h2 class="text-xl font-bold mb-4">Climate Change and Global Initiatives</h2>
+                    <h2 class="text-xl font-bold mb-4">{{ $test->title }}</h2>
                     
                     <div class="prose max-w-none">
-                        <p>Climate change is one of the most pressing challenges of our time, with far-reaching implications for the environment, economies, and societies worldwide. The scientific consensus is clear: human activities, particularly the burning of fossil fuels and deforestation, are driving unprecedented changes in our climate system. These changes manifest in rising global temperatures, shifting precipitation patterns, more frequent and intense extreme weather events, and rising sea levels.</p>
-
-                        <p>The Intergovernmental Panel on Climate Change (IPCC), established by the United Nations in 1988, has been instrumental in assessing the scientific basis of climate change, its impacts, and potential response strategies. Through its comprehensive assessment reports, the IPCC has provided policymakers with the most authoritative scientific information about climate change. The panel's findings have consistently emphasized the urgency of reducing greenhouse gas emissions to limit global warming to well below 2°C above pre-industrial levels, as stipulated in the Paris Agreement.</p>
-
-                        <p>The Paris Agreement, adopted in 2015, represents a landmark in global climate governance. It brings together nations in a common cause to undertake ambitious efforts to combat climate change and adapt to its effects. The agreement operates on a five-year cycle of increasingly ambitious climate action carried out by countries. By 2020, countries were expected to submit their plans for climate action known as nationally determined contributions (NDCs).</p>
-
-                            <p>Beyond international agreements, various initiatives are underway to address climate change at different scales. These include the development and deployment of renewable energy technologies, energy efficiency measures, sustainable land management practices, and carbon pricing mechanisms. Cities and local governments are also taking action through urban planning, transportation policies, and building standards designed to reduce emissions and enhance resilience.</p>
-
-                            <p>The private sector plays a crucial role in climate action as well. Many companies are setting science-based targets for reducing their emissions, investing in clean energy, and developing innovative solutions for a low-carbon future. Financial institutions are increasingly considering climate risks in their investment decisions and developing green financial products to support the transition to a sustainable economy.</p>
-
-                            <p>Despite these efforts, significant challenges remain. Current pledges under the Paris Agreement are insufficient to limit global warming to 1.5°C. The transition to a low-carbon economy requires substantial investments, technological innovation, and policy support. Moreover, ensuring a just transition that addresses the needs of vulnerable communities and workers in carbon-intensive industries is essential for the success of climate action.</p>
-                    
+                        {!! $test->description !!}
                     </div>
                 </div>
             </div>
@@ -74,7 +62,7 @@
             <div class="questions-panel">
                 <form action="{{ route('reading.submit-answers', ['test' => $test->slug, 'attempt' => $attempt->id]) }}" method="POST" class="bg-white rounded-lg shadow-md p-6">
                     @csrf
-                    <input type="hidden" name="next_route" value="reading.part3">
+                    <input type="hidden" name="next_route" value="">
                     
                     <div class="overflow-y-auto questions-container" style="height: calc(100vh - 220px); display: block !important;">
                         <!-- Questions 14-26 -->
@@ -106,29 +94,71 @@
     </div>
 </div>
 
-@push('scripts')
 <script>
-    // Timer functionality
-    function startTimer() {
-        const timerElement = document.getElementById('timer');
-        let timeLeft = 60 * 60; // 60 minutes in seconds
-        
-        // Only start the timer if it hasn't been started yet
-        if (!window.timerInterval) {
-            window.timerInterval = setInterval(function() {
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                
-                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(window.timerInterval);
-                    document.querySelector('form').submit();
-                }
-                
-                timeLeft -= 1;
-            }, 1000);
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Part 2 page loaded');
+        // Timer functionality
+        function startTimer() {
+            console.log('Timer ishga tushirilmoqda...');
+            const timerElement = document.getElementById('timer');
+            if (!timerElement) {
+                console.error('Timer elementi topilmadi!');
+                return;
+            }
+            
+            // Get time from data attribute
+            const totalSeconds = parseInt(timerElement.dataset.timeSeconds) || 3600; // Default to 60 minutes
+            console.log('Jami vaqt (sekund):', totalSeconds);
+            let minutes, seconds;
+            let remainingSeconds = totalSeconds;
+            
+            // Only start the timer if it hasn't been started yet
+            if (!window.timerInterval) {
+                window.timerInterval = setInterval(function() {
+                    if (remainingSeconds <= 0) {
+                        clearInterval(window.timerInterval);
+                        console.log('Vaqt tugadi!');
+                        
+                        // Submit the form when time expires
+                        const form = document.querySelector('form');
+                        if (form) {
+                            console.log('Forma avtomatik topshirilmoqda...');
+                            form.submit();
+                        }
+                        return;
+                    }
+                    
+                    minutes = Math.floor(remainingSeconds / 60);
+                    seconds = remainingSeconds % 60;
+                    
+                    // Change color based on time remaining
+                    if (minutes < 10) {
+                        timerElement.style.color = '#e74c3c'; // Red when less than 10 minutes
+                    } else if (minutes < 20) {
+                        timerElement.style.color = '#f39c12'; // Orange when less than 20 minutes
+                    }
+                    
+                    timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    remainingSeconds--;
+                    
+                    // Save remaining time to localStorage to persist between page navigations
+                    localStorage.setItem('readingTestRemainingTime', remainingSeconds);
+                }, 1000);
+            }
         }
+        
+        // Check if there's a saved timer value in localStorage
+        const savedTime = localStorage.getItem('readingTestRemainingTime');
+        if (savedTime) {
+            const timerElement = document.getElementById('timer');
+            if (timerElement) {
+                timerElement.dataset.timeSeconds = savedTime;
+                console.log('Saved time found:', savedTime);
+            }
+        }
+        
+        // Start the timer
+        startTimer();
         
         // Tab switching functionality
         const tabButtons = document.querySelectorAll('.tab-btn');
@@ -229,6 +259,24 @@
             });
         });
     });
+        
+        // Load the highlighting functionality from reading-test.js
+        if (typeof initializeHighlighting === 'function') {
+            initializeHighlighting();
+        } else {
+            console.error('Highlighting functionality not available');
+            // Load the script if not already loaded
+            if (!document.querySelector('script[src="/js/reading-test.js"]')) {
+                const script = document.createElement('script');
+                script.src = '/js/reading-test.js';
+                document.head.appendChild(script);
+                script.onload = function() {
+                    if (typeof initializeHighlighting === 'function') {
+                        initializeHighlighting();
+                    }
+                };
+            }
+        }
+    });
 </script>
-@endpush
 @endsection

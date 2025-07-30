@@ -1,6 +1,6 @@
 @extends('layouts.student')
 
-@section('title', 'Reading Test - Part 3')
+@section('title', 'Reading Test - Complete')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/ielts-custom.css') }}">
@@ -23,7 +23,7 @@
                         <i class="fas fa-chart-line mr-1"></i> Natijalar
                     </a>
                 </div>
-                <div class="text-xl font-bold text-white" id="timer">60:00</div>
+                <div class="text-xl font-bold text-white" id="timer" data-time-seconds="{{ $test->time_limit * 60 }}">{{ sprintf('%02d:%02d', $test->time_limit, 0) }}</div>
             </div>
         </div>
     </div>
@@ -34,12 +34,11 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-xl font-bold text-gray-800">IELTS Academic Reading</h1>
-                    <div class="text-gray-600 text-sm">Part 3: Questions 27-40</div>
+                    <div class="text-gray-600 text-sm">Test Complete</div>
                 </div>
                 <div class="flex space-x-2">
                     <a href="{{ route('reading.part1', ['test' => $test->slug, 'attempt' => $attempt->id]) }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md">Part 1</a>
                     <a href="{{ route('reading.part2', ['test' => $test->slug, 'attempt' => $attempt->id]) }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md">Part 2</a>
-                    <a href="{{ route('reading.part3', ['test' => $test->slug, 'attempt' => $attempt->id]) }}" class="px-4 py-2 bg-blue-600 text-white rounded-md">Part 3</a>
                 </div>
             </div>
         </div>
@@ -47,133 +46,93 @@
 
     <!-- Main Content -->
     <div class="container-fluid px-4 py-4">
-        <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
-
-            <!-- Passage Panel (Left Side) -->
-            <div class="bg-white rounded-lg shadow-md p-4 passage-container">
-                <div class="overflow-y-auto" style="height: calc(100vh - 220px);">
-                    <h2 class="text-xl font-bold mb-4">Artificial Intelligence and Society</h2>
+        <div class="flex justify-center">
+            <div class="bg-white rounded-lg shadow-md p-8 max-w-2xl w-full">
+                <div class="text-center">
+                    <div class="text-green-500 mb-4">
+                        <i class="fas fa-check-circle text-6xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-4">Test Complete!</h2>
+                    <p class="text-gray-600 mb-6">You have completed the IELTS Reading test. Your answers have been submitted successfully.</p>
                     
-                    <div class="prose max-w-none">
-                        <p><strong>A</strong> Sleep is a naturally recurring state characterized by reduced consciousness and sensory activity. It is distinguished from wakefulness by decreased reactivity to stimuli.</p>
-
-                        <p><strong>B</strong> Sleep mechanisms are partially understood. It may conserve energy, though it only decreases metabolism by 5-10%. Mammals require sleep even during hibernation.</p>
-
-                        <p><strong>C</strong> Sleep is divided into two types: rapid eye movement (REM) and non-rapid eye movement (NREM) sleep. The American Academy of Sleep Medicine divides NREM into three stages: N1, N2, and N3 (delta sleep).</p>
+                    <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                        <h3 class="font-bold text-lg mb-2">Test Summary</h3>
+                        <div class="flex justify-between mb-2">
+                            <span>Test:</span>
+                            <span class="font-medium">{{ $test->title }}</span>
+                        </div>
+                        <div class="flex justify-between mb-2">
+                            <span>Parts Completed:</span>
+                            <span class="font-medium">2 of 2</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Questions:</span>
+                            <span class="font-medium">26 questions</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-center space-x-4">
+                        <a href="{{ route('student.results') }}" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-chart-line mr-2"></i> View Results
+                        </a>
+                        <a href="{{ route('student.dashboard') }}" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                            <i class="fas fa-home mr-2"></i> Return to Dashboard
+                        </a>
                     </div>
                 </div>
-            </div>
-
-            <!-- Questions Panel (Right Side) -->
-            <div class="questions-panel">
-                <form action="{{ route('reading.submit-answers', ['test' => $test->slug, 'attempt' => $attempt->id]) }}" method="POST" class="bg-white rounded-lg shadow-md p-6">
-                    @csrf
-                    <input type="hidden" name="next_route" value="">
-                    
-                    <div class="overflow-y-auto questions-container" style="height: calc(100vh - 220px); display: block !important;">
-                        <!-- Questions 27-33: Multiple Choice -->
-                        <div class="mb-10">
-                            <div class="font-bold text-lg mb-4">Questions 27–33</div>
-                            <div class="mb-6 text-gray-700">
-                                Choose the correct letter, A, B, C or D.
-                            </div>
-
-                            
-                            <div class="answer-options" id="answer-options">
-                                <div class="draggable" draggable="true" data-value="A">A</div>
-                                <div class="draggable" draggable="true" data-value="B">B</div>
-                                <div class="draggable" draggable="true" data-value="C">C</div>
-                                <div class="draggable" draggable="true" data-value="D">D</div>
-                            </div>
-                            
-                            <div class="space-y-2">
-                                @php $questionNumber = 27; @endphp
-                                @foreach($questions as $question)
-                                    {!! \App\Services\QuestionRenderer::render($question, $questionNumber++, $userAnswers) !!}
-                                @endforeach
-                                </div>
-                        </div>
-                        
-                        <!-- Questions 34-40: Completion -->
-                        <div class="mb-10">
-                            <div class="font-bold text-lg mb-4">Questions 34–40</div>
-                            <div class="mb-6 text-gray-700">
-                                Complete the sentences below. Write NO MORE THAN TWO WORDS for each answer.
-                            </div>
-                            
-                            <div class="space-y-2">
-                                @php $questionNumber = 34; @endphp
-                                @foreach($questions as $question)
-                                    @if($questionNumber > 33 && $questionNumber <= 40)
-                                        {!! \App\Services\QuestionRenderer::render($question, $questionNumber++, $userAnswers) !!}
-                                    @endif
-                                @endforeach
-                            </div>
-                        </div>
-                        
-                        <div class="flex justify-between mt-10">
-                            <a href="{{ route('reading.part2', ['test' => $test->slug, 'attempt' => $attempt->id]) }}" class="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors">
-                                <i class="fas fa-arrow-left mr-2"></i> Oldingi
-                            </a>
-                            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                                Yakunlash <i class="fas fa-check ml-2"></i>
-                            </button>
-                        </div>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
 </div>
 
-@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Timer functionality
-        const timerElement = document.getElementById('timer');
-        let timeLeft = 60 * 60; // 60 minutes in seconds
+        console.log('Test complete page loaded');
+        // Clear timer data
+        localStorage.removeItem('readingTestRemainingTime');
         
-        // Only start the timer if it hasn't been started yet
-        if (!window.timerInterval) {
-            window.timerInterval = setInterval(function() {
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                
-                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(window.timerInterval);
-                    document.querySelector('form').submit();
-                }
-                
-                timeLeft -= 1;
-            }, 1000);
+        // Show completion message
+        function startTimer() {
+            console.log('Timer ishga tushirilmoqda...');
+            const timerElement = document.getElementById('timer');
+            if (!timerElement) {
+                console.error('Timer elementi topilmadi!');
+                return;
+            }
+            
+            let totalSeconds = parseInt(timerElement.getAttribute('data-time-seconds')) || 3600;
+            console.log('Jami vaqt (sekund):', totalSeconds);
+            let minutes, seconds;
+            
+            // Only start the timer if it hasn't been started yet
+            if (!window.timerInterval) {
+                window.timerInterval = setInterval(function() {
+                    if (totalSeconds <= 0) {
+                        clearInterval(window.timerInterval);
+                        console.log('Vaqt tugadi, forma yuborilmoqda...');
+                        // Formani topish va yuborish
+                        const form = document.querySelector('form');
+                        if (form) {
+                            form.submit();
+                        } else {
+                            console.error('Forma topilmadi!');
+                            // Natijalar sahifasiga yo'naltirish
+                            window.location.href = '/student/results';
+                        }
+                        return;
+                    }
+                    
+                    minutes = Math.floor(totalSeconds / 60);
+                    seconds = totalSeconds % 60;
+                    
+                    timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    totalSeconds--;
+                }, 1000);
+            }
         }
         
-        // Tab switching functionality
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabPanes = document.querySelectorAll('.tab-pane');
-        
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const tabId = button.getAttribute('data-tab');
-                
-                // Toggle active class on buttons
-                tabButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-600', 'text-white'));
-                tabButtons.forEach(btn => btn.classList.add('bg-gray-200', 'text-gray-700'));
-                button.classList.add('active', 'bg-blue-600', 'text-white');
-                button.classList.remove('bg-gray-200', 'text-gray-700');
-                
-                // Toggle active class on panes
-                tabPanes.forEach(pane => {
-                    pane.classList.add('hidden');
-                    pane.classList.remove('active');
-                });
-                
-                document.getElementById(`${tabId}-tab`).classList.remove('hidden');
-                document.getElementById(`${tabId}-tab`).classList.add('active');
-            });
-        });
+        // Sahifa yuklanganda timerni ishga tushirish
+        startTimer();
         
         // Fix for radio buttons and inputs
         document.querySelectorAll('.form-radio').forEach(radio => {
@@ -258,5 +217,4 @@
         });
     });
 </script>
-@endpush
 @endsection

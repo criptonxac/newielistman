@@ -13,7 +13,8 @@ class Test extends Model
     protected $fillable = [
         'title',
         'slug',
-        'description', 
+        'description',
+        'reading_passage',
         'test_category_id',
         'type',
         'duration_minutes',
@@ -43,6 +44,17 @@ class Test extends Model
     public function questions(): HasMany
     {
         return $this->hasMany(TestQuestion::class)->orderBy('sort_order')->orderBy('question_number');
+    }
+    
+    /**
+     * Get the passages for the test
+     * For Reading tests, we need to get passages from the database
+     */
+    public function passages()
+    {
+        // If this is a reading test, we would fetch passages from a related table
+        // For now, we'll use a placeholder implementation
+        return $this->hasMany(TestPassage::class)->orderBy('sort_order');
     }
 
     public function attempts(): HasMany

@@ -9,6 +9,98 @@ use Illuminate\Http\Request;
 
 class ReadingTestController extends Controller
 {
+    /**
+     * Unified reading test view that shows all parts in one page
+     */
+    public function unifiedTest(Test $test, $attempt)
+    {
+        $attempt = UserTestAttempt::findOrFail($attempt);
+        
+        // Get all questions for the test
+        $allQuestions = $test->questions()->orderBy('sort_order')->get();
+        
+        // Assign question numbers sequentially
+        $questionNumber = 1;
+        foreach ($allQuestions as $question) {
+            $question->question_number = $questionNumber++;
+        }
+        
+        // Divide questions into parts
+        $part1Questions = $allQuestions->take(13);
+        $part2Questions = $allQuestions->skip(13)->take(13);
+        $part3Questions = $allQuestions->skip(26)->take(14);
+        
+        // Get passages for the test
+        $passages = [];
+        try {
+            // Try to get passages from relationship if it exists
+            $passages = $test->passages()->get();
+            
+            // If no passages found, create default ones
+            if ($passages->isEmpty()) {
+                // Create default passages from reading_passage field if available
+                if (!empty($test->reading_passage)) {
+                    $passages = collect([
+                        (object)[
+                            'title' => 'Reading Passage 1',
+                            'content' => $test->reading_passage,
+                            'part' => 1
+                        ],
+                        (object)[
+                            'title' => 'Reading Passage 2',
+                            'content' => $test->reading_passage,
+                            'part' => 2
+                        ],
+                        (object)[
+                            'title' => 'Reading Passage 3',
+                            'content' => $test->reading_passage,
+                            'part' => 3
+                        ]
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Error loading test passages: ' . $e->getMessage());
+            // Create passages with user content as fallback
+            $userContent = '<p>Bu yerda IELTS Reading Test uchun matn bo\'lishi kerak. Siz o\'quvchilar uchun tayyorlangan matnni ko\'rmoqdasiz. Bu matn o\'quvchilarning o\'qish ko\'nikmalarini rivojlantirish va baholash uchun ishlatiladi.</p>
+<p>IELTS Reading testida odatda ilmiy, akademik va umumiy mavzulardagi matnlar beriladi. Har bir qismda 13-14 ta savol bo\'lib, jami 40 ta savolga javob berishingiz kerak.</p>
+<p>Matnni diqqat bilan o\'qing va berilgan savollarga javob bering. Vaqtingizni to\'g\'ri taqsimlang - Reading testi uchun 60 daqiqa beriladi.</p>';
+            
+            $passages = collect([
+                (object)[
+                    'title' => 'Reading Passage 1',
+                    'content' => $userContent,
+                    'part' => 1
+                ],
+                (object)[
+                    'title' => 'Reading Passage 2',
+                    'content' => $userContent,
+                    'part' => 2
+                ],
+                (object)[
+                    'title' => 'Reading Passage 3',
+                    'content' => $userContent,
+                    'part' => 3
+                ]
+            ]);
+        }
+        
+        $userAnswers = $attempt->answers ?? [];
+        
+        // QuestionRenderer servisini ishlatish
+        $questionRenderer = new QuestionRenderer();
+        
+        return view('tests.reading.reading-test', compact(
+            'test', 
+            'attempt', 
+            'part1Questions', 
+            'part2Questions', 
+            'part3Questions', 
+            'userAnswers', 
+            'questionRenderer',
+            'passages'
+        ));
+    }
     public function start(Test $test, Request $request)
     {
         // Testni boshlash
@@ -23,7 +115,8 @@ class ReadingTestController extends Controller
             'started_at' => now(),
         ]);
 
-        return redirect()->route('reading.part1', ['test' => $test->slug, 'attempt' => $attempt->id]);
+        // Unified view-ga yo'naltirish
+        return redirect()->route('reading.unified', ['test' => $test->slug, 'attempt' => $attempt->id]);
     }
 
     public function part1(Test $test, $attempt)

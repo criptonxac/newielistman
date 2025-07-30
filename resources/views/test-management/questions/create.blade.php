@@ -1,4 +1,4 @@
-@extends('layouts.teacher')
+@extends($layout)
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
@@ -8,6 +8,18 @@
             Orqaga
         </a>
     </div>
+
+    @if(session('success'))
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        {{ session('success') }}
+    </div>
+    @endif
+    
+    @if(session('error'))
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        {{ session('error') }}
+    </div>
+    @endif
 
     @if($errors->any())
     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -20,7 +32,7 @@
     @endif
 
     <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
-        <form action="{{ route('test-management.questions.store', $test) }}" method="POST" enctype="multipart/form-data" id="questions-form">
+        <form action="{{ route('test-management.questions.store', $test->id) }}" method="POST" enctype="multipart/form-data" id="questions-form">
             @csrf
             <input type="hidden" id="test-category" value="{{ $test->category->name }}" />
             
@@ -62,8 +74,84 @@
                 <p class="text-sm text-gray-500 mb-4">Savollarni qo'shish uchun pastdagi tugmani bosing. Savollarni drag-and-drop orqali tartibini o'zgartirishingiz mumkin.</p>
                 
                 <div id="questions-container" class="space-y-4">
-                    <!-- Savollar shu yerga qo'shiladi -->
+                    @if($questions->count() > 0)
+                        @foreach($questions as $index => $question)
+                            <div class="question-item bg-gray-50 p-4 rounded border border-gray-200" draggable="true">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h3 class="font-semibold question-number">Savol #{{ ($questions->currentPage() - 1) * 10 + $loop->iteration }}</h3>
+                                    <div class="flex space-x-2">
+                                        <button type="button" class="handle cursor-move text-gray-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                                            </svg>
+                                        </button>
+                                        <button type="button" class="remove-question text-red-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <input type="hidden" name="questions[{{ $question->id }}][sort_order]" value="{{ $question->sort_order }}" class="sort-order">
+                                
+                                <div class="mb-3">
+                                    <label class="block text-gray-700 text-sm font-bold mb-1">Savol matni:</label>
+                                    <textarea name="questions[{{ $question->id }}][question_text]" rows="3" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>{{ $question->question_text }}</textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="block text-gray-700 text-sm font-bold mb-1">Savol turi:</label>
+                                    <select name="questions[{{ $question->id }}][question_type]" class="question-type shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                                        <option value="multiple_choice" {{ $question->question_type == 'multiple_choice' ? 'selected' : '' }}>Ko'p tanlovli (Radio)</option>
+                                        <option value="short_answer" {{ $question->question_type == 'short_answer' ? 'selected' : '' }}>Ko'p to'g'ri javobli (Checkbox)</option>
+                                        <option value="true_false" {{ $question->question_type == 'true_false' ? 'selected' : '' }}>To'g'ri/Noto'g'ri</option>
+                                        <option value="fill_blank" {{ $question->question_type == 'fill_blank' ? 'selected' : '' }}>Bo'sh joyni to'ldirish</option>
+                                        <option value="matching" {{ $question->question_type == 'matching' ? 'selected' : '' }}>Moslashtirish</option>
+                                        <option value="matching" {{ $question->question_type == 'drag_drop' ? 'selected' : '' }}>Drag-and-Drop</option>
+                                        <option value="essay" {{ $question->question_type == 'essay' ? 'selected' : '' }}>Insho</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="block text-gray-700 text-sm font-bold mb-1">Ball:</label>
+                                    <input type="number" name="questions[{{ $question->id }}][points]" value="{{ $question->points }}" min="1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="bg-yellow-50 p-4 rounded border border-yellow-200 text-yellow-800">
+                            <p>Hozircha savollar yo'q. Savol qo'shish tugmasini bosing.</p>
+                        </div>
+                    @endif
                 </div>
+                
+                <!-- Pagination Controls -->
+                @if($questions->hasPages())
+                <div class="mt-6 flex justify-center">
+                    <div class="flex space-x-1">
+                        @if($questions->onFirstPage())
+                            <span class="px-3 py-1 bg-gray-300 text-gray-600 rounded-md">Oldingi</span>
+                        @else
+                            <a href="{{ route('test-management.questions.create', [$test->id, 'page' => $questions->currentPage() - 1]) }}" class="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600">Oldingi</a>
+                        @endif
+                        
+                        @for($i = 1; $i <= $questions->lastPage(); $i++)
+                            @if($i == $questions->currentPage())
+                                <span class="px-3 py-1 bg-gray-300 text-gray-600 rounded-md">{{ $i }}</span>
+                            @else
+                                <a href="{{ route('test-management.questions.create', [$test->id, 'page' => $i]) }}" class="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600">{{ $i }}</a>
+                            @endif
+                        @endfor
+                        
+                        @if($questions->hasMorePages())
+                            <a href="{{ route('test-management.questions.create', [$test->id, 'page' => $questions->currentPage() + 1]) }}" class="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600">Keyingi</a>
+                        @else
+                            <span class="px-3 py-1 bg-gray-300 text-gray-600 rounded-md">Keyingi</span>
+                        @endif
+                    </div>
+                </div>
+                @endif
                 
                 <a href="{{ route('test-management.questions.add', $test->id) }}" class="mt-4 inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     + Savol qo'shish
@@ -111,11 +199,11 @@
             <select name="questions[INDEX][question_type]" class="question-type shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                 <option value="">Turni tanlang</option>
                 <option value="multiple_choice">Ko'p tanlovli (Radio)</option>
-                <option value="multiple_answer">Ko'p to'g'ri javobli (Checkbox)</option>
+                <option value="short_answer">Ko'p to'g'ri javobli (Checkbox)</option>
                 <option value="true_false">To'g'ri/Noto'g'ri</option>
                 <option value="fill_blank">Bo'sh joyni to'ldirish</option>
                 <option value="matching">Moslashtirish</option>
-                <option value="drag_drop">Drag-and-Drop</option>
+                <option value="matching">Drag-and-Drop</option>
                 <option value="essay">Insho</option>
             </select>
         </div>
@@ -179,6 +267,24 @@
         console.log('questionsContainer:', window.questionsContainer);
         console.log('questionTemplate:', window.questionTemplate);
         
+        // Savol indeksini o'rnatish - mavjud savollar sonidan boshlash
+        const existingQuestions = window.questionsContainer ? window.questionsContainer.querySelectorAll('.question-item').length : 0;
+        window.questionIndex = existingQuestions;
+        
+        // Savollarni drag-and-drop qilish uchun Sortable kutubxonasini ishlatish
+        if (window.questionsContainer) {
+            new Sortable(window.questionsContainer, {
+                animation: 150,
+                handle: '.handle',
+                onEnd: function() {
+                    updateQuestionNumbers();
+                    updateSortOrders();
+                }
+            });
+        } else {
+            console.error('questionsContainer topilmadi!');
+        }
+        
         // Savol qo'shish tugmasiga hodisa qo'shish
         var addQuestionLink = document.getElementById('add-question-link');
         console.log('addQuestionLink:', addQuestionLink);
@@ -197,24 +303,7 @@
         console.log('Birinchi savolni qo\'shish...');
         addQuestion();
         
-        // Drag-and-drop uchun Sortable.js ni ishlatish
-        if (questionsContainer) {
-            new Sortable(questionsContainer, {
-                animation: 150,
-                handle: '.handle',
-                onEnd: updateQuestionNumbers
-            });
-        } else {
-            console.error('questionsContainer topilmadi!');
-        }
-        
-        // Bu kod endi kerak emas, chunki yuqorida onclick bilan almashtirildi
-        // document.getElementById('add-question').addEventListener('click', function(e) {
-        //    e.preventDefault();
-        //    addQuestion();
-        //    console.log('Savol qo\'shish tugmasi bosildi');
-        // });
-        
+         
         // Savolni o'chirish
         document.addEventListener('click', function(e) {
             if (e.target.closest('.remove-question')) {
@@ -244,17 +333,17 @@
                         optionsContainer.classList.remove('hidden');
                         correctAnswerContainer.classList.remove('hidden');
                         break;
-                    case 'multiple_answer':
+                    case 'short_answer':
                         optionsContainer.classList.remove('hidden');
                         multipleAnswersContainer.classList.remove('hidden');
                         break;
                     case 'matching':
                         optionsContainer.classList.remove('hidden');
                         correctAnswerContainer.classList.remove('hidden');
-                        break;
-                    case 'drag_drop':
-                        optionsContainer.classList.remove('hidden');
-                        mappingContainer.classList.remove('hidden');
+                        // Drag-and-Drop uchun ham matching ishlatiladi
+                        if (questionItem.querySelector('select').selectedOptions[0].text.includes('Drag-and-Drop')) {
+                            mappingContainer.classList.remove('hidden');
+                        }
                         break;
                     default:
                         correctAnswerContainer.classList.remove('hidden');
@@ -320,19 +409,24 @@
         
         // Savol raqamlarini yangilash
         function updateQuestionNumbers() {
-            const questions = questionsContainer.querySelectorAll('.question-item');
+            const questions = document.querySelectorAll('.question-item');
+            const currentPage = {{ $questions->currentPage() }};
+            const startIndex = (currentPage - 1) * 10;
+            
             questions.forEach((question, index) => {
-                question.querySelector('.question-number').textContent = `Savol #${index + 1}`;
-                question.querySelector('.sort-order').value = index + 1;
-                
-                // Barcha input va select nomlarini yangilash
-                const inputs = question.querySelectorAll('input, textarea, select');
-                inputs.forEach(input => {
-                    const name = input.getAttribute('name');
-                    if (name) {
-                        input.setAttribute('name', name.replace(/\[\d+\]/, `[${index}]`));
-                    }
-                });
+                question.querySelector('.question-number').textContent = 'Savol #' + (startIndex + index + 1);
+                question.querySelector('.sort-order').value = startIndex + index + 1;
+            });
+        }
+        
+        // Sort order ni yangilash
+        function updateSortOrders() {
+            const questions = document.querySelectorAll('.question-item');
+            const currentPage = {{ $questions->currentPage() }};
+            const startIndex = (currentPage - 1) * 10;
+            
+            questions.forEach((question, index) => {
+                question.querySelector('.sort-order').value = startIndex + index + 1;
             });
         }
         
@@ -404,20 +498,48 @@
         
         // Formani yuborishdan oldin tekshirish
         document.getElementById('questions-form').addEventListener('submit', function(e) {
-            const questions = questionsContainer.querySelectorAll('.question-item');
-            const testCategory = document.getElementById('test-category').value;
+            const questions = document.querySelectorAll('.question-item');
             
-            // Check if there are any questions
+            // Kamida 1 ta savol bo'lishi kerak
             if (questions.length === 0) {
                 e.preventDefault();
-                alert('Kamida bitta savol qo\'shing!');
+                alert('Kamida 1 ta savol qo\'shishingiz kerak!');
                 return;
             }
             
-            // For Listening and Reading tests, require at least 40 questions
+            // Savollar soni 40 tadan oshmasligi kerak
+            if (questions.length > 40) {
+                e.preventDefault();
+                alert('Testda savollar soni 40 tadan oshmasligi kerak. Hozir: ' + questions.length + ' ta.');
+                return;
+            }
+            
+            // Barcha savol turlarini tekshirish va to'g'rilash
+            questions.forEach((question, index) => {
+                const questionTypeSelect = question.querySelector('select[name*="question_type"]');
+                if (questionTypeSelect) {
+                    // Savol turini ma'lumotlar bazasidagi ruxsat etilgan qiymatlarga moslashtirish
+                    const selectedText = questionTypeSelect.options[questionTypeSelect.selectedIndex].text;
+                    
+                    // Qiymatlarni to'g'rilash
+                    if (selectedText === 'Drag-and-Drop' || selectedText === 'Ko\'p to\'g\'ri javobli (Checkbox)') {
+                        questionTypeSelect.value = 'matching';
+                    }
+                    
+                    // multiple_answer qiymatini multiple_choice ga o'zgartirish
+                    if (questionTypeSelect.value === 'multiple_answer') {
+                        questionTypeSelect.value = 'multiple_choice';
+                    }
+                    
+                    console.log(`Savol #${index + 1} turi: ${questionTypeSelect.value}`);
+                }
+            });
+            
+            // Test kategoriyasiga qarab minimal savol sonini tekshirish
+            const testCategory = document.getElementById('test-category').value;
             if ((testCategory === 'Listening' || testCategory === 'Reading') && questions.length < 40) {
                 e.preventDefault();
-                alert(`${testCategory} testi uchun kamida 40 ta savol bo'lishi kerak. Hozir: ${questions.length} ta.`);
+                alert(`${testCategory} testi uchun kamida 40 ta savol bo\'lishi kerak. Hozir: ${questions.length} ta.`);
                 return;
             }
         });

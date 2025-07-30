@@ -31,9 +31,12 @@ class StudentController extends Controller
 
     public function tests(Request $request)
     {
-        // Faqat admin va teacher tomonidan yaratilgan testlarni ko'rsatish
+        // Admin va teacher tomonidan yaratilgan faqat amaliyot uchun testlarni ko'rsatish
         $categories = TestCategory::with(['tests' => function ($query) {
-            $query->where('is_active', true); // Faqat faol testlarni ko'rsatish
+            // Faqat amaliyot uchun va faol testlarni ko'rsatish
+            $query->where('type', 'practice')
+                  ->where('is_active', true)
+                  ->orderBy('created_at', 'desc');
         }])->get();
 
         return view('student.tests', compact('categories'));

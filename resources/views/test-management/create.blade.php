@@ -1,4 +1,4 @@
-@extends('layouts.teacher')
+@extends($layout)
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
@@ -31,6 +31,12 @@
             <div class="mb-4">
                 <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Tavsif:</label>
                 <textarea name="description" id="description" rows="3" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ old('description') }}</textarea>
+            </div>
+            
+            <div class="mb-4 reading-passage-container" style="display: none;">
+                <label for="reading_passage" class="block text-gray-700 text-sm font-bold mb-2">O'qish uchun matn (Reading test uchun):</label>
+                <textarea name="reading_passage" id="reading_passage" rows="10" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ old('reading_passage') }}</textarea>
+                <p class="text-sm text-gray-600 mt-1">Bu matn reading test sahifasida ko'rsatiladi.</p>
             </div>
             
             <div class="mb-4">
@@ -120,6 +126,33 @@
                 }
             }
         });
+        
+        // Reading passage ko'rsatish/yashirish
+        const categorySelect = document.getElementById('test_category_id');
+        const readingPassageContainer = document.querySelector('.reading-passage-container');
+        
+        // Kategoriya o'zgarganida tekshirish
+        categorySelect.addEventListener('change', function() {
+            const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+            const categoryName = selectedOption.textContent.trim().toLowerCase();
+            
+            // Agar reading kategoriyasi bo'lsa, matn maydonini ko'rsatish
+            if (categoryName.includes('reading') || categoryName.includes('o\'qish')) {
+                readingPassageContainer.style.display = 'block';
+            } else {
+                readingPassageContainer.style.display = 'none';
+            }
+        });
+        
+        // Sahifa yuklanganda ham tekshirish
+        if (categorySelect.selectedIndex > 0) {
+            const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+            const categoryName = selectedOption.textContent.trim().toLowerCase();
+            
+            if (categoryName.includes('reading') || categoryName.includes('o\'qish')) {
+                readingPassageContainer.style.display = 'block';
+            }
+        }
     });
 </script>
 @endpush

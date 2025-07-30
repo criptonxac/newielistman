@@ -39,8 +39,7 @@ class TestCategorySeeder extends Seeder
                 'duration_minutes' => 60,
                 'is_active' => true,
                 'sort_order' => 3
-            ],
-          
+            ]
         ];
 
         foreach ($categories as $category) {

@@ -100,6 +100,73 @@ label {
     border-color: #7dd3fc;
 }
 
+/* Placeholder for empty drop zones */
+.placeholder {
+    color: #94a3b8;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+/* Highlighting functionality */
+.highlighted {
+    background-color: #ffff00;
+    border-radius: 2px;
+    padding: 0 2px;
+    cursor: pointer;
+}
+
+.note-highlight {
+    background-color: #90ee90;
+    border-radius: 2px;
+    padding: 0 2px;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Context menu styling */
+.context-menu {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+.context-menu-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.context-menu-item:hover {
+    background-color: #f0f0f0;
+}
+
+/* Passage and questions styling improvements */
+.passage-container {
+    position: relative;
+}
+
+.passage-container p {
+    line-height: 1.8;
+    margin-bottom: 1rem;
+}
+
+.questions-container p {
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+}
+
+/* Timer styling */
+#timer {
+    transition: color 0.3s ease;
+    font-family: monospace;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
 .drop-zone.has-item {
     border-style: solid;
     border-color: #94a3b8;

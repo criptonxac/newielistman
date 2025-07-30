@@ -1,4 +1,4 @@
-@extends('layouts.teacher')
+@extends($layout)
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
@@ -88,19 +88,35 @@
                         @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
-                            <a href="{{ route('test-management.edit', $test) }}" class="text-indigo-600 hover:text-indigo-900">Tahrirlash</a>
+                        <div class="flex space-x-3">
+                            <a href="{{ route('test-management.edit', $test->id) }}" class="text-indigo-600 hover:text-indigo-900 bg-indigo-100 p-2 rounded-full" title="Tahrirlash">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </a>
                             
                             @if($test->total_questions > 0)
-                                <a href="{{ route('test-management.questions.edit', $test) }}" class="text-blue-600 hover:text-blue-900">Savollarni tahrirlash</a>
+                                <a href="{{ route('test-management.questions.edit', $test->id) }}" class="text-blue-600 hover:text-blue-900 bg-blue-100 p-2 rounded-full" title="Savollarni tahrirlash">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </a>
                             @else
-                                <a href="{{ route('test-management.questions.create', $test) }}" class="text-green-600 hover:text-green-900">Savollar qo'shish</a>
+                                <a href="{{ route('test-management.questions.create', $test->id) }}" class="text-green-600 hover:text-green-900 bg-green-100 p-2 rounded-full" title="Savollar qo'shish">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </a>
                             @endif
                             
-                            <form action="{{ route('test-management.destroy', $test) }}" method="POST" onsubmit="return confirm('Haqiqatan ham bu testni o\'chirmoqchimisiz?');">
+                            <form action="{{ route('test-management.destroy', $test->id) }}" method="POST" onsubmit="return confirm('Haqiqatan ham bu testni o\'chirmoqchimisiz?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900">O'chirish</button>
+                                <button type="submit" class="text-red-600 hover:text-red-900 bg-red-100 p-2 rounded-full" title="O'chirish">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
                             </form>
                         </div>
                     </td>
