@@ -46,7 +46,7 @@
                 <i class="fas fa-users mr-3 text-blue-400"></i>
                 Talabalar
             </a>
-            <a href="{{ route('teacher.results') }}" class="flex items-center px-6 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-800 transition-all duration-300 {{ request()->routeIs('teacher.results') ? 'text-white bg-gradient-to-r from-blue-600 to-blue-800 border-r-4 border-blue-400 shadow-lg' : '' }}">
+            <a href="{{ route('teacher.results.index') }}" class="flex items-center px-6 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-800 transition-all duration-300 {{ request()->routeIs('teacher.results.*') ? 'text-white bg-gradient-to-r from-blue-600 to-blue-800 border-r-4 border-blue-400 shadow-lg' : '' }}">
                 <i class="fas fa-chart-bar mr-3 text-blue-400"></i>
                 Natijalar
             </a>

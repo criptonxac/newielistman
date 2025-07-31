@@ -32,6 +32,17 @@
             <button id="part2-btn" class="part-button px-4 py-2 bg-gray-200 text-gray-700 rounded-md" data-part="2" onclick="showPart(2)">Part 2</button>
             <button id="part3-btn" class="part-button px-4 py-2 bg-gray-200 text-gray-700 rounded-md" data-part="3" onclick="showPart(3)">Part 3</button>
         </div>
+        
+        <!-- Progress Bar -->
+        <div class="mt-4">
+            <div class="flex justify-between items-center mb-1">
+                <div class="text-sm text-gray-600" id="progressText">0/{{ $test->questions->count() }} questions answered</div>
+                <div class="text-sm text-gray-600">Progress</div>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full" style="width: {{ $attempt->progress }}%"></div>
+            </div>
+        </div>
     </div>
 
     <!-- Test Content -->
@@ -67,18 +78,22 @@
 
         <!-- Questions Panel (Right Side) -->
         <div class="bg-white rounded-lg shadow-md p-4 questions-panel">
-            <form id="reading-test-form" action="{{ route('reading.submit-answers', ['test' => $test->slug, 'attempt' => $attempt->id]) }}" method="POST">
+            <form id="reading-test-form" action="{{ route('reading.submit-answers', ['test' => $test->slug, 'attempt' => $attempt->attempt_code]) }}" method="POST">
                 @csrf
                 <div class="overflow-y-auto questions-container" style="height: calc(100vh - 300px);">
                     <!-- Part 1 Questions -->
                     <div id="part1-questions" class="questions-content active">
                         <div class="font-bold text-lg mb-4">Questions 1-13</div>
                         <div class="space-y-6">
-                            @foreach($part1Questions as $question)
-                                <div class="question-item mb-4">
-                                    {!! $questionRenderer->render($question, $question->question_number, $userAnswers) !!}
-                                </div>
-                            @endforeach
+                            @if(isset($questionsByPart[1]))
+                                @foreach($questionsByPart[1] as $question)
+                                    <div class="question-item mb-4">
+                                        {!! app(\App\Services\QuestionRenderer::class)->render($question, $question->question_number_in_part, $existingAnswers[$question->id] ?? null) !!}
+                                    </div>
+                                @endforeach
+                            @else
+                                <div class="text-gray-500">No questions available for Part 1</div>
+                            @endif
                         </div>
                     </div>
                     
@@ -86,11 +101,15 @@
                     <div id="part2-questions" class="questions-content hidden">
                         <div class="font-bold text-lg mb-4">Questions 14-26</div>
                         <div class="space-y-6">
-                            @foreach($part2Questions as $question)
-                                <div class="question-item mb-4">
-                                    {!! $questionRenderer->render($question, $question->question_number, $userAnswers) !!}
-                                </div>
-                            @endforeach
+                            @if(isset($questionsByPart[2]))
+                                @foreach($questionsByPart[2] as $question)
+                                    <div class="question-item mb-4">
+                                        {!! app(\App\Services\QuestionRenderer::class)->render($question, $question->question_number_in_part + 13, $existingAnswers[$question->id] ?? null) !!}
+                                    </div>
+                                @endforeach
+                            @else
+                                <div class="text-gray-500">No questions available for Part 2</div>
+                            @endif
                         </div>
                     </div>
                     
@@ -98,26 +117,36 @@
                     <div id="part3-questions" class="questions-content hidden">
                         <div class="font-bold text-lg mb-4">Questions 27-40</div>
                         <div class="space-y-6">
-                            @foreach($part3Questions as $question)
-                                <div class="question-item mb-4">
-                                    {!! $questionRenderer->render($question, $question->question_number, $userAnswers) !!}
-                                </div>
-                            @endforeach
+                            @if(isset($questionsByPart[3]))
+                                @foreach($questionsByPart[3] as $question)
+                                    <div class="question-item mb-4">
+                                        {!! app(\App\Services\QuestionRenderer::class)->render($question, $question->question_number_in_part + 26, $existingAnswers[$question->id] ?? null) !!}
+                                    </div>
+                                @endforeach
+                            @else
+                                <div class="text-gray-500">No questions available for Part 3</div>
+                            @endif
                         </div>
                     </div>
                 </div>
                 
                 <!-- Navigation Buttons -->
                 <div class="flex justify-between mt-6">
-                    <button type="button" id="prevBtn" class="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors hidden">
+                    <button type="button" id="prevBtn" class="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors {{ $attempt->current_part <= 1 ? 'hidden' : '' }}" onclick="showPart({{ $attempt->current_part - 1 }})">
                         <i class="fas fa-arrow-left mr-2"></i> Oldingi
                     </button>
-                    <button type="button" id="nextBtn" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                        Keyingi <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
-                    <button type="submit" id="finishBtn" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors hidden">
-                        Yakunlash <i class="fas fa-check ml-2"></i>
-                    </button>
+                    
+                    @if($attempt->current_part < 3)
+                        <button type="button" id="nextBtn" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" onclick="showPart({{ $attempt->current_part + 1 }})">
+                            Keyingi <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                        <input type="hidden" name="next_route" value="reading.part{{ $attempt->current_part + 1 }}">
+                    @else
+                        <button type="submit" id="finishBtn" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                            Yakunlash <i class="fas fa-check ml-2"></i>
+                        </button>
+                        <input type="hidden" name="complete" value="1">
+                    @endif
                 </div>
             </form>
         </div>
@@ -189,4 +218,7 @@
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/ielts-custom.css') }}">
 <link rel="stylesheet" href="{{ asset('css/reading-test.css') }}">
+<meta name="test-slug" content="{{ $test->slug }}">
+<meta name="current-part" content="{{ $attempt->current_part }}">
+<meta name="attempt-code" content="{{ $attempt->attempt_code }}">
 @endsection

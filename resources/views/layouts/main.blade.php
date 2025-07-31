@@ -48,7 +48,7 @@
                     <a href="{{ route('categories.index') }}" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
                         <i class="fas fa-list-ul mr-1"></i> Kategoriyalar
                     </a>
-                    <a href="{{ route('student.tests') }}" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
+                    <a href="{{ route('student.tests.index') }}" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
                         <i class="fas fa-file-alt mr-1"></i> Barcha Testlar
                     </a>
                     <a href="{{ route('student.results') }}" class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors">
@@ -115,7 +115,7 @@
                     <a href="{{ route('categories.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200 hover:text-blue-700">
                         <i class="fas fa-list-ul mr-2"></i> Kategoriyalar
                     </a>
-                    <a href="{{ route('student.tests') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200 hover:text-blue-700">
+                    <a href="{{ route('student.tests.index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200 hover:text-blue-700">
                         <i class="fas fa-file-alt mr-2"></i> Barcha Testlar
                     </a>
                     <a href="{{ route('student.results') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200 hover:text-blue-700">

@@ -130,7 +130,7 @@
                                         <a href="{{ route('test-management.edit', $test->id) }}" class="text-indigo-600 hover:text-indigo-900">
                                             <i class="fas fa-edit"></i> Tahrirlash
                                         </a>
-                                        <a href="{{ route('test-management.questions.edit', $test->id) }}" class="text-green-600 hover:text-green-900">
+                                        <a href="{{ route('test-management.questions.create', $test->id) }}" class="text-green-600 hover:text-green-900">
                                             <i class="fas fa-question-circle"></i> Savollar
                                         </a>
                                     </div>

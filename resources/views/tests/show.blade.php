@@ -97,12 +97,16 @@
     <div class="bg-white rounded-xl shadow-lg p-6">
         <h3 class="text-xl font-bold text-gray-900 mb-4">Boshqa Testlar</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            @foreach($test->category->tests->where('id', '!=', $test->id) as $relatedTest)
-            <a href="{{ route('tests.show', $relatedTest) }}" class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-4 transition-colors">
-                <h4 class="font-semibold text-gray-900 mb-2">{{ $relatedTest->title }}</h4>
-                <p class="text-sm text-gray-600">{{ $relatedTest->questions->count() }} ta savol</p>
-            </a>
-            @endforeach
+            @if($test->category)
+                @foreach($test->category->tests->where('id', '!=', $test->id) as $relatedTest)
+                <a href="{{ route('student.tests.show', $relatedTest) }}" class="block bg-gray-50 hover:bg-gray-100 rounded-lg p-4 transition-colors">
+                    <h4 class="font-semibold text-gray-900 mb-2">{{ $relatedTest->title }}</h4>
+                    <p class="text-sm text-gray-600">{{ $relatedTest->questions->count() }} ta savol</p>
+                </a>
+                @endforeach
+            @else
+                <p class="text-gray-500">Boshqa testlar mavjud emas</p>
+            @endif
         </div>
     </div>
 </div>

@@ -102,7 +102,7 @@
                             <span class="text-sm text-gray-500">FOYDALANUVCHILAR</span>
                         </div>
                     </div>
-                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_users'] }}</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_users'] ?? 0 }}</div>
                     <div class="text-xs text-gray-400">Jami foydalanuvchilar soni</div>
                 </div>
 
@@ -116,7 +116,7 @@
                             <span class="text-sm text-gray-500">TALABALAR</span>
                         </div>
                     </div>
-                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_students'] }}</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_students'] ?? 0 }}</div>
                     <div class="text-xs text-gray-400">Ro'yxatdan o'tgan talabalar</div>
                 </div>
 
@@ -130,7 +130,7 @@
                             <span class="text-sm text-gray-500">SAVOLLAR</span>
                         </div>
                     </div>
-                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_questions'] }}</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_questions'] ?? 0 }}</div>
                     <div class="text-xs text-gray-400">Jami test savollari</div>
                 </div>
 
@@ -144,7 +144,7 @@
                             <span class="text-sm text-gray-500">O'QITUVCHILAR</span>
                         </div>
                     </div>
-                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_teachers'] }}</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_teachers'] ?? 0 }}</div>
                     <div class="text-xs text-gray-400">Faol o'qituvchilar soni</div>
                 </div>
             </div>
@@ -161,7 +161,7 @@
                     <div class="text-center mb-6">
                         <div class="w-32 h-32 bg-gradient-to-r from-blue-400 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
                             <div class="text-white text-center">
-                                <div class="text-3xl font-bold">{{ number_format($todayAverageScore, 1) }}</div>
+                                <div class="text-3xl font-bold">{{ isset($todayAverageScore) ? number_format($todayAverageScore, 1) : '0.0' }}</div>
                                 <div class="text-sm">Ball</div>
                             </div>
                         </div>
@@ -178,11 +178,11 @@
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Eng yaxshi 10 talaba</h3>
                     <div class="text-sm text-gray-500 mb-6">O'rtacha ball bo'yicha eng yaxshi ko'rsatkichli talabalar</div>
                     
-                    @if($topStudents->count() > 0)
+                    @if(isset($topStudents) && $topStudents->count() > 0)
                         <div class="h-64 flex items-end justify-between space-x-2">
-                            @foreach($topStudents->take(10) as $index => $student)
+                            @foreach(isset($topStudents) ? $topStudents->take(10) : [] as $index => $student)
                                 @php
-                                    $maxScore = $topStudents->max('average_score') ?: 100;
+                                    $maxScore = isset($topStudents) ? ($topStudents->max('average_score') ?: 100) : 100;
                                     $height = $student['average_score'] > 0 ? (($student['average_score'] / $maxScore) * 200) : 10;
                                 @endphp
                                 <div class="flex-1 flex flex-col items-center">
@@ -222,7 +222,7 @@
                     
                     <!-- Faollik foizi -->
                     <div class="text-center mb-4">
-                        <div class="text-3xl font-bold text-indigo-600 mb-2">{{ $weeklyActivity['activity_percentage'] }}%</div>
+                        <div class="text-3xl font-bold text-indigo-600 mb-2">{{ isset($weeklyActivity) ? $weeklyActivity['activity_percentage'] : '0' }}%</div>
                         <div class="text-sm text-gray-500">Haftalik faollik foizi</div>
                     </div>
                     
@@ -234,11 +234,11 @@
                     <!-- Qo'shimcha ma'lumotlar -->
                     <div class="grid grid-cols-2 gap-4 text-center">
                         <div>
-                            <div class="text-lg font-bold text-gray-800">{{ $weeklyActivity['total_tests'] }}</div>
+                            <div class="text-lg font-bold text-gray-800">{{ isset($weeklyActivity) ? $weeklyActivity['total_tests'] : '0' }}</div>
                             <div class="text-xs text-gray-500">Jami testlar</div>
                         </div>
                         <div>
-                            <div class="text-lg font-bold text-gray-800">{{ $weeklyActivity['avg_daily'] }}</div>
+                            <div class="text-lg font-bold text-gray-800">{{ isset($weeklyActivity) ? $weeklyActivity['avg_daily'] : '0' }}</div>
                             <div class="text-xs text-gray-500">Kunlik o'rtacha</div>
                         </div>
                     </div>
@@ -250,7 +250,7 @@
                     <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100 flex justify-between items-center">
                         <div>
                             <div class="text-sm text-gray-500">Faol talabalar</div>
-                            <div class="text-2xl font-bold text-gray-800">{{ $studentActivity['active_students'] }}</div>
+                            <div class="text-2xl font-bold text-gray-800">{{ isset($studentActivity) ? $studentActivity['active_students'] : '0' }}</div>
                             <div class="text-xs text-gray-400">Oxirgi 7 kun</div>
                         </div>
                         <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -261,7 +261,7 @@
                     <!-- Tugallangan testlar -->
                     <div class="bg-blue-600 text-white rounded-lg p-4">
                         <div class="text-sm opacity-80">Tugallangan testlar</div>
-                        <div class="text-2xl font-bold">{{ $studentActivity['completed_tests'] }}</div>
+                        <div class="text-2xl font-bold">{{ isset($studentActivity) ? $studentActivity['completed_tests'] : '0' }}</div>
                         <div class="text-xs opacity-70">Jami</div>
                     </div>
                     
@@ -270,7 +270,7 @@
                         <div class="flex justify-between items-center">
                             <div>
                                 <div class="text-sm text-gray-500">O'rtacha natija</div>
-                                <div class="text-xl font-bold text-gray-800">{{ $studentActivity['average_score'] }} ball</div>
+                                <div class="text-xl font-bold text-gray-800">{{ isset($studentActivity) ? $studentActivity['average_score'] : '0' }} ball</div>
                             </div>
                             <div class="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
                                 <i class="fas fa-chart-bar text-blue-600 text-xs"></i>
@@ -283,7 +283,7 @@
                         <div class="flex justify-between items-center">
                             <div>
                                 <div class="text-sm text-gray-500">Eng yaxshi natija</div>
-                                <div class="text-xl font-bold text-gray-800">{{ $studentActivity['highest_score'] }} ball</div>
+                                <div class="text-xl font-bold text-gray-800">{{ isset($studentActivity) ? $studentActivity['highest_score'] : '0' }} ball</div>
                             </div>
                             <div class="w-8 h-8 bg-yellow-100 rounded flex items-center justify-center">
                                 <i class="fas fa-trophy text-yellow-600 text-xs"></i>
@@ -346,14 +346,14 @@ const weeklyChart = new Chart(weeklyCtx, {
     type: 'line',
     data: {
         labels: [
-            @foreach($weeklyStats as $stat)
+            @foreach(isset($weeklyStats) ? $weeklyStats : [] as $stat)
                 '{{ $stat["date"] }}',
             @endforeach
         ],
         datasets: [{
             label: 'Kunlik testlar',
             data: [
-                @foreach($weeklyStats as $stat)
+                @foreach(isset($weeklyStats) ? $weeklyStats : [] as $stat)
                     {{ $stat['count'] }},
                 @endforeach
             ],
@@ -434,6 +434,7 @@ const weeklyChart = new Chart(weeklyCtx, {
 });
 
 // Talabalar Ballari Chart
+@if(isset($topStudents) && $topStudents->count() > 0)
 const studentsCtx = document.getElementById('studentsChart').getContext('2d');
 const studentsChart = new Chart(studentsCtx, {
     type: 'bar',
@@ -533,3 +534,4 @@ document.addEventListener('click', function(event) {
 </script>
 </body>
 </html>
+@endif

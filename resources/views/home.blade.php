@@ -111,7 +111,7 @@
                                             <h4 class="font-medium text-gray-900">{{ $test->title }}</h4>
                                             <p class="text-sm text-gray-500">{{ $test->total_questions }} savol</p>
                                         </div>
-                                        <a href="{{ route('tests.show', $test) }}" 
+                                        <a href="{{ route('student.tests.show', $test) }}" 
                                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                                             Boshlash
                                         </a>
@@ -212,7 +212,7 @@
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                     <div class="bg-gradient-to-r from-blue-500 to-indigo-500 p-6">
                         <h3 class="text-xl font-bold text-white mb-2">{{ $test->title }}</h3>
-                        <p class="text-blue-100">{{ $test->category->name }}</p>
+                        <p class="text-blue-100">{{ $test->category ? $test->category->name : 'Kategoriya mavjud emas' }}</p>
                     </div>
                     <div class="p-6">
                         <p class="text-gray-600 mb-4">{{ $test->description }}</p>
@@ -230,7 +230,7 @@
                                 {{ $test->total_questions }} savol
                             </span>
                         </div>
-                        <a href="{{ route('tests.show', $test) }}" 
+                        <a href="{{ route('student.tests.show', $test) }}" 
                            class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors">
                             Testni boshlash
                         </a>

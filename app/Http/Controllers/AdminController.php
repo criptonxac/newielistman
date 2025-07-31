@@ -44,21 +44,7 @@ class AdminController extends Controller
                 ];
             });
 
-        // Agar haqiqiy ma'lumotlar bo'lmasa, demo ma'lumotlar
-        if ($topStudents->isEmpty()) {
-            $topStudents = collect([
-                ['name' => 'Ahmad Karimov', 'email' => 'ahmad@example.com', 'average_score' => 85.5, 'total_tests' => 12],
-                ['name' => 'Malika Tosheva', 'email' => 'malika@example.com', 'average_score' => 82.3, 'total_tests' => 8],
-                ['name' => 'Bobur Aliyev', 'email' => 'bobur@example.com', 'average_score' => 79.8, 'total_tests' => 15],
-                ['name' => 'Nodira Qodirova', 'email' => 'nodira@example.com', 'average_score' => 77.2, 'total_tests' => 6],
-                ['name' => 'Jasur Rahimov', 'email' => 'jasur@example.com', 'average_score' => 75.9, 'total_tests' => 10],
-                ['name' => 'Zilola Nazarova', 'email' => 'zilola@example.com', 'average_score' => 74.1, 'total_tests' => 9],
-                ['name' => 'Sardor Umarov', 'email' => 'sardor@example.com', 'average_score' => 72.6, 'total_tests' => 7],
-                ['name' => 'Gulnora Ismoilova', 'email' => 'gulnora@example.com', 'average_score' => 71.3, 'total_tests' => 11],
-                ['name' => 'Otabek Salimov', 'email' => 'otabek@example.com', 'average_score' => 69.7, 'total_tests' => 5],
-                ['name' => 'Feruza Abdullayeva', 'email' => 'feruza@example.com', 'average_score' => 68.4, 'total_tests' => 8]
-            ]);
-        }
+             
 
         // Talaba faolligi statistikalari
         $studentActivity = [

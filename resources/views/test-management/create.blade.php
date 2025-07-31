@@ -56,14 +56,22 @@
                 <select name="type" id="type" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                     <option value="">Test turini tanlang</option>
                     <option value="familiarisation" {{ old('type') == 'familiarisation' ? 'selected' : '' }}>Tanishuv</option>
-                    <option value="sample" {{ old('type') == 'sample' ? 'selected' : '' }}>Namuna</option>
                     <option value="practice" {{ old('type') == 'practice' ? 'selected' : '' }}>Amaliyot</option>
                 </select>
             </div>
-            
             <div class="mb-4">
                 <label for="duration_minutes" class="block text-gray-700 text-sm font-bold mb-2">Davomiyligi (daqiqalarda):</label>
-                <input type="number" name="duration_minutes" id="duration_minutes" value="{{ old('duration_minutes') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <input type="number" name="duration_minutes" id="duration_minutes" value="{{ old('duration_minutes') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+            
+            <div class="mb-4">
+                <label for="pass_score" class="block text-gray-700 text-sm font-bold mb-2">O'tish bali (0-100):</label>
+                <input type="number" name="pass_score" id="pass_score" value="{{ old('pass_score') }}" min="0" max="100" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+            
+            <div class="mb-4">
+                <label for="attempts_allowed" class="block text-gray-700 text-sm font-bold mb-2">Ruxsat etilgan urinishlar soni:</label>
+                <input type="number" name="attempts_allowed" id="attempts_allowed" value="{{ old('attempts_allowed', 1) }}" min="1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
             </div>
             
             <div class="mb-4">

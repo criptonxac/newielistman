@@ -55,6 +55,132 @@ function showPart(partNum) {
     console.log('Showing part:', partNum);
     currentPart = parseInt(partNum);
     
+    // Save current answers before changing parts
+    saveCurrentAnswers();
+    
+    // Get test slug and attempt code from meta tags
+    const testSlug = document.querySelector('meta[name="test-slug"]')?.getAttribute('content');
+    const attemptCode = document.querySelector('meta[name="attempt-code"]')?.getAttribute('content');
+    
+    if (testSlug && attemptCode) {
+        // Option 1: Use AJAX to update the current part on the server
+        updateCurrentPartOnServer(currentPart);
+        
+        // Option 2: Navigate to the part URL directly if AJAX fails
+        // This is a fallback that causes a page reload
+        setTimeout(() => {
+            // If we're still here after a short delay, AJAX might have failed
+            // Navigate to the part URL directly
+            window.location.href = `/reading/${testSlug}/part${partNum}/${attemptCode}`;
+        }, 500); // 500ms delay to give AJAX a chance
+        
+        return;
+    }
+    
+    // Fallback to client-side part switching if navigation fails
+    console.log('Falling back to client-side part switching');
+    clientSidePartSwitch(partNum);
+}
+
+// Update current part on server via AJAX
+function updateCurrentPartOnServer(partNum) {
+    const form = document.querySelector('form');
+    if (!form) return;
+    
+    // Get test slug and attempt code from meta tags
+    const testSlug = document.querySelector('meta[name="test-slug"]')?.getAttribute('content');
+    const attemptCode = document.querySelector('meta[name="attempt-code"]')?.getAttribute('content');
+    
+    if (!testSlug || !attemptCode) {
+        console.error('Missing test slug or attempt code meta tags');
+        return;
+    }
+    
+    // Create form data with current answers and part info
+    const formData = new FormData(form);
+    formData.append('current_part', partNum);
+    
+    // Send AJAX request
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    }).then(response => {
+        console.log('Part updated on server');
+    }).catch(error => {
+        console.error('Error updating part on server:', error);
+    });
+}
+
+// Save current answers via AJAX
+function saveCurrentAnswers() {
+    const form = document.querySelector('form');
+    if (!form) return;
+    
+    // Get all filled inputs
+    const inputs = form.querySelectorAll('input[name^="answers"], select[name^="answers"], textarea[name^="answers"]');
+    if (inputs.length === 0) return;
+    
+    // Get test slug and attempt code from meta tags
+    const testSlug = document.querySelector('meta[name="test-slug"]')?.getAttribute('content');
+    const attemptCode = document.querySelector('meta[name="attempt-code"]')?.getAttribute('content');
+    
+    if (!testSlug || !attemptCode) {
+        console.error('Missing test slug or attempt code meta tags');
+        return;
+    }
+    
+    // Process each answer individually
+    inputs.forEach(input => {
+        // Skip empty inputs or unchecked radio/checkboxes
+        if ((input.type === 'radio' || input.type === 'checkbox') && !input.checked) return;
+        if (input.value.trim() === '') return;
+        
+        // Extract question ID from input name (format: answers[question_id])
+        const questionIdMatch = input.name.match(/answers\[(\d+)\]/);
+        if (!questionIdMatch || !questionIdMatch[1]) return;
+        
+        const questionId = questionIdMatch[1];
+        const answer = input.value;
+        
+        // Create form data for this answer
+        const formData = new FormData();
+        formData.append('question_id', questionId);
+        formData.append('answer', answer);
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('input[name="_token"]');
+        if (csrfToken) {
+            formData.append('_token', csrfToken.value);
+        }
+        
+        // Send AJAX request to save-answer endpoint
+        const saveUrl = `/reading/${testSlug}/attempt/${attemptCode}/save`;
+        fetch(saveUrl, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(response => response.json())
+          .then(data => {
+              console.log(`Answer saved for question ${questionId}:`, data);
+              
+              // Update progress if available
+              if (data.progress) {
+                  updateProgress(data.progress);
+              }
+          })
+          .catch(error => {
+              console.error(`Error saving answer for question ${questionId}:`, error);
+          });
+    });
+}
+
+// Client-side part switching (fallback)
+function clientSidePartSwitch(partNum) {
     // Hide all parts
     document.querySelectorAll('.test-content').forEach(content => {
         content.classList.remove('active');
@@ -103,20 +229,22 @@ function showPart(partNum) {
     }
     
     // Update navigation buttons
-    const prevBtn = document.getElementById('prevPartBtn');
-    const nextBtn = document.getElementById('nextPartBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const finishBtn = document.getElementById('finishBtn');
     
     if (prevBtn) {
-        prevBtn.style.display = partNum > 1 ? 'block' : 'none';
+        prevBtn.classList.toggle('hidden', partNum <= 1);
     }
     
-    if (nextBtn) {
-        nextBtn.textContent = partNum < totalParts ? 'Keyingi →' : 'Yakunlash';
-    }
-    
-    // Update current part display
-    if (document.getElementById('currentPartDisplay')) {
-        document.getElementById('currentPartDisplay').textContent = partNum;
+    if (nextBtn && finishBtn) {
+        if (partNum < totalParts) {
+            nextBtn.classList.remove('hidden');
+            finishBtn.classList.add('hidden');
+        } else {
+            nextBtn.classList.add('hidden');
+            finishBtn.classList.remove('hidden');
+        }
     }
 }
 
@@ -136,51 +264,119 @@ function previousPart() {
     }
 }
 
-// Timer function
+function finishTest() {
+    console.log('Finishing test...');
+    
+    // Stop the timer if it's running
+    if (testTimer) {
+        clearInterval(testTimer);
+    }
+    
+    // Save current answers before submitting
+    saveCurrentAnswers();
+    
+    // Get test slug and attempt code from meta tags
+    const testSlug = document.querySelector('meta[name="test-slug"]')?.getAttribute('content');
+    const attemptCode = document.querySelector('meta[name="attempt-code"]')?.getAttribute('content');
+    
+    if (!testSlug || !attemptCode) {
+        console.error('Missing test slug or attempt code meta tags');
+        return;
+    }
+    
+    // Add complete flag to form
+    const form = document.querySelector('form');
+    if (form) {
+        const completeInput = document.createElement('input');
+        completeInput.type = 'hidden';
+        completeInput.name = 'complete';
+        completeInput.value = '1';
+        form.appendChild(completeInput);
+        
+        console.log('Submitting test for completion...');
+        form.submit();
+    } else {
+        // Fallback if form not found - redirect to completion URL
+        window.location.href = `/reading/${testSlug}/attempt/${attemptCode}/complete`;
+    }
+}
+
+// Timer function with server synchronization
 function startTimer() {
-    console.log('Starting timer...');
+    console.log('Starting timer with server synchronization...');
     const timerElement = document.getElementById('timer');
     if (!timerElement) {
         console.error('Timer element not found!');
         return;
     }
     
-    // Check if there's a saved timer value in localStorage
-    let remainingSeconds;
-    const savedTime = localStorage.getItem('readingTestRemainingTime');
+    // Get attempt code from the form action URL
+    const form = document.querySelector('form');
+    const testSlug = document.querySelector('meta[name="test-slug"]')?.getAttribute('content');
+    const attemptCode = document.querySelector('meta[name="attempt-code"]')?.getAttribute('content');
     
-    if (savedTime) {
-        remainingSeconds = parseInt(savedTime);
-        console.log('Resuming timer with saved time:', remainingSeconds);
-    } else {
-        // Get time from data attribute or default to 60 minutes
-        remainingSeconds = parseInt(timerElement.dataset.timeSeconds) || 3600;
-        console.log('Starting new timer with seconds:', remainingSeconds);
+    if (!testSlug || !attemptCode) {
+        console.error('Missing test slug or attempt code meta tags');
+        return;
     }
     
-    testTimer = setInterval(() => {
-        if (remainingSeconds <= 0) {
-            clearInterval(testTimer);
-            console.log('Time expired!');
-            localStorage.removeItem('readingTestRemainingTime'); // Clear saved time
-            
-            // Submit the form when time expires
-            const form = document.querySelector('form');
-            if (form) {
-                console.log('Auto-submitting form...');
-                form.submit();
-            } else {
-                console.error('Form not found!');
-                // Redirect to results page as fallback
-                window.location.href = '/student/results';
-            }
-            return;
-        }
+    console.log('Test slug:', testSlug, 'Attempt code:', attemptCode);
+    
+    // Initial timer display
+    const initialSeconds = parseInt(timerElement.dataset.timeSeconds) || 3600;
+    updateTimerDisplay(initialSeconds);
+    
+    // Function to get time from server
+    function syncWithServer() {
+        const url = `/reading/${testSlug}/attempt/${attemptCode}/time`;
         
-        const minutes = Math.floor(remainingSeconds / 60);
-        const seconds = remainingSeconds % 60;
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Server time sync:', data);
+                
+                if (data.status === 'completed') {
+                    console.log('Test already completed');
+                    clearInterval(testTimer);
+                    window.location.href = `/reading/${testSlug}/attempt/${attemptCode}/complete`;
+                    return;
+                }
+                
+                // Update timer display
+                updateTimerDisplay(data.time_remaining);
+                
+                // Update progress if available
+                if (data.progress) {
+                    updateServerProgress(data.progress);
+                }
+                
+                // If time expired, submit the form
+                if (data.time_remaining <= 0) {
+                    console.log('Time expired according to server!');
+                    clearInterval(testTimer);
+                    
+                    // Add complete flag to form
+                    const completeInput = document.createElement('input');
+                    completeInput.type = 'hidden';
+                    completeInput.name = 'complete';
+                    completeInput.value = '1';
+                    form.appendChild(completeInput);
+                    
+                    console.log('Auto-submitting form...');
+                    form.submit();
+                }
+            })
+            .catch(error => {
+                console.error('Error syncing with server:', error);
+            });
+    }
+    
+    // Update timer display
+    function updateTimerDisplay(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
         const displayMinutes = minutes.toString().padStart(2, '0');
-        const displaySeconds = seconds.toString().padStart(2, '0');
+        const displaySeconds = remainingSeconds.toString().padStart(2, '0');
         const timeString = `${displayMinutes}:${displaySeconds}`;
         
         timerElement.textContent = timeString;
@@ -193,12 +389,20 @@ function startTimer() {
         } else if (minutes < 20) {
             timerElement.style.color = '#f39c12'; // Orange when less than 20 minutes
         }
-        
-        remainingSeconds--;
-        
-        // Save remaining time to localStorage to persist between page navigations
-        localStorage.setItem('readingTestRemainingTime', remainingSeconds);
-    }, 1000);
+    }
+    
+    // Update progress using the global function
+    function updateServerProgress(progress) {
+        if (progress) {
+            updateProgress(progress);
+        }
+    }
+    
+    // Initial sync
+    syncWithServer();
+    
+    // Set up interval to sync with server every 30 seconds
+    testTimer = setInterval(syncWithServer, 30000);
 }
 
 // Input handling for text inputs
@@ -227,6 +431,83 @@ function initializeInputHandling() {
             updateProgress();
         }
     });
+    
+    document.addEventListener('input', function(e) {
+        if (e.target.matches('input[type="text"], textarea')) {
+            // Auto-save after typing stops (debounce)
+            clearTimeout(e.target.saveTimeout);
+            e.target.saveTimeout = setTimeout(() => {
+                console.log('Auto-saving answer for', e.target.name);
+                saveInputAnswer(e.target);
+            }, 1000); // 1 second debounce
+        }
+    });
+
+    document.addEventListener('change', function(e) {
+        if (e.target.matches('input[type="radio"], input[type="checkbox"], select')) {
+            console.log('Auto-saving answer for', e.target.name);
+            saveInputAnswer(e.target);
+        }
+    });
+}
+
+// Function to save a single input answer
+function saveInputAnswer(input) {
+    // Skip if input is empty or unchecked
+    if ((input.type === 'radio' || input.type === 'checkbox') && !input.checked) return;
+    if (input.value.trim() === '') return;
+    
+    // Extract question ID from input name (format: answers[question_id])
+    const questionIdMatch = input.name.match(/answers\[(\d+)\]/);
+    if (!questionIdMatch || !questionIdMatch[1]) return;
+    
+    const questionId = questionIdMatch[1];
+    const answer = input.value;
+    
+    // Get form for CSRF token and attempt info
+    const form = document.querySelector('form');
+    if (!form) return;
+    
+    // Get test slug and attempt code from meta tags
+    const testSlug = document.querySelector('meta[name="test-slug"]')?.getAttribute('content');
+    const attemptCode = document.querySelector('meta[name="attempt-code"]')?.getAttribute('content');
+    
+    if (!testSlug || !attemptCode) {
+        console.error('Missing test slug or attempt code meta tags');
+        return;
+    }
+    
+    // Create form data for this answer
+    const formData = new FormData();
+    formData.append('question_id', questionId);
+    formData.append('answer', answer);
+    
+    // Add CSRF token
+    const csrfToken = document.querySelector('input[name="_token"]');
+    if (csrfToken) {
+        formData.append('_token', csrfToken.value);
+    }
+    
+    // Send AJAX request to save-answer endpoint
+    const saveUrl = `/reading/${testSlug}/attempt/${attemptCode}/save`;
+    fetch(saveUrl, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    }).then(response => response.json())
+      .then(data => {
+          console.log(`Answer saved for question ${questionId}:`, data);
+          
+          // Update progress if available
+          if (data.progress) {
+              updateProgress(data.progress);
+          }
+      })
+      .catch(error => {
+          console.error(`Error saving answer for question ${questionId}:`, error);
+      });
 }
 
 // Input handling for radio buttons
@@ -251,35 +532,51 @@ function initializeRadioHandling() {
     });
 }
 
-function updateProgress() {
-    const progressText = document.getElementById('progressText');
-    const progressBar = document.getElementById('progressBar');
-    const answeredDisplay = document.getElementById('answeredDisplay');
-    const percentage = (answeredCount / totalQuestions) * 100;
-    
-    if (progressText) {
-        progressText.textContent = `${answeredCount}/${totalQuestions} questions answered`;
-    }
-    
-    if (progressBar) {
-        progressBar.style.width = percentage + '%';
-    }
-    
-    if (answeredDisplay) {
-        answeredDisplay.textContent = answeredCount;
+function updateProgress(serverProgress) {
+    // If server provided progress data, use that
+    if (serverProgress) {
+        const progressText = document.getElementById('progressText');
+        const progressBar = document.getElementById('progressBar');
+        const answeredDisplay = document.getElementById('answeredDisplay');
+        
+        if (progressText) {
+            progressText.textContent = `${serverProgress.answered_questions}/${serverProgress.total_questions} questions answered`;
+        }
+        
+        if (progressBar) {
+            progressBar.style.width = serverProgress.percentage + '%';
+        }
+        
+        if (answeredDisplay) {
+            answeredDisplay.textContent = serverProgress.answered_questions;
+        }
+        
+        // Update our client-side tracking to match server
+        answeredCount = serverProgress.answered_questions;
+        totalQuestions = serverProgress.total_questions;
+    } 
+    // Otherwise use client-side tracking
+    else {
+        const progressText = document.getElementById('progressText');
+        const progressBar = document.getElementById('progressBar');
+        const answeredDisplay = document.getElementById('answeredDisplay');
+        const percentage = (answeredCount / totalQuestions) * 100;
+        
+        if (progressText) {
+            progressText.textContent = `${answeredCount}/${totalQuestions} questions answered`;
+        }
+        
+        if (progressBar) {
+            progressBar.style.width = percentage + '%';
+        }
+        
+        if (answeredDisplay) {
+            answeredDisplay.textContent = answeredCount;
+        }
     }
 }
 
-function finishTest() {
-    if (testTimer) {
-        clearInterval(testTimer);
-    }
-    
-    alert(`Test yakunlandi! Siz ${answeredCount}/${totalQuestions} savolga javob berdingiz.`);
-    
-    // Redirect to results or dashboard
-    window.location.href = "/student/dashboard";
-}
+// Duplicate finishTest function removed - using the consolidated version above
 
 // Drag and Drop functionality
 function initializeDragAndDrop() {
@@ -622,13 +919,45 @@ function clearAllHighlights() {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded, initializing reading test functionality...');
+    
+    // Initialize all input handling
     initializeInputHandling();
     initializeRadioHandling();
+    
+    // Initialize drag and drop if needed
+    if (document.querySelector('.draggable') || document.querySelector('.drop-zone')) {
+        console.log('Initializing drag and drop functionality');
+        initializeDragAndDrop();
+    }
+    
+    // Initialize keyboard shortcuts and highlighting
     initializeKeyboardShortcuts();
     initializeHighlighting();
     
-    // Auto-start timer for standalone test pages
+    // Set up initial part display
+    const initialPart = document.querySelector('meta[name="current-part"]')?.getAttribute('content') || 1;
+    currentPart = parseInt(initialPart);
+    showPart(currentPart);
+    
+    // Count total questions for progress tracking
+    const allQuestions = document.querySelectorAll('.question-item');
+    if (allQuestions.length > 0) {
+        totalQuestions = allQuestions.length;
+        console.log(`Total questions detected: ${totalQuestions}`);
+    }
+    
+    // Count already answered questions
+    const filledInputs = document.querySelectorAll('input[name^="answers"]:checked, input[name^="answers"][type="text"]:not([value=""]), textarea[name^="answers"]:not(:empty), select[name^="answers"] option:checked:not([value=""])');
+    answeredCount = filledInputs.length;
+    console.log(`Already answered questions: ${answeredCount}`);
+    
+    // Update progress display
+    updateProgress();
+    
+    // Auto-start timer for test pages
     if (document.getElementById('timer')) {
+        console.log('Starting timer automatically');
         startTimer();
         testStarted = true;
     }

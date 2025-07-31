@@ -115,7 +115,7 @@
                                 </a>
                                 
                                 @if($category->activeTests->count() > 0)
-                                    <a href="{{ route('tests.show', $category->activeTests->first()) }}" 
+                                    <a href="{{ route('student.tests.show', $category->activeTests->first()) }}" 
                                        class="border-2 border-blue-400 text-blue-600 hover:bg-blue-400 hover:text-white py-2 px-6 rounded-lg font-medium text-center transition-all duration-200">
                                         <i class="fas fa-database mr-2"></i>
                                         Database Test

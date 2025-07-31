@@ -5,15 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Category extends Model
+class TestCategory extends Model
 {
     use HasFactory;
+    
+    protected $table = 'test_categories';
 
     protected $fillable = [
         'name',
         'slug',
         'description',
-        'is_active'
+        'icon',
+        'duration_minutes',
+        'is_active',
+        'sort_order'
     ];
 
     protected $casts = [
@@ -24,6 +29,11 @@ class Category extends Model
     public function tests()
     {
         return $this->hasMany(Test::class);
+    }
+    
+    public function activeTests()
+    {
+        return $this->hasMany(Test::class)->where('is_active', true);
     }
 
     // Scopes

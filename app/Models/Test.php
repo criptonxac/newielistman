@@ -10,14 +10,16 @@ class Test extends Model
     use HasFactory;
 
     protected $fillable = [
-        'category_id',
+        'test_category_id',
         'title',
+        'slug',
         'description',
         'type',
         'duration_minutes',
         'pass_score',
         'is_active',
-        'attempts_allowed'
+        'attempts_allowed',
+        'created_by'
     ];
 
     protected $casts = [
@@ -30,7 +32,7 @@ class Test extends Model
     // Relationships
     public function category()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(TestCategory::class, 'test_category_id');
     }
 
     public function questions()

@@ -20,7 +20,7 @@
                             <div class="text-xs text-blue-600 font-medium bg-blue-50 px-2 py-1 rounded-full">+12%</div>
                         </div>
                     </div>
-                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_tests'] }}</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_tests'] ?? 0 }}</div>
                     <div class="text-xs text-gray-400">Jami testlar soni</div>
                 </div>
 
@@ -36,7 +36,7 @@
                             <div class="text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded-full">+8%</div>
                         </div>
                     </div>
-                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_students'] }}</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_students'] ?? 0 }}</div>
                     <div class="text-xs text-gray-400">Ro'yxatdan o'tgan talabalar</div>
                 </div>
 
@@ -52,7 +52,7 @@
                             <div class="text-xs text-purple-600 font-medium bg-purple-50 px-2 py-1 rounded-full">+15%</div>
                         </div>
                     </div>
-                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_attempts'] }}</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $stats['total_attempts'] ?? 0 }}</div>
                     <div class="text-xs text-gray-400">Jami test urinishlari</div>
                 </div>
 
@@ -68,7 +68,7 @@
                             <div class="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-1 rounded-full">+5%</div>
                         </div>
                     </div>
-                    <div class="text-2xl font-bold text-gray-800">{{ number_format($stats['average_score'], 1) }}</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ isset($stats['average_score']) ? number_format($stats['average_score'], 1) : '0.0' }}</div>
                     <div class="text-xs text-gray-400">O'rtacha ball</div>
                 </div>
             </div>
@@ -83,7 +83,7 @@
                         <i class="fas fa-clock mr-2 text-blue-500"></i>So'nggi Test Urinishlari
                     </h3>
                     <div class="space-y-3">
-                        @forelse($recent_attempts as $attempt)
+                        @forelse($recent_attempts ?? [] as $attempt)
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                             <div>
                                 <div class="font-medium text-gray-900">{{ $attempt->user ? $attempt->user->name : 'Noma\'lum foydalanuvchi' }}</div>
@@ -136,7 +136,7 @@
                             </div>
                         </a>
 
-                        <a href="{{ route('teacher.results') }}" class="block w-full bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg p-4 transition-colors">
+                        <a href="{{ route('teacher.results.index') }}" class="block w-full bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg p-4 transition-colors">
                             <div class="flex items-center">
                                 <i class="fas fa-chart-bar text-purple-600 text-xl mr-3"></i>
                                 <div>

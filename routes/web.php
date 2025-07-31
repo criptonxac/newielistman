@@ -81,7 +81,8 @@ Route::get('/admin-direct', [AdminController::class, 'adminDirect'])->name('admi
 // ADMIN ROUTES
 // ==========================================
 Route::prefix('admin')->name('admin.')
-    ->middleware(['auth', 'verified', 'role:admin'])
+    ->middleware(['auth', 'verified'])
+    
     ->group(function () {
         
         // Dashboard
@@ -89,7 +90,8 @@ Route::prefix('admin')->name('admin.')
         
         // User management
         Route::controller(AdminController::class)->group(function () {
-            Route::get('/users', 'index')->name('users.index');
+            Route::get('/users', 'index')->name('users');
+            Route::get('/users/list', 'index')->name('users.index');
             Route::post('/users', 'store')->name('users.store');
             Route::put('/users/{user}', 'update')->name('users.update');
             Route::delete('/users/{user}', 'destroy')->name('users.destroy');
@@ -108,7 +110,7 @@ Route::prefix('admin')->name('admin.')
 // TEACHER ROUTES
 // ==========================================
 Route::prefix('teacher')->name('teacher.')
-    ->middleware(['auth', 'verified', 'role:admin,teacher'])
+    ->middleware(['auth', 'verified'])
     ->group(function () {
         
         // Dashboard
@@ -136,7 +138,8 @@ Route::prefix('teacher')->name('teacher.')
 // STUDENT ROUTES
 // ==========================================
 Route::prefix('student')->name('student.')
-    ->middleware(['auth', 'verified', 'role:student'])
+    ->middleware(['auth', 'verified'])
+    
     ->group(function () {
         
         // Dashboard
@@ -166,7 +169,7 @@ Route::prefix('student')->name('student.')
 // TEST MANAGEMENT (Admin & Teacher)
 // ==========================================
 Route::prefix('test-management')->name('test-management.')
-    ->middleware(['auth', 'verified', 'role:admin,teacher'])
+    ->middleware(['auth', 'verified'])
     ->group(function () {
         
         // Main test CRUD
@@ -188,6 +191,7 @@ Route::prefix('test-management')->name('test-management.')
             Route::get('/{test}/questions/create', 'createQuestions')->name('questions.create');
             Route::post('/{test}/questions', 'storeQuestions')->name('questions.store');
             Route::get('/{test}/questions/add', 'addQuestion')->name('questions.add');
+            Route::get('/{test}/questions/{question}/edit', 'editQuestion')->name('questions.edit');
             Route::put('/{test}/questions/{question}', 'updateQuestion')->name('questions.update');
             Route::delete('/{test}/questions/{question}', 'deleteQuestion')->name('questions.delete');
             
@@ -234,16 +238,16 @@ Route::prefix('reading')->name('reading.')
     ->controller(ReadingTestController::class)
     ->group(function () {
         Route::get('/{test:slug}/start', 'start')->name('start');
-        Route::get('/{test:slug}/instructions/{attempt}', 'instructions')->name('instructions');
-        Route::get('/{test:slug}/part1/{attempt}', 'part1')->name('part1');
-        Route::get('/{test:slug}/part2/{attempt}', 'part2')->name('part2');
-        Route::get('/{test:slug}/part3/{attempt}', 'part3')->name('part3');
-        Route::get('/{test:slug}/unified/{attempt}', 'unifiedTest')->name('unified');
-        Route::get('/{test:slug}/attempt/{attempt}/complete', 'complete')->name('complete');
+        Route::get('/{test:slug}/part1/{attemptCode}', 'part1')->name('part1');
+        Route::get('/{test:slug}/part2/{attemptCode}', 'part2')->name('part2');
+        Route::get('/{test:slug}/part3/{attemptCode}', 'part3')->name('part3');
+        Route::get('/{test:slug}/unified/{attemptCode}', 'unifiedTest')->name('unified');
+        Route::get('/{test:slug}/attempt/{attemptCode}/complete', 'complete')->name('complete');
         
         // AJAX endpoints
-        Route::match(['get', 'post'], '/{test:slug}/attempt/{attempt}/answers', 'submitAnswers')->name('submit-answers');
-        Route::post('/{test:slug}/attempt/{attempt}/save', 'saveAnswer')->name('save-answer');
+        Route::match(['get', 'post'], '/{test:slug}/attempt/{attemptCode}/answers', 'submitAnswers')->name('submit-answers');
+        Route::post('/{test:slug}/attempt/{attemptCode}/save', 'saveAnswer')->name('save-answer');
+        Route::get('/{test:slug}/attempt/{attemptCode}/time', 'getTimeRemaining')->name('time-remaining');
     });
 
 // Writing Tests
@@ -303,7 +307,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Audio upload (Admin & Teacher only)
 Route::post('/upload-audio', [AudioController::class, 'upload'])
-    ->middleware(['auth', 'verified', 'role:admin,teacher'])
+    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified'])
     ->name('upload.audio');
 
 // Audio streaming (authenticated users)
@@ -317,10 +322,20 @@ Route::get('/download/{type}/{id}', [HomeController::class, 'download'])
     ->middleware(['auth', 'verified'])
     ->name('download.file');
 
+// Audio routes
+Route::post('/audio/upload', [AudioController::class, 'upload'])->name('audio.upload');
+
+// Test audio upload route
+Route::get('/test-audio', function() {
+    return view('test-audio');
+});
+
+Route::get('/audio/test', [AudioController::class, 'test']);
+
 // ==========================================
-// API ROUTES (v1)
+// API ROUTES
 // ==========================================
-Route::prefix('api/v1')->name('api.v1.')
+Route::prefix('api')->name('api.')
     ->middleware(['auth', 'verified'])
     ->group(function () {
         
@@ -330,13 +345,14 @@ Route::prefix('api/v1')->name('api.v1.')
         
         // Test taking API
         Route::prefix('tests')->name('tests.')->group(function () {
+            Route::get('/{test:slug}', [TestController::class, 'show'])->name('show');
             Route::get('/{test:slug}/questions', [TestController::class, 'getQuestions'])->name('questions');
             Route::post('/{test:slug}/attempt/{attempt}/progress', [TestController::class, 'saveProgress'])->name('save-progress');
             Route::get('/{test:slug}/attempt/{attempt}/status', [TestController::class, 'getStatus'])->name('status');
         });
         
         // Admin & Teacher only API endpoints
-        Route::middleware(['role:admin,teacher'])->group(function () {
+        Route::middleware(['auth', 'verified'])->group(function () {
             // Test management API
             Route::prefix('test-management')->name('test-management.')->group(function () {
                 Route::get('/tests/{test}/questions', [TestManagementController::class, 'getQuestions'])->name('questions');

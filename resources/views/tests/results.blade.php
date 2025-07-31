@@ -24,7 +24,7 @@
         </div>
 
         <div class="flex justify-center space-x-4">
-            <a href="{{ route('tests.show', $test) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">
+            <a href="{{ route('student.tests.show', $test) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">
                 <i class="fas fa-redo mr-2"></i>
                 Qayta Urinish
             </a>

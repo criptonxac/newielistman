@@ -52,6 +52,7 @@ function showPart(partNum) {
     const partContent = document.getElementById(`part${partNum}-content`);
     if (partContent) {
         partContent.classList.add('active');
+        console.log(`Part ${partNum} content is now active`);
     } else {
         console.error(`Part content #part${partNum}-content not found`);
         return;
@@ -86,6 +87,13 @@ function showPart(partNum) {
     const loadingIndicator = document.getElementById('audioLoadingIndicator');
     const loadingProgress = document.getElementById('audioLoadingProgress');
     
+    // Check if all audio elements exist
+    if (!audioPlayer) console.error('audioPlayer element not found');
+    if (!audioSource) console.error('audioSource element not found');
+    if (!playBtn) console.error('playBtn element not found');
+    if (!loadingIndicator) console.error('loadingIndicator element not found');
+    if (!loadingProgress) console.error('loadingProgress element not found');
+    
     if (audioSource && window.audioFiles && window.audioFiles[`part${partNum}`]) {
         console.log(`Setting audio source to: ${window.audioFiles[`part${partNum}`]}`);
         
@@ -94,6 +102,7 @@ function showPart(partNum) {
             loadingIndicator.style.display = 'flex';
             loadingProgress.style.width = '0%';
             loadingProgress.textContent = '0%';
+            console.log('Audio loading indicator shown');
         }
         
         audioSource.src = window.audioFiles[`part${partNum}`];
@@ -101,12 +110,46 @@ function showPart(partNum) {
         
         // Automatically play audio when loaded
         audioPlayer.oncanplaythrough = function() {
+            console.log('Audio can play through now');
             if (loadingIndicator) {
                 loadingIndicator.style.display = 'none';
+                console.log('Loading indicator hidden');
             }
-            audioPlayer.play();
-            if (playBtn) {
-                playBtn.textContent = '⏸';
+            
+            // Try to play audio automatically
+            try {
+                console.log('Attempting to play audio automatically...');
+                const playPromise = audioPlayer.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('Audio playback started successfully');
+                        if (playBtn) {
+                            playBtn.textContent = '⏸';
+                            playBtn.setAttribute('aria-label', 'Pause');
+                            playBtn.classList.add('playing');
+                        }
+                    }).catch(error => {
+                        console.error('Auto-play was prevented:', error);
+                        // Show play button since autoplay failed
+                        if (playBtn) {
+                            playBtn.textContent = '▶';
+                            playBtn.setAttribute('aria-label', 'Play');
+                            playBtn.classList.remove('playing');
+                        }
+                        // Show message to user
+                        alert('Audio avtomatik ijro etilmadi. Iltimos, "Play" tugmasini bosing.');
+                        console.log('User alerted about autoplay failure');
+                    });
+                } else {
+                    console.error('Play promise is undefined');
+                }
+            } catch (error) {
+                console.error('Error during autoplay attempt:', error);
+                if (playBtn) {
+                    playBtn.textContent = '▶';
+                    playBtn.setAttribute('aria-label', 'Play');
+                }
             }
         };
         

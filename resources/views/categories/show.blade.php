@@ -151,7 +151,7 @@
 
                             <!-- Action Buttons -->
                             <div class="flex flex-col sm:flex-row gap-3">
-                                <a href="{{ route('tests.show', $test) }}" 
+                                <a href="{{ route('student.tests.show', $test) }}" 
                                    class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 px-6 rounded-lg font-medium text-center transition-all duration-200 transform hover:scale-105">
                                     <i class="fas fa-eye mr-2"></i>
                                     Batafsil ko'rish

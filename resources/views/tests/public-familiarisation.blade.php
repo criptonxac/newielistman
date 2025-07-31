@@ -35,7 +35,7 @@
                     </div>
                     
                     <div class="mt-4">
-                        <a href="{{ route('tests.show', $test) }}" class="inline-block w-full py-2 px-4 bg-blue-600 text-white font-medium text-center rounded hover:bg-blue-700 transition">
+                        <a href="{{ route('student.tests.show', $test) }}" class="inline-block w-full py-2 px-4 bg-blue-600 text-white font-medium text-center rounded hover:bg-blue-700 transition">
                             Testni ko'rish
                         </a>
                     </div>

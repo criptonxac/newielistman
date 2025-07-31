@@ -56,7 +56,7 @@
                             @endif
                         </td>
                         <td class="py-3 px-4 text-sm">
-                            <a href="{{ route('tests.show', $test) }}" class="text-blue-600 hover:text-blue-900">Ko'rish</a>
+                            <a href="{{ route('student.tests.show', $test) }}" class="text-blue-600 hover:text-blue-900">Ko'rish</a>
                         </td>
                     </tr>
                 @empty
