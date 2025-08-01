@@ -24,12 +24,12 @@ class ListeningTestController extends Controller
     public function start(Test $test, Request $request)
     {
         // Check if user can take this test
-        if (!$test->canUserTakeTest(Auth::user())) {
+        if (!$test->canUserAttempt(Auth::user()->id)) {
             return redirect()->back()->with('error', 'Bu testni topshira olmaysiz.');
         }
 
         // Check if test is listening type
-        if (!$test->isListeningTest()) {
+        if ($test->type !== 'listening') {
             return redirect()->back()->with('error', 'Bu listening test emas.');
         }
 

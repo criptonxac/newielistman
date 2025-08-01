@@ -44,7 +44,7 @@ class AdminController extends Controller
                 ];
             });
 
-             
+
 
         // Talaba faolligi statistikalari
         $studentActivity = [
@@ -198,7 +198,7 @@ class AdminController extends Controller
 
         return view('admin.tests', compact('categories', 'tests'));
     }
-    
+
     /**
      * Foydalanuvchi rollariga qarab dashboard ko'rsatish
      */
@@ -221,27 +221,5 @@ class AdminController extends Controller
                 return redirect()->route('home');
         }
     }
-    
-    /**
-     * Admin uchun to'g'ridan-to'g'ri kirish (faqat development uchun)
-     */
-    public function adminDirect()
-    {
-        // Create temporary admin session
-        $adminUser = User::where('role', 'admin')->first();
-        
-        if (!$adminUser) {
-            // Create admin user if not exists
-            $adminUser = User::create([
-                'name' => 'Admin User',
-                'email' => 'admin@ielts.com',
-                'password' => Hash::make('admin123'),
-                'role' => 'admin',
-            ]);
-        }
 
-        auth()->login($adminUser);
-        
-        return redirect()->route('admin.dashboard');
-    }
 }

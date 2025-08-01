@@ -106,12 +106,12 @@ class ReadingTestController extends Controller
     public function start(Test $test, Request $request)
     {
         // Check if user can take this test
-        if (!$test->canUserTakeTest(Auth::user())) {
+        if (!$test->canUserAttempt(Auth::user()->id)) {
             return redirect()->back()->with('error', 'Bu testni topshira olmaysiz.');
         }
 
         // Check if test is reading type
-        if (!$test->isReadingTest()) {
+        if ($test->type !== 'reading') {
             return redirect()->back()->with('error', 'Bu reading test emas.');
         }
 

@@ -56,9 +56,8 @@
                 <label for="type" class="block text-gray-700 text-sm font-bold mb-2">Test turi:</label>
                 <select name="type" id="type" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                     <option value="">Test turini tanlang</option>
-                    <option value="familiarisation" {{ old('type', $test->type->value) == 'familiarisation' ? 'selected' : '' }}>Tanishuv</option>
-                    <option value="sample" {{ old('type', $test->type->value) == 'sample' ? 'selected' : '' }}>Namuna</option>
-                    <option value="practice" {{ old('type', $test->type->value) == 'practice' ? 'selected' : '' }}>Amaliyot</option>
+                    <option value="familiarisation" {{ old('type', $test->type) == 'familiarisation' ? 'selected' : '' }}>Tanishuv</option>
+                    <option value="practice" {{ old('type', $test->type) == 'practice' ? 'selected' : '' }}>Amaliyot</option>
                 </select>
             </div>
             

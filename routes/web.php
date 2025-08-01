@@ -74,20 +74,22 @@ Route::get('/dashboard', [AdminController::class, 'dashboardRedirect'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-// Direct admin access (development only - remove in production)
-Route::get('/admin-direct', [AdminController::class, 'adminDirect'])->name('admin.direct');
 
 // ==========================================
 // ADMIN ROUTES
 // ==========================================
+// Direct access to admin panel
+Route::get('/admin', function() {
+    return redirect()->route('admin.dashboard');
+})->middleware(['auth', 'verified', 'admin'])->name('admin.direct');
+
 Route::prefix('admin')->name('admin.')
-    ->middleware(['auth', 'verified'])
-    
+    ->middleware(['auth', 'verified', 'admin'])
     ->group(function () {
-        
+
         // Dashboard
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
-        
+
         // User management
         Route::controller(AdminController::class)->group(function () {
             Route::get('/users', 'index')->name('users');
@@ -97,10 +99,10 @@ Route::prefix('admin')->name('admin.')
             Route::delete('/users/{user}', 'destroy')->name('users.destroy');
             Route::get('/users/{user}/export', 'exportUser')->name('users.export');
         });
-        
+
         // Test overview
         Route::get('/tests', [AdminController::class, 'tests'])->name('tests');
-        
+
         // System settings
         Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
         Route::post('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
@@ -112,14 +114,14 @@ Route::prefix('admin')->name('admin.')
 Route::prefix('teacher')->name('teacher.')
     ->middleware(['auth', 'verified'])
     ->group(function () {
-        
+
         // Dashboard
         Route::get('/dashboard', [TeacherController::class, 'dashboard'])->name('dashboard');
-        
+
         // Students management
         Route::get('/students', [TeacherController::class, 'students'])->name('students');
         Route::get('/students/{user}/export', [TeacherController::class, 'exportUser'])->name('students.export');
-        
+
         // Test results management
         Route::controller(TestResultController::class)->group(function () {
             Route::get('/results', 'index')->name('results.index');
@@ -128,7 +130,7 @@ Route::prefix('teacher')->name('teacher.')
             Route::get('/results/export', 'export')->name('results.export');
             Route::post('/results/{attempt}/grade', 'grade')->name('results.grade');
         });
-        
+
         // Class management
         Route::get('/classes', [TeacherController::class, 'classes'])->name('classes');
         Route::post('/classes', [TeacherController::class, 'createClass'])->name('classes.store');
@@ -139,16 +141,16 @@ Route::prefix('teacher')->name('teacher.')
 // ==========================================
 Route::prefix('student')->name('student.')
     ->middleware(['auth', 'verified'])
-    
+
     ->group(function () {
-        
+
         // Dashboard
         Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('dashboard');
-        
+
         // Student results
         Route::get('/results', [StudentController::class, 'results'])->name('results');
         Route::get('/progress', [StudentController::class, 'progress'])->name('progress');
-        
+
         // Available tests
         Route::controller(TestController::class)->group(function () {
             Route::get('/tests', 'index')->name('tests.index');
@@ -158,7 +160,7 @@ Route::prefix('student')->name('student.')
             Route::get('/tests/{test:slug}/attempt/{attempt}/result', 'result')->name('tests.result');
             Route::get('/test-history', 'history')->name('tests.history');
         });
-        
+
         // AJAX routes for test taking
         Route::post('/tests/{test:slug}/attempt/{attempt}/save-answer', [TestController::class, 'saveAnswer'])->name('tests.save-answer');
         Route::post('/tests/{test:slug}/attempt/{attempt}/submit', [TestController::class, 'submit'])->name('tests.submit');
@@ -171,7 +173,7 @@ Route::prefix('student')->name('student.')
 Route::prefix('test-management')->name('test-management.')
     ->middleware(['auth', 'verified'])
     ->group(function () {
-        
+
         // Main test CRUD
         Route::controller(TestManagementController::class)->group(function () {
             Route::get('/', 'index')->name('index');
@@ -180,13 +182,13 @@ Route::prefix('test-management')->name('test-management.')
             Route::get('/{test}/edit', 'edit')->name('edit');
             Route::put('/{test}', 'update')->name('update');
             Route::delete('/{test}', 'destroy')->name('destroy');
-            
+
             // Test operations
             Route::get('/{test}/preview', 'preview')->name('preview');
             Route::post('/{test}/duplicate', 'duplicate')->name('duplicate');
             Route::post('/{test}/publish', 'publish')->name('publish');
             Route::post('/{test}/unpublish', 'unpublish')->name('unpublish');
-            
+
             // Question management
             Route::get('/{test}/questions/create', 'createQuestions')->name('questions.create');
             Route::post('/{test}/questions', 'storeQuestions')->name('questions.store');
@@ -194,15 +196,15 @@ Route::prefix('test-management')->name('test-management.')
             Route::get('/{test}/questions/{question}/edit', 'editQuestion')->name('questions.edit');
             Route::put('/{test}/questions/{question}', 'updateQuestion')->name('questions.update');
             Route::delete('/{test}/questions/{question}', 'deleteQuestion')->name('questions.delete');
-            
+
             // Bulk operations
             Route::post('/{test}/questions/import', 'importQuestions')->name('questions.import');
             Route::get('/{test}/questions/export', 'exportQuestions')->name('questions.export');
-            
+
             // Test results
             Route::get('/{test}/results', 'results')->name('results');
             Route::get('/{test}/analytics', 'analytics')->name('analytics');
-            
+
             // Settings
             Route::get('/enums', 'showEnums')->name('enums');
         });
@@ -225,7 +227,7 @@ Route::prefix('listening')->name('listening.')
         Route::get('/{test:slug}/part4/{attempt}', 'part4')->name('part4');
         Route::get('/{test:slug}/unified/{attempt}', 'unifiedTest')->name('unified');
         Route::get('/{test:slug}/attempt/{attempt}/complete', 'complete')->name('complete');
-        
+
         // AJAX endpoints
         Route::post('/{test:slug}/attempt/{attempt}/submit', 'submitAnswers')->name('submit-answers');
         Route::post('/{test:slug}/attempt/{attempt}/save', 'saveAnswer')->name('save-answer');
@@ -243,7 +245,7 @@ Route::prefix('reading')->name('reading.')
         Route::get('/{test:slug}/part3/{attemptCode}', 'part3')->name('part3');
         Route::get('/{test:slug}/unified/{attemptCode}', 'unifiedTest')->name('unified');
         Route::get('/{test:slug}/attempt/{attemptCode}/complete', 'complete')->name('complete');
-        
+
         // AJAX endpoints
         Route::match(['get', 'post'], '/{test:slug}/attempt/{attemptCode}/answers', 'submitAnswers')->name('submit-answers');
         Route::post('/{test:slug}/attempt/{attemptCode}/save', 'saveAnswer')->name('save-answer');
@@ -260,7 +262,7 @@ Route::prefix('writing')->name('writing.')
         Route::get('/{test:slug}/task1/{attempt}', 'task1')->name('task1');
         Route::get('/{test:slug}/task2/{attempt}', 'task2')->name('task2');
         Route::get('/{test:slug}/attempt/{attempt}/complete', 'complete')->name('complete');
-        
+
         // AJAX endpoints
         Route::post('/{test:slug}/attempt/{attempt}/answers', 'submitAnswers')->name('submit-answers');
         Route::post('/{test:slug}/attempt/{attempt}/save', 'saveAnswer')->name('save-answer');
@@ -276,8 +278,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/listening-test', function () {
         $category = Category::where('name', 'Listening')->first();
         $test = $category?->activeTests()->first();
-        
-        return $test 
+
+        return $test
             ? redirect()->route('listening.start', ['test' => $test->slug])
             : redirect()->route('student.tests.index')->with('error', 'No listening tests available');
     })->name('tests.listening');
@@ -285,8 +287,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reading-test', function () {
         $category = Category::where('name', 'Academic Reading')->first();
         $test = $category?->activeTests()->first();
-        
-        return $test 
+
+        return $test
             ? redirect()->route('reading.start', ['test' => $test->slug])
             : redirect()->route('student.tests.index')->with('error', 'No reading tests available');
     })->name('tests.reading');
@@ -294,8 +296,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/writing-test', function () {
         $category = Category::where('name', 'Academic Writing')->first();
         $test = $category?->activeTests()->first();
-        
-        return $test 
+
+        return $test
             ? redirect()->route('writing.start', ['test' => $test->slug])
             : redirect()->route('student.tests.index')->with('error', 'No writing tests available');
     })->name('tests.writing');
@@ -305,32 +307,45 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // AUDIO & FILE HANDLING
 // ==========================================
 
-// Audio upload (Admin & Teacher only)
-Route::post('/upload-audio', [AudioController::class, 'upload'])
-    ->middleware(['auth', 'verified'])
-    ->middleware(['auth', 'verified'])
-    ->name('upload.audio');
+// Audio upload routes - Admin & Teacher only
+Route::middleware(['auth', 'verified'])->group(function () {
 
-// Audio streaming (authenticated users)
-Route::get('/audio/{path}', [AudioController::class, 'stream'])
-    ->middleware(['auth', 'verified'])
-    ->where('path', '.*')
-    ->name('audio.stream');
+    // Main audio upload (supports both normal and chunked)
+    Route::post('/audio/upload', [AudioController::class, 'upload'])
+        ->name('audio.upload');
 
-// File downloads
+    // Chunked upload specific endpoints
+    Route::post('/audio/upload/chunk', [AudioController::class, 'uploadChunk'])
+        ->name('audio.upload.chunk');
+
+    Route::post('/audio/upload/finalize', [AudioController::class, 'finalizeUpload'])
+        ->name('audio.upload.finalize');
+
+    // Audio file management
+    Route::get('/audio/list', [AudioController::class, 'list'])
+        ->name('audio.list');
+
+    Route::delete('/audio/delete', [AudioController::class, 'delete'])
+        ->name('audio.delete');
+
+    // Audio streaming - for authenticated users
+    Route::get('/audio/stream/{filename}', [AudioController::class, 'stream'])
+        ->where('filename', '[a-zA-Z0-9._-]+')
+        ->name('audio.stream');
+
+    // Alternative streaming route (if you need path support)
+    Route::get('/audio/{path}', [AudioController::class, 'stream'])
+        ->where('path', '.*')
+        ->name('audio.stream.path');
+});
+
+
+
+// File downloads (keeping your existing route)
 Route::get('/download/{type}/{id}', [HomeController::class, 'download'])
     ->middleware(['auth', 'verified'])
     ->name('download.file');
 
-// Audio routes
-Route::post('/audio/upload', [AudioController::class, 'upload'])->name('audio.upload');
-
-// Test audio upload route
-Route::get('/test-audio', function() {
-    return view('test-audio');
-});
-
-Route::get('/audio/test', [AudioController::class, 'test']);
 
 // ==========================================
 // API ROUTES
@@ -338,11 +353,11 @@ Route::get('/audio/test', [AudioController::class, 'test']);
 Route::prefix('api')->name('api.')
     ->middleware(['auth', 'verified'])
     ->group(function () {
-        
+
         // Public API endpoints (all authenticated users)
         Route::get('/test-categories', [TestCategoryController::class, 'getCategories'])->name('test-categories');
         Route::get('/user/profile', [StudentController::class, 'getProfile'])->name('user.profile');
-        
+
         // Test taking API
         Route::prefix('tests')->name('tests.')->group(function () {
             Route::get('/{test:slug}', [TestController::class, 'show'])->name('show');
@@ -350,7 +365,7 @@ Route::prefix('api')->name('api.')
             Route::post('/{test:slug}/attempt/{attempt}/progress', [TestController::class, 'saveProgress'])->name('save-progress');
             Route::get('/{test:slug}/attempt/{attempt}/status', [TestController::class, 'getStatus'])->name('status');
         });
-        
+
         // Admin & Teacher only API endpoints
         Route::middleware(['auth', 'verified'])->group(function () {
             // Test management API
@@ -359,13 +374,13 @@ Route::prefix('api')->name('api.')
                 Route::post('/tests/{test}/questions/reorder', [TestManagementController::class, 'reorderQuestions'])->name('questions.reorder');
                 Route::get('/tests/{test}/statistics', [TestManagementController::class, 'getStatistics'])->name('statistics');
             });
-            
+
             // Audio API
             Route::prefix('audio')->name('audio.')->group(function () {
                 Route::get('/upload-status/{id}', [AudioController::class, 'uploadStatus'])->name('upload-status');
                 Route::post('/process', [AudioController::class, 'processAudio'])->name('process');
             });
-            
+
             // Analytics API
             Route::prefix('analytics')->name('analytics.')->group(function () {
                 Route::get('/dashboard', [AdminController::class, 'getDashboardData'])->name('dashboard');
@@ -383,13 +398,3 @@ Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });
 
-// Development routes (remove in production)
-if (app()->environment('local', 'testing')) {
-    Route::get('/test-routes', function () {
-        return response()->json([
-            'message' => 'Routes loaded successfully',
-            'routes_count' => count(Route::getRoutes()),
-            'timestamp' => now(),
-        ]);
-    })->name('test.routes');
-}

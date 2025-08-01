@@ -270,7 +270,7 @@ function saveCurrentAnswer() {
         if (input.value.trim() !== '') {
             const questionId = input.name.replace('question_', '');
             
-            fetch(`{{ route('tests.submit-answer', ['test' => $test->slug, 'attempt' => $attempt->id]) }}`, {
+            fetch(`{{ route('tests.save-answer', ['test' => $test->slug, 'attempt' => $attempt->id]) }}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -287,13 +287,13 @@ function saveCurrentAnswer() {
 
 // Testni yakunlash
 function finishTest() {
-    fetch(`{{ route('tests.complete', ['test' => $test->slug, 'attempt' => $attempt->id]) }}`, {
+    fetch(`{{ route('tests.submit', ['test' => $test->slug, 'attempt' => $attempt->id]) }}`, {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     }).then(function() {
-        window.location.href = `{{ route('tests.results', ['test' => $test->slug, 'attempt' => $attempt->id]) }}`;
+        window.location.href = `{{ route('tests.result', ['test' => $test->slug, 'attempt' => $attempt->id]) }}`;
     });
 }
 

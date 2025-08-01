@@ -42,7 +42,7 @@ class TestController extends Controller
             ->get()
             ->groupBy('test_id');
 
-        return view('student.tests.index', compact('categories', 'userAttempts'));
+        return view('student.tests', compact('categories', 'userAttempts'));
     }
 
     /**
@@ -64,7 +64,7 @@ class TestController extends Controller
         $canAttempt = Auth::user()->canAttemptTest($test->id);
         $inProgressAttempt = Auth::user()->getCurrentAttempt($test->id);
 
-        return view('student.tests.show', compact('test', 'userAttempts', 'canAttempt', 'inProgressAttempt'));
+        return view('student.tests', compact('test', 'userAttempts', 'canAttempt', 'inProgressAttempt'));
     }
 
     /**
@@ -79,7 +79,7 @@ class TestController extends Controller
         // Ruxsat tekshirish
         if (!Auth::user()->canAttemptTest($test->id)) {
             return redirect()
-                ->route('student.tests.show', $test)
+                ->route('student.tests.index')
                 ->with('error', 'Sizning urinishlar limitingiz tugagan.');
         }
 
@@ -87,7 +87,7 @@ class TestController extends Controller
         $inProgressAttempt = Auth::user()->getCurrentAttempt($test->id);
         if ($inProgressAttempt) {
             return redirect()->route('student.tests.take', [
-                'test' => $test->id,
+                'test' => $test->slug,
                 'attempt' => $inProgressAttempt->id
             ]);
         }
@@ -101,7 +101,7 @@ class TestController extends Controller
         ]);
 
         return redirect()->route('student.tests.take', [
-            'test' => $test->id,
+            'test' => $test->slug,
             'attempt' => $attempt->id
         ]);
     }
@@ -118,15 +118,24 @@ class TestController extends Controller
 
         if ($attempt->status !== 'in_progress') {
             return redirect()
-                ->route('student.tests.result', ['test' => $test->id, 'attempt' => $attempt->id])
+                ->route('student.tests.index')
                 ->with('info', 'Bu test allaqachon yakunlangan.');
         }
 
         // Vaqt tugaganmi tekshirish
         if ($attempt->getRemainingTime() <= 0) {
-            $this->submitTest($test, $attempt, request());
+            // Testni avtomatik yakunlash
+            DB::beginTransaction();
+            try {
+                // Attemptni yakunlash
+                $attempt->complete();
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollback();
+            }
+            
             return redirect()
-                ->route('student.tests.result', ['test' => $test->id, 'attempt' => $attempt->id])
+                ->route('student.tests.index')
                 ->with('warning', 'Test vaqti tugadi va avtomatik yakunlandi.');
         }
 
@@ -139,7 +148,22 @@ class TestController extends Controller
             ->pluck('user_answer', 'test_question_id')
             ->toArray();
 
-        return view('student.tests.take', compact('test', 'attempt', 'savedAnswers'));
+        // Test tipiga qarab tegishli view'ni qaytarish
+        if ($test->type === 'listening') {
+            return redirect()->route('listening.test.part', [
+                'test' => $test->slug,
+                'part' => 1,
+                'attemptCode' => $attempt->attempt_code
+            ]);
+        } elseif ($test->type === 'reading') {
+            return redirect()->route('reading.test.part', [
+                'test' => $test->slug,
+                'part' => 1,
+                'attemptCode' => $attempt->attempt_code
+            ]);
+        } else {
+            return view('student.tests', compact('test', 'attempt', 'savedAnswers'));
+        }
     }
 
     /**
@@ -210,7 +234,7 @@ class TestController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('student.tests.result', ['test' => $test->id, 'attempt' => $attempt->id])
+                ->route('student.tests.index')
                 ->with('success', 'Test muvaffaqiyatli yakunlandi!');
 
         } catch (\Exception $e) {
@@ -232,14 +256,35 @@ class TestController extends Controller
         }
 
         if ($attempt->status !== 'completed') {
-            return redirect()
-                ->route('student.tests.take', ['test' => $test->id, 'attempt' => $attempt->id])
-                ->with('warning', 'Test hali yakunlanmagan.');
+            // Test tipiga qarab tegishli route'ga yo'naltirish
+            if ($test->type === 'listening') {
+                return redirect()->route('listening.test.part', [
+                    'test' => $test->slug,
+                    'part' => 1,
+                    'attemptCode' => $attempt->attempt_code
+                ])->with('warning', 'Test hali yakunlanmagan.');
+            } elseif ($test->type === 'reading') {
+                return redirect()->route('reading.test.part', [
+                    'test' => $test->slug,
+                    'part' => 1,
+                    'attemptCode' => $attempt->attempt_code
+                ])->with('warning', 'Test hali yakunlanmagan.');
+            } else {
+                return redirect()->route('student.tests.index')
+                    ->with('warning', 'Test hali yakunlanmagan.');
+            }
         }
 
         $attempt->load(['testAnswers.testQuestion']);
 
-        return view('student.tests.result', compact('test', 'attempt'));
+        // Test tipiga qarab tegishli view'ni qaytarish
+        if ($test->type === 'listening') {
+            return view('listening.result', compact('test', 'attempt'));
+        } elseif ($test->type === 'reading') {
+            return view('reading.result', compact('test', 'attempt'));
+        } else {
+            return view('student.tests', compact('test', 'attempt'));
+        }
     }
 
     /**

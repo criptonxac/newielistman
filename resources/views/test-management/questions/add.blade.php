@@ -98,6 +98,21 @@
                         <input type="text" id="correct_answer_{{ $i }}" name="questions[{{ $i }}][correct_answer]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                     </div>
                     
+                    <div id="incorrect-answers-container-{{ $i }}" class="incorrect-answers-container mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            Xato javoblar:
+                        </label>
+                        <div id="incorrect-answers-list-{{ $i }}" class="incorrect-answers-list space-y-2">
+                            <div class="flex items-center">
+                                <input type="text" name="questions[{{ $i }}][incorrect_answers][]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Xato javob">
+                                <button type="button" class="ml-2 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline remove-incorrect-answer">X</button>
+                            </div>
+                        </div>
+                        <button type="button" class="mt-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline add-incorrect-answer" data-index="{{ $i }}">
+                            + Xato javob qo'shish
+                        </button>
+                    </div>
+                    
                     <div id="multiple-answers-container-{{ $i }}" class="multiple-answers-container mb-4 hidden">
                         <label class="block text-gray-700 text-sm font-bold mb-2">
                             To'g'ri javoblar (bir nechta):
@@ -236,6 +251,26 @@
             });
         });
         
+        // Xato javob qo'shish tugmalarini sozlash
+        document.querySelectorAll('.add-incorrect-answer').forEach(button => {
+            button.addEventListener('click', function() {
+                const index = this.getAttribute('data-index');
+                const incorrectAnswersList = document.getElementById(`incorrect-answers-list-${index}`);
+                const newIncorrectAnswer = document.createElement('div');
+                newIncorrectAnswer.className = 'flex items-center';
+                newIncorrectAnswer.innerHTML = `
+                    <input type="text" name="questions[${index}][incorrect_answers][]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Xato javob">
+                    <button type="button" class="ml-2 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline remove-incorrect-answer">X</button>
+                `;
+                incorrectAnswersList.appendChild(newIncorrectAnswer);
+                
+                // Xato javob o'chirish tugmasini ishlatish
+                newIncorrectAnswer.querySelector('.remove-incorrect-answer').addEventListener('click', function() {
+                    incorrectAnswersList.removeChild(newIncorrectAnswer);
+                });
+            });
+        });
+        
         // Mavjud o'chirish tugmalarini ishlatish
         document.querySelectorAll('.remove-option').forEach(button => {
             button.addEventListener('click', function() {
@@ -244,6 +279,12 @@
         });
         
         document.querySelectorAll('.remove-correct-answer').forEach(button => {
+            button.addEventListener('click', function() {
+                this.parentElement.remove();
+            });
+        });
+        
+        document.querySelectorAll('.remove-incorrect-answer').forEach(button => {
             button.addEventListener('click', function() {
                 this.parentElement.remove();
             });

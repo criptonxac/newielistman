@@ -120,6 +120,28 @@
                                     <label class="block text-gray-700 text-sm font-bold mb-1">To'g'ri javob:</label>
                                     <input type="text" name="questions[{{ $question->id }}][correct_answer]" value="{{ $question->correct_answer }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                                 </div>
+                                
+                                <div class="mb-3 incorrect-answers-container">
+                                    <label class="block text-gray-700 text-sm font-bold mb-1">Xato javoblar:</label>
+                                    <div id="incorrect-answers-list-{{ $question->id }}" class="incorrect-answers-list space-y-2">
+                                        @if(isset($question->incorrect_answers) && is_array($question->incorrect_answers))
+                                            @foreach($question->incorrect_answers as $index => $incorrect_answer)
+                                                <div class="flex items-center">
+                                                    <input type="text" name="questions[{{ $question->id }}][incorrect_answers][]" value="{{ $incorrect_answer }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Xato javob">
+                                                    <button type="button" class="ml-2 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline remove-incorrect-answer">X</button>
+                                                </div>
+                                            @endforeach
+                                        @else
+                                            <div class="flex items-center">
+                                                <input type="text" name="questions[{{ $question->id }}][incorrect_answers][]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Xato javob">
+                                                <button type="button" class="ml-2 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline remove-incorrect-answer">X</button>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <button type="button" class="mt-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline add-incorrect-answer" data-index="{{ $question->id }}">
+                                        + Xato javob qo'shish
+                                    </button>
+                                </div>
                             </div>
                         @endforeach
                     @else
@@ -201,6 +223,19 @@
             <div class="mb-3">
                 <label class="block text-gray-700 text-sm font-bold mb-1">To'g'ri javob:</label>
                 <input type="text" name="questions[new_QUESTION_INDEX][correct_answer]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            
+            <div class="mb-3 incorrect-answers-container">
+                <label class="block text-gray-700 text-sm font-bold mb-1">Xato javoblar:</label>
+                <div class="incorrect-answers-list space-y-2">
+                    <div class="flex items-center">
+                        <input type="text" name="questions[new_QUESTION_INDEX][incorrect_answers][]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Xato javob">
+                        <button type="button" class="ml-2 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline remove-incorrect-answer">X</button>
+                    </div>
+                </div>
+                <button type="button" class="mt-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-1 px-3 rounded focus:outline-none focus:shadow-outline add-incorrect-answer" data-index="new_QUESTION_INDEX">
+                    + Xato javob qo'shish
+                </button>
             </div>
         </div>
     </template>
@@ -314,6 +349,37 @@
             question.querySelectorAll('.remove-option').forEach(function(button) {
                 button.addEventListener('click', function() {
                     this.closest('.option-item').remove();
+                });
+            });
+            
+            // Xato javob qo'shish
+            const addIncorrectAnswerButton = question.querySelector('.add-incorrect-answer');
+            if (addIncorrectAnswerButton) {
+                addIncorrectAnswerButton.addEventListener('click', function() {
+                    const incorrectAnswersList = question.querySelector('.incorrect-answers-list');
+                    const questionId = question.dataset.id;
+                    
+                    const incorrectAnswerItem = document.createElement('div');
+                    incorrectAnswerItem.className = 'flex items-center';
+                    incorrectAnswerItem.innerHTML = `
+                        <input type="text" name="questions[${questionId}][incorrect_answers][]" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Xato javob">
+                        <button type="button" class="ml-2 bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline remove-incorrect-answer">X</button>
+                    `;
+                    
+                    incorrectAnswersList.appendChild(incorrectAnswerItem);
+                    
+                    // Xato javobni o'chirish
+                    const removeIncorrectAnswerButton = incorrectAnswerItem.querySelector('.remove-incorrect-answer');
+                    removeIncorrectAnswerButton.addEventListener('click', function() {
+                        incorrectAnswerItem.remove();
+                    });
+                });
+            }
+            
+            // Mavjud xato javoblarni o'chirish
+            question.querySelectorAll('.remove-incorrect-answer').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    this.closest('.flex.items-center').remove();
                 });
             });
         }

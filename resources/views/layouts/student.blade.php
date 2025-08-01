@@ -4,16 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Talaba Panel - IELTS Platform')</title>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
+
+    <!-- Vite Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- Fallback CSS -->
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
     @yield('head')
 </head>
 <body class="bg-gray-100">
@@ -28,16 +31,16 @@
                 <span class="ml-3 text-xl font-bold text-white">Talaba Panel</span>
             </div>
         </div>
-        
+
         <nav class="mt-6">
             <div class="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider mb-3">Dashboard</div>
             <a href="{{ route('student.dashboard') }}" class="flex items-center px-6 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-800 transition-all duration-300 {{ request()->routeIs('student.dashboard') ? 'text-white bg-gradient-to-r from-blue-600 to-blue-800 border-r-4 border-blue-400 shadow-lg' : '' }}">
                 <i class="fas fa-home mr-3 text-blue-400"></i>
                 Bosh sahifa
             </a>
-            
+
             <div class="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider mb-3 mt-6">Testlar</div>
-            <a href="{{ route('student.tests') }}" class="flex items-center px-6 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-800 transition-all duration-300 {{ request()->routeIs('student.tests') ? 'text-white bg-gradient-to-r from-blue-600 to-blue-800 border-r-4 border-blue-400 shadow-lg' : '' }}">
+            <a href="{{ route('student.tests.index') }}" class="flex items-center px-6 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-800 transition-all duration-300 {{ request()->routeIs('student.tests.*') ? 'text-white bg-gradient-to-r from-blue-600 to-blue-800 border-r-4 border-blue-400 shadow-lg' : '' }}">
                 <i class="fas fa-play mr-3 text-blue-400"></i>
                 Test Boshlash
             </a>
@@ -54,11 +57,11 @@
         <div class="bg-white shadow-sm border-b border-gray-200 px-8 py-4">
             <div class="flex justify-between items-center">
                 <h1 class="text-2xl font-semibold text-gray-800">@yield('page_title', 'Talaba Panel')</h1>
-                
+
                 <!-- User Avatar Dropdown -->
                 <div class="relative">
                     <button id="userMenuButton" class="flex items-center space-x-3 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500" onclick="toggleUserMenu()">
-                        <img src="https://ui-avatars.com/api/?name={{ auth()->user()->name ?? 'Student' }}&background=10b981&color=fff" 
+                        <img src="https://ui-avatars.com/api/?name={{ auth()->user()->name ?? 'Student' }}&background=10b981&color=fff"
                              class="w-8 h-8 rounded-full" alt="Avatar">
                         <div class="text-left">
                             <div class="font-medium text-gray-900">{{ auth()->user()->name ?? 'Talaba' }}</div>
@@ -66,7 +69,7 @@
                         </div>
                         <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
                     </button>
-                    
+
                     <!-- Dropdown Menu -->
                     <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
                         <a href="{{ route('student.dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -77,7 +80,7 @@
                             <i class="fas fa-chart-line mr-2"></i>
                             Natijalarim
                         </a>
-                        <a href="{{ route('student.tests') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <a href="{{ route('student.tests.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                             <i class="fas fa-play mr-2"></i>
                             Test Boshlash
                         </a>
@@ -93,7 +96,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Dashboard Content -->
         <div class="p-8">
             @yield('content')
@@ -111,7 +114,7 @@
     document.addEventListener('click', function(event) {
         const userMenuButton = document.getElementById('userMenuButton');
         const dropdown = document.getElementById('userDropdown');
-        
+
         if (!userMenuButton.contains(event.target) && !dropdown.contains(event.target)) {
             dropdown.classList.add('hidden');
         }

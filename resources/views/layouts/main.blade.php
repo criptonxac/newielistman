@@ -13,9 +13,6 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -61,7 +58,7 @@
                     @auth
                         <div class="relative">
                             <button id="userMenuButton" class="flex items-center space-x-3 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500" onclick="toggleUserMenu()">
-                                <img src="https://ui-avatars.com/api/?name={{ auth()->user()->name ?? 'Student' }}&background=10b981&color=fff" 
+                                <img src="https://ui-avatars.com/api/?name={{ auth()->user()->name ?? 'Student' }}&background=10b981&color=fff"
                                      class="w-8 h-8 rounded-full" alt="Avatar">
                                 <div class="text-left">
                                     <div class="font-medium text-gray-900">{{ auth()->user()->name ?? 'Talaba' }}</div>
@@ -69,7 +66,7 @@
                                 </div>
                                 <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
                             </button>
-                            
+
                             <!-- Dropdown Menu -->
                             <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
                                 <a href="{{ route('student.dashboard') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -121,9 +118,9 @@
                     <a href="{{ route('student.results') }}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-200 hover:text-blue-700">
                         <i class="fas fa-chart-line mr-2"></i> Natijalar
                     </a>
-                    
+
                     <!-- Development Admin Access -->
-                    <a href="{{ route('admin.direct') }}" 
+                    <a href="{{ route('admin.direct') }}"
                        class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors">
                         Admin Panel
                     </a>
@@ -167,19 +164,19 @@
             const mobileMenu = document.getElementById('mobile-menu');
             mobileMenu.classList.toggle('hidden');
         }
-        
+
         function toggleUserMenu() {
             const dropdown = document.getElementById('userDropdown');
             dropdown.classList.toggle('hidden');
         }
-        
+
         // Close the dropdown when clicking outside
         window.addEventListener('click', function(event) {
             const dropdown = document.getElementById('userDropdown');
             const userMenuButton = document.getElementById('userMenuButton');
-            
-            if (!dropdown.classList.contains('hidden') && 
-                !userMenuButton.contains(event.target) && 
+
+            if (!dropdown.classList.contains('hidden') &&
+                !userMenuButton.contains(event.target) &&
                 !dropdown.contains(event.target)) {
                 dropdown.classList.add('hidden');
             }

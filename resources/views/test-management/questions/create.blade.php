@@ -13,23 +13,23 @@
         from { opacity: 0; transform: translateY(-20px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    
+
     @keyframes slideInUp {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    
+
     @keyframes shake {
         0%, 100% { transform: translateX(0); }
         25% { transform: translateX(-10px); }
         75% { transform: translateX(10px); }
     }
-    
+
     @keyframes pulse {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.5; }
     }
-    
+
     @keyframes bounce {
         0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
         40%, 43% { transform: translate3d(0,-30px,0); }
@@ -51,13 +51,13 @@
         animation: gradientShift 4s ease infinite;
         transition: all 0.3s ease;
     }
-    
+
     .upload-zone:hover {
         background-position: right center;
         transform: translateY(-2px);
         box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
     }
-    
+
     @keyframes gradientShift {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
@@ -73,12 +73,12 @@
         height: 6px;
         transition: all 0.2s ease;
     }
-    
+
     .volume-slider:hover {
         height: 8px;
         background: linear-gradient(to right, #2563eb 0%, #2563eb 100%, #cbd5e1 100%);
     }
-    
+
     .volume-slider::-webkit-slider-thumb {
         appearance: none;
         width: 18px;
@@ -90,7 +90,7 @@
         box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         transition: all 0.2s ease;
     }
-    
+
     .volume-slider::-webkit-slider-thumb:hover {
         transform: scale(1.2);
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
@@ -101,23 +101,23 @@
         transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         border-left: 4px solid transparent;
     }
-    
+
     .file-item:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         border-left-color: #3b82f6;
     }
-    
+
     .file-item.uploading {
         border-left-color: #f59e0b;
         background: linear-gradient(90deg, #fef3c7 0%, #ffffff 100%);
     }
-    
+
     .file-item.success {
         border-left-color: #10b981;
         background: linear-gradient(90deg, #d1fae5 0%, #ffffff 100%);
     }
-    
+
     .file-item.error {
         border-left-color: #ef4444;
         background: linear-gradient(90deg, #fee2e2 0%, #ffffff 100%);
@@ -130,7 +130,7 @@
         position: relative;
         overflow: hidden;
     }
-    
+
     .progress-bar::after {
         content: '';
         position: absolute;
@@ -138,13 +138,13 @@
         left: 0;
         bottom: 0;
         right: 0;
-        background: linear-gradient(90deg, 
-            transparent, 
-            rgba(255,255,255,0.3), 
+        background: linear-gradient(90deg,
+            transparent,
+            rgba(255,255,255,0.3),
             transparent);
         animation: shimmer 2s infinite;
     }
-    
+
     @keyframes shimmer {
         0% { transform: translateX(-100%); }
         100% { transform: translateX(100%); }
@@ -156,16 +156,16 @@
         position: relative;
         overflow: hidden;
     }
-    
+
     .play-btn:hover, .control-btn:hover {
         transform: scale(1.05);
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
-    
+
     .play-btn:active, .control-btn:active {
         transform: scale(0.95);
     }
-    
+
     .play-btn::before, .control-btn::before {
         content: '';
         position: absolute;
@@ -178,7 +178,7 @@
         transition: all 0.3s ease;
         transform: translate(-50%, -50%);
     }
-    
+
     .play-btn:active::before, .control-btn:active::before {
         width: 100%;
         height: 100%;
@@ -191,7 +191,7 @@
         transform: scale(1.02);
         box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
     }
-    
+
     .drag-active {
         animation: bounce 0.6s ease-in-out;
     }
@@ -203,12 +203,12 @@
         position: relative;
         overflow: hidden;
     }
-    
+
     .stat-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     }
-    
+
     .stat-card::before {
         content: '';
         position: absolute;
@@ -219,7 +219,7 @@
         background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
         transition: left 0.5s;
     }
-    
+
     .stat-card:hover::before {
         left: 100%;
     }
@@ -230,19 +230,19 @@
         border-left: 4px solid #10b981;
         color: #065f46;
     }
-    
+
     .message-error {
         background: linear-gradient(135deg, #fee2e2 0%, #fef2f2 100%);
         border-left: 4px solid #ef4444;
         color: #991b1b;
     }
-    
+
     .message-warning {
         background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
         border-left: 4px solid #f59e0b;
         color: #92400e;
     }
-    
+
     .message-info {
         background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
         border-left: 4px solid #3b82f6;
@@ -254,24 +254,24 @@
         .file-item {
             padding: 12px;
         }
-        
+
         .file-header {
             flex-direction: column;
             align-items: flex-start;
             gap: 8px;
         }
-        
+
         .audio-controls {
             flex-direction: column;
             gap: 8px;
             width: 100%;
         }
-        
+
         .volume-control {
             width: 100%;
             justify-content: center;
         }
-        
+
         .stat-card {
             text-align: center;
         }
@@ -284,12 +284,12 @@
             border-color: #374151;
             color: #f9fafb;
         }
-        
+
         .upload-zone {
             background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
             color: #e5e7eb;
         }
-        
+
         .progress-bar {
             background: linear-gradient(90deg, #3b82f6, #6366f1);
         }
@@ -307,12 +307,12 @@
         white-space: nowrap;
         border: 0;
     }
-    
+
     .focus-visible:focus {
         outline: 2px solid #3b82f6;
         outline-offset: 2px;
     }
-    
+
     /* Loading States */
     .loading-shimmer {
         background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
@@ -366,7 +366,7 @@
         </button>
     </div>
     @endif
-    
+
     @if(session('error'))
     <div class="message-error p-4 rounded-lg mb-6 flex items-center animate-slideInDown">
         <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -420,7 +420,7 @@
                         <p class="text-lg font-semibold text-gray-900">{{ $test->category->name ?? 'N/A' }}</p>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center p-4 bg-green-50 rounded-lg border border-green-100">
                     <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
                         <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -440,7 +440,7 @@
                         </p>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center p-4 bg-purple-50 rounded-lg border border-purple-100">
                     <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
                         <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -463,12 +463,12 @@
             <h2 class="text-xl font-semibold flex items-center">
                 <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                </svg> 
+                </svg>
                 Audio Fayllar Boshqaruvi
             </h2>
             <p class="text-blue-100 mt-1">Audio fayllarni yuklang va ularni test bilan bog'lang</p>
         </div>
-        
+
         <div class="p-6">
             <!-- Modern Upload Zone -->
             <div id="audioUploadSection" class="upload-zone relative flex flex-col items-center justify-center py-12 px-6 border-2 border-dashed border-blue-300 rounded-xl transition-all duration-300 cursor-pointer group">
@@ -485,26 +485,28 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
                         </svg>
                     </div>
-                    
+
                     <h3 class="text-xl font-semibold text-white mb-2">Audio fayllarni yuklash</h3>
                     <p class="text-white/80 text-sm mb-6 max-w-md">Fayllarni tanlash uchun bosing yoki bu yerga olib tashlang.<br>Bir vaqtda bir nechta faylni yuklashingiz mumkin.</p>
-                    
-                    <input type="file" id="audio-upload" class="hidden" accept="audio/*" multiple>
-                    
-                    <button type="button" id="selectFilesBtn" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white py-3 px-8 rounded-lg font-semibold transition-all duration-300 flex items-center mx-auto group-hover:scale-105">
+
+                    <input type="file" id="audio-upload" class="hidden" accept="audio/*">
+                    <input type="hidden" name="test_id" value="{{ $test->id ?? 1 }}">
+                    <input type="hidden" name="part_id" value="{{ $part->id ?? 1 }}">
+
+                    <label for="audio-upload" id="selectFilesBtn" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white py-3 px-8 rounded-lg font-semibold transition-all duration-300 flex items-center mx-auto group-hover:scale-105">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                         </svg>
                         Fayllarni tanlash
-                    </button>
-                    
+                    </label>
+
                     <div class="text-xs text-white/60 mt-6 space-y-1">
                         <p>✓ Qo'llab-quvvatlanadigan formatlar: MP3, WAV, OGG, M4A, AAC, FLAC</p>
                         <p>✓ Maksimal fayl hajmi: 100MB</p>
                         <p>✓ Drag & Drop qo'llab-quvvatlanadi</p>
                     </div>
                 </div>
-                
+
                 <!-- Background decoration -->
                 <div class="absolute inset-0 opacity-10">
                     <div class="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full"></div>
@@ -529,7 +531,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="stat-card bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
                     <div class="flex items-center">
                         <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center mr-3">
@@ -543,7 +545,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="stat-card bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
                     <div class="flex items-center">
                         <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
@@ -557,7 +559,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="stat-card bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
                     <div class="flex items-center">
                         <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center mr-3">
@@ -607,7 +609,7 @@
             @csrf
             <input type="hidden" id="test-category" value="{{ $test->category->name ?? '' }}" />
             <input type="hidden" id="test-id" value="{{ $test->id ?? '' }}" />
-            
+
             <!-- Questions Container -->
             <div class="mb-8">
                 <div class="flex justify-between items-center mb-6">
@@ -625,7 +627,7 @@
                         </a>
                     </div>
                 </div>
-                
+
                 <div id="questions-container" class="space-y-6">
                     @if(isset($questions) && $questions->count() > 0)
                         @foreach($questions as $index => $question)
@@ -650,16 +652,16 @@
                                         </button>
                                     </div>
                                 </div>
-                                
+
                                 <input type="hidden" name="questions[{{ $question->id }}][sort_order]" value="{{ $question->sort_order }}" class="sort-order">
-                                
+
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <div class="space-y-4">
                                         <div>
                                             <label class="block text-gray-700 text-sm font-semibold mb-2">Savol matni:</label>
                                             <textarea name="questions[{{ $question->id }}][question_text]" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none" required placeholder="Savolingizni yozing...">{{ $question->question_text }}</textarea>
                                         </div>
-                                        
+
                                         <div>
                                             <label class="block text-gray-700 text-sm font-semibold mb-2">Savol turi:</label>
                                             <select name="questions[{{ $question->id }}][question_type]" class="question-type w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" required>
@@ -673,7 +675,7 @@
                                             </select>
                                         </div>
                                     </div>
-                                    
+
                                     <div>
                                         <label class="block text-gray-700 text-sm font-semibold mb-2">Ball:</label>
                                         <input type="number" name="questions[{{ $question->id }}][points]" value="{{ $question->points }}" min="1" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" required>
@@ -699,7 +701,7 @@
                         </div>
                     @endif
                 </div>
-                
+
                 <!-- Enhanced Pagination -->
                 @if(isset($questions) && $questions->hasPages())
                 <div class="mt-8 flex justify-center">
@@ -709,7 +711,7 @@
                         @else
                             <a href="{{ route('test-management.questions.create', [$test->id, 'page' => $questions->currentPage() - 1]) }}" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">Oldingi</a>
                         @endif
-                        
+
                         @foreach(range(1, $questions->lastPage()) as $page)
                             @if($page == $questions->currentPage())
                                 <span class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold">{{ $page }}</span>
@@ -717,7 +719,7 @@
                                 <a href="{{ route('test-management.questions.create', [$test->id, 'page' => $page]) }}" class="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 rounded-lg transition-colors">{{ $page }}</a>
                             @endif
                         @endforeach
-                        
+
                         @if($questions->hasMorePages())
                             <a href="{{ route('test-management.questions.create', [$test->id, 'page' => $questions->currentPage() + 1]) }}" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">Keyingi</a>
                         @else
@@ -727,7 +729,7 @@
                 </div>
                 @endif
             </div>
-            
+
             <!-- Enhanced Form Actions -->
             <div class="flex items-center justify-between pt-6 border-t border-gray-200">
                 <div class="flex items-center space-x-4">
@@ -740,7 +742,7 @@
                     </button>
                     <span class="text-sm text-gray-500">Avtomatik saqlash: Yoqilgan</span>
                 </div>
-                
+
                 <div class="flex items-center space-x-3">
                     <button type="button" id="draftBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -789,7 +791,7 @@
                         <li>• Bir vaqtda ko'p fayllarni yuklash mumkin</li>
                     </ul>
                 </div>
-                
+
                 <div>
                     <h4 class="font-semibold text-gray-800 mb-2 flex items-center">
                         <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -804,7 +806,7 @@
                         <li>• Savollarni tahrirlash va o'chirish mumkin</li>
                     </ul>
                 </div>
-                
+
                 <div>
                     <h4 class="font-semibold text-gray-800 mb-2 flex items-center">
                         <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -837,418 +839,8 @@
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
 <script src="{{ asset('js/questions-management.js') }}"></script>
-<script src="{{ asset('js/enhanced-audio-upload.js') }}"></script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎵 Enhanced page loaded, initializing systems...');
-    
-    // Initialize help modal
-    const helpBtn = document.getElementById('helpBtn');
-    const helpModal = document.getElementById('helpModal');
-    const closeHelpModal = document.getElementById('closeHelpModal');
-    
-    helpBtn?.addEventListener('click', () => {
-        helpModal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    });
-    
-    closeHelpModal?.addEventListener('click', () => {
-        helpModal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    });
-    
-    // Close modal on outside click
-    helpModal?.addEventListener('click', (e) => {
-        if (e.target === helpModal) {
-            helpModal.classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-    });
-    
-    // Enhanced form handling
-    const questionsForm = document.getElementById('questions-form');
-    const previewBtn = document.getElementById('previewBtn');
-    const draftBtn = document.getElementById('draftBtn');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    
-    // Auto-save functionality
-    let autoSaveTimeout;
-    function scheduleAutoSave() {
-        clearTimeout(autoSaveTimeout);
-        autoSaveTimeout = setTimeout(() => {
-            // Auto-save logic here
-            console.log('Auto-saving...');
-        }, 5000); // 5 seconds
-    }
-    
-    // Form change detection
-    questionsForm?.addEventListener('input', scheduleAutoSave);
-    
-    // Preview functionality
-    previewBtn?.addEventListener('click', () => {
-        // Open test preview in new tab
-        const testId = document.getElementById('test-id')?.value;
-        if (testId) {
-            window.open(`/test-preview/${testId}`, '_blank');
-        }
-    });
-    
-    // Draft save
-    draftBtn?.addEventListener('click', async () => {
-        const formData = new FormData(questionsForm);
-        formData.append('save_as_draft', 'true');
-        
-        try {
-            loadingOverlay?.classList.remove('hidden');
-            const response = await fetch(questionsForm.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                showNotification('Qoralama saqlandi', 'success');
-            } else {
-                showNotification('Xatolik yuz berdi', 'error');
-            }
-        } catch (error) {
-            console.error('Draft save error:', error);
-            showNotification('Saqlashda xatolik', 'error');
-        } finally {
-            loadingOverlay?.classList.add('hidden');
-        }
-    });
-    
-    // Enhanced form submission
-    questionsForm?.addEventListener('submit', function(e) {
-        console.log('📝 Enhanced form submitting...');
-        
-        // Show loading
-        loadingOverlay?.classList.remove('hidden');
-        
-        // Get uploaded audio files if any
-        if (window.audioUploadManager) {
-            const uploadedFiles = window.audioUploadManager.getUploadedFiles();
-            console.log('🎵 Uploaded audio files:', uploadedFiles);
-            
-            if (uploadedFiles.length > 0) {
-                const audioDataInput = document.createElement('input');
-                audioDataInput.type = 'hidden';
-                audioDataInput.name = 'uploaded_audio_files';
-                audioDataInput.value = JSON.stringify(uploadedFiles);
-                questionsForm.appendChild(audioDataInput);
-            }
-        }
-    });
-    
-    // Notification system
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg message-${type} animate-slideInDown`;
-        notification.innerHTML = `
-            <div class="flex items-center">
-                <span>${message}</span>
-                <button class="ml-4 p-1 hover:bg-black hover:bg-opacity-10 rounded transition-colors" onclick="this.parentElement.parentElement.remove()">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.remove();
-        }, 5000);
-    }
-    
-    // Enhanced keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey || e.metaKey) {
-            switch (e.key) {
-                case 'u':
-                    e.preventDefault();
-                    document.getElementById('audio-upload')?.click();
-                    break;
-                case 's':
-                    e.preventDefault();
-                    questionsForm?.requestSubmit();
-                    break;
-                case 'h':
-                    e.preventDefault();
-                    helpBtn?.click();
-                    break;
-            }
-        }
-        
-        // ESC key
-        if (e.key === 'Escape') {
-            helpModal?.classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-    });
-    
-    // Enhanced audio upload manager initialization
-    if (document.getElementById('audioUploadSection')) {
-        // Wait a bit for the enhanced manager to load
-        setTimeout(() => {
-            if (window.EnhancedAudioUploadManager) {
-                window.audioUploadManager = new window.EnhancedAudioUploadManager({
-                    debug: true,
-                    enableBulkUpload: true,
-                    enableDragDrop: true,
-                    enablePreview: true,
-                    showStatistics: true,
-                    testId: window.testId,
-                    part: 'part1'
-                });
-                
-                // Enhanced event listeners
-                window.audioUploadManager.on('filesSelected', (data) => {
-                    console.log('Files selected:', data.files);
-                    showNotification(`${data.files.length} ta fayl tanlandi`, 'info');
-                });
-                
-                window.audioUploadManager.on('uploadSuccess', (data) => {
-                    console.log('Upload success:', data);
-                    showNotification(`${data.file.name} yuklandi`, 'success');
-                });
-                
-                window.audioUploadManager.on('uploadError', (data) => {
-                    console.log('Upload error:', data);
-                    showNotification(`Yuklashda xatolik: ${data.error.message}`, 'error');
-                });
-                
-                console.log('✅ Enhanced Audio Upload Manager initialized');
-            } else {
-                console.warn('⚠️ Enhanced Audio Upload Manager not found, falling back to basic version');
-                
-                // Fallback to basic version
-                if (window.AudioUploadManager) {
-                    window.audioUploadManager = new window.AudioUploadManager({
-                        debug: true
-                    });
-                }
-            }
-        }, 1000);
-    }
-    
-    // Debug info
-    console.log('🔧 Enhanced global objects available:', {
-        audioUploadManager: !!window.audioUploadManager,
-        EnhancedAudioUploadManager: !!window.EnhancedAudioUploadManager,
-        AudioUploadManager: !!window.AudioUploadManager,
-        csrfToken: !!window.csrfToken,
-        testId: window.testId,
-        userId: window.userId
-    });
-});
-
-// Enhanced global functions
-window.startListeningTestAudio = function() {
-    if (window.audioUploadManager && window.audioUploadManager.autoPlayFirstAudio) {
-        window.audioUploadManager.autoPlayFirstAudio();
-    } else {
-        console.warn('⚠️ Audio upload manager or autoPlayFirstAudio method not available');
-    }
-};
-
-window.checkAudioUploadStatus = function() {
-    if (window.audioUploadManager && window.audioUploadManager.getUploadedFiles) {
-        const files = window.audioUploadManager.getUploadedFiles();
-        console.log('📊 Enhanced Audio Upload Status:', {
-            initialized: window.audioUploadManager.isInitialized || false,
-            uploadedFiles: files.length,
-            files: files
-        });
-        return files;
-    } else {
-        console.log('❌ Enhanced audio upload manager not available');
-        return [];
-    }
-};
-
-// Performance monitoring
-window.addEventListener('load', () => {
-    const loadTime = performance.now();
-    console.log(`⚡ Page loaded in ${Math.round(loadTime)}ms`);
-});
-
-// Direct fix for file upload button with improved reliability
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 Applying direct fix for file upload button');
-    
-    // Function to set up the button
-    function setupFileUploadButton() {
-        // Get elements
-        const selectFilesBtn = document.getElementById('selectFilesBtn');
-        const audioUploadInput = document.getElementById('audio-upload');
-        
-        if (selectFilesBtn && audioUploadInput) {
-            console.log('✅ Found both select button and file input');
-            
-            // Remove any existing event listeners (in case of duplicates)
-            const newBtn = selectFilesBtn.cloneNode(true);
-            selectFilesBtn.parentNode.replaceChild(newBtn, selectFilesBtn);
-            
-            // Add direct event listener
-            newBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('🖱️ Select files button clicked directly');
-                
-                // Show loading indicator
-                const overlay = document.getElementById('audio-upload-loading-overlay');
-                const text = document.getElementById('audio-upload-loading-text');
-                if (overlay && text) {
-                    text.textContent = 'Fayl tanlanmoqda...';
-                    overlay.classList.remove('hidden');
-                }
-                
-                // Set a global flag to prevent multiple clicks
-                window.audioUploadIsSelecting = true;
-                
-                // Auto-hide after 5 seconds if no file was selected
-                setTimeout(() => {
-                    if (window.audioUploadIsSelecting) {
-                        console.log('File selection timeout - no file selected');
-                        window.audioUploadIsSelecting = false;
-                        if (overlay) overlay.classList.add('hidden');
-                    }
-                }, 5000);
-                
-                audioUploadInput.click();
-            });
-            
-            console.log('✅ Direct event listener added to select files button');
-            
-            // Add change event listener to file input
-            audioUploadInput.addEventListener('change', function(e) {
-                console.log('📁 File input change event triggered');
-                
-                // Reset selection flag
-                window.audioUploadIsSelecting = false;
-                
-                // Hide loading indicator
-                const overlay = document.getElementById('audio-upload-loading-overlay');
-                if (overlay) overlay.classList.add('hidden');
-                
-                if (e.target.files.length > 0) {
-                    console.log(`Selected ${e.target.files.length} files`);
-                    
-                    // Show upload loading indicator with file name
-                    const text = document.getElementById('audio-upload-loading-text');
-                    if (overlay && text) {
-                        text.textContent = `${e.target.files[0].name} yuklanmoqda...`;
-                        overlay.classList.remove('hidden');
-                    }
-                } else {
-                    console.log('No files selected');
-                }
-            });
-            
-            // Also add a click handler to the upload section as a backup
-            const uploadSection = document.getElementById('audioUploadSection');
-            if (uploadSection) {
-                uploadSection.addEventListener('click', function(e) {
-                    // Only trigger if clicking on the section itself, not on buttons
-                    if (e.target === uploadSection || e.target.closest('#audioUploadSection') && !e.target.closest('button')) {
-                        console.log('🖱️ Upload section clicked');
-                        
-                        // Show loading indicator
-                        const overlay = document.getElementById('audio-upload-loading-overlay');
-                        const text = document.getElementById('audio-upload-loading-text');
-                        if (overlay && text) {
-                            text.textContent = 'Fayl tanlanmoqda...';
-                            overlay.classList.remove('hidden');
-                        }
-                        
-                        // Set a global flag to prevent multiple clicks
-                        window.audioUploadIsSelecting = true;
-                        
-                        audioUploadInput.click();
-                    }
-                });
-            }
-        } else {
-            console.error('❌ Could not find select button or file input');
-            console.log('selectFilesBtn:', !!selectFilesBtn);
-            console.log('audioUploadInput:', !!audioUploadInput);
-            
-            // Try again after a short delay
-            setTimeout(setupFileUploadButton, 500);
-        }
-    }
-    
-    // Initial setup
-    setupFileUploadButton();
-    
-    // Also set up a global click handler as a last resort
-    document.querySelector('button#selectFilesBtn')?.addEventListener('click', function() {
-        console.log('🔄 Global button click handler triggered');
-        document.getElementById('audio-upload')?.click();
-    });
-});
-</script>
-
-<!-- Immediate fix for file upload button -->
-<script>
-// Execute immediately without waiting for DOMContentLoaded
-(function() {
-    console.log('🚀 Immediate file upload button fix');
-    
-    // Try to fix the button immediately
-    const fixButton = function() {
-        const btn = document.getElementById('selectFilesBtn');
-        const input = document.getElementById('audio-upload');
-        
-        if (btn && input) {
-            console.log('🔗 Connecting button to file input directly');
-            btn.onclick = function(e) {
-                if (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                console.log('📁 File selection triggered');
-                
-                // Show loading indicator
-                const overlay = document.getElementById('audio-upload-loading-overlay');
-                const text = document.getElementById('audio-upload-loading-text');
-                if (overlay && text) {
-                    text.textContent = 'Fayl tanlanmoqda...';
-                    overlay.classList.remove('hidden');
-                }
-                
-                // Set a global flag to prevent multiple clicks
-                window.audioUploadIsSelecting = true;
-                
-                // Auto-hide after 5 seconds if no file was selected
-                setTimeout(() => {
-                    if (window.audioUploadIsSelecting) {
-                        console.log('File selection timeout - no file selected');
-                        window.audioUploadIsSelecting = false;
-                        if (overlay) overlay.classList.add('hidden');
-                    }
-                }, 5000);
-                
-                input.click();
-                return false;
-            };
-        } else {
-            console.log('⏱️ Elements not ready yet, will try again');
-            setTimeout(fixButton, 100);
-        }
-    };
-    
-    // Start fixing
-    fixButton();
-})();
-</script>
+{{--<script src="{{ asset('js/enhanced-audio-upload.js') }}"></script>--}}
+<script src="{{ asset('js/simple-audio-upload.js') }}"></script>
+{{--<script src="{{ asset('js/audio-upload.js') }}"></script>--}}
 
 @endsection

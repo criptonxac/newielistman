@@ -132,7 +132,7 @@ class TestManagementController extends Controller
         $test->update($validated);
 
         return redirect()
-            ->route('admin.tests.index')
+            ->route('test-management.index')
             ->with('success', 'Test muvaffaqiyatli yangilandi.');
     }
 
@@ -154,7 +154,7 @@ class TestManagementController extends Controller
         $test->delete();
 
         return redirect()
-            ->route('admin.tests.index')
+            ->route('teacher.tests.index')
             ->with('success', 'Test muvaffaqiyatli o\'chirildi.');
     }
 

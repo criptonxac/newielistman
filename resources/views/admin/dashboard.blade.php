@@ -4,13 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - IELTS Platform</title>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
+
+    <!-- Vite Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- Fallback CSS -->
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
@@ -26,14 +29,14 @@
                 <span class="ml-3 text-xl font-bold text-white">IELTS Platform</span>
             </div>
         </div>
-        
+
         <nav class="mt-6">
             <div class="px-4 text-xs font-semibold text-purple-300 uppercase tracking-wider mb-3">Dashboard</div>
             <a href="#" class="flex items-center px-6 py-3 text-white bg-gradient-to-r from-blue-600 to-purple-600 border-r-4 border-blue-400 shadow-lg">
                 <i class="fas fa-home mr-3 text-blue-200"></i>
                 Home
             </a>
-            
+
             <div class="px-4 text-xs font-semibold text-purple-300 uppercase tracking-wider mb-3 mt-6">Management</div>
             <a href="{{ route('admin.users') }}" class="flex items-center px-6 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-purple-600 hover:to-blue-600 transition-all duration-300">
                 <i class="fas fa-users mr-3 text-purple-400"></i>
@@ -52,11 +55,11 @@
         <div class="bg-white shadow-sm border-b border-gray-200 px-8 py-4">
             <div class="flex justify-between items-center">
                 <h1 class="text-2xl font-semibold text-gray-800">IELTS Mock Test Platform</h1>
-                
+
                 <!-- User Avatar Dropdown -->
                 <div class="relative">
                     <button id="userMenuButton" class="flex items-center space-x-3 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500" onclick="toggleUserMenu()">
-                        <img src="https://ui-avatars.com/api/?name={{ auth()->user()->name ?? 'Admin' }}&background=6366f1&color=fff" 
+                        <img src="https://ui-avatars.com/api/?name={{ auth()->user()->name ?? 'Admin' }}&background=6366f1&color=fff"
                              class="w-8 h-8 rounded-full" alt="Avatar">
                         <div class="text-left">
                             <div class="font-medium text-gray-900">{{ auth()->user()->name ?? 'Administrator' }}</div>
@@ -64,7 +67,7 @@
                         </div>
                         <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
                     </button>
-                    
+
                     <!-- Dropdown Menu -->
                     <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
                         <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -87,7 +90,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Dashboard Content -->
         <div class="p-8">
             <!-- Top Stats Cards -->
@@ -157,7 +160,7 @@
                         <h3 class="text-lg font-semibold text-gray-800 mb-2">Bugungi o'rtacha ball</h3>
                         <div class="text-sm text-gray-500">Bugun topshirilgan testlar bo'yicha talabalar olgan o'rtacha ball</div>
                     </div>
-                    
+
                     <div class="text-center mb-6">
                         <div class="w-32 h-32 bg-gradient-to-r from-blue-400 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
                             <div class="text-white text-center">
@@ -166,7 +169,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="text-center">
                         <div class="text-sm text-gray-500 mb-2">Bugungi testlar soni</div>
                         <div class="text-2xl font-bold text-gray-800">{{ \App\Models\UserTestAttempt::today()->completed()->count() }}</div>
@@ -177,7 +180,7 @@
                 <div class="lg:col-span-2 bg-white rounded-lg p-6 shadow-sm border border-gray-100">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Eng yaxshi 10 talaba</h3>
                     <div class="text-sm text-gray-500 mb-6">O'rtacha ball bo'yicha eng yaxshi ko'rsatkichli talabalar</div>
-                    
+
                     @if(isset($topStudents) && $topStudents->count() > 0)
                         <div class="h-64 flex items-end justify-between space-x-2">
                             @foreach(isset($topStudents) ? $topStudents->take(10) : [] as $index => $student)
@@ -187,7 +190,7 @@
                                 @endphp
                                 <div class="flex-1 flex flex-col items-center">
                                     <div class="text-xs font-semibold text-gray-700 mb-1">{{ number_format($student['average_score'], 1) }}</div>
-                                    <div 
+                                    <div
                                         class="w-full bg-gradient-to-t from-indigo-500 to-indigo-400 rounded-t transition-all duration-500 hover:from-indigo-600 hover:to-indigo-500 cursor-pointer"
                                         style="height: {{ $height }}px; min-height: 20px;"
                                         title="{{ $student['name'] }} - {{ $student['average_score'] }} ball"
@@ -199,7 +202,7 @@
                                 </div>
                             @endforeach
                         </div>
-                        
+
                         <!-- Legend -->
                         <div class="mt-4 text-center">
                             <div class="text-xs text-gray-500">Ustunlar balandligi o'rtacha ballni ko'rsatadi</div>
@@ -219,18 +222,18 @@
                 <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Haftalik Faollik</h3>
                     <div class="text-sm text-gray-500 mb-6">Oxirgi 7 kunlik test faolligi va statistikalar</div>
-                    
+
                     <!-- Faollik foizi -->
                     <div class="text-center mb-4">
                         <div class="text-3xl font-bold text-indigo-600 mb-2">{{ isset($weeklyActivity) ? $weeklyActivity['activity_percentage'] : '0' }}%</div>
                         <div class="text-sm text-gray-500">Haftalik faollik foizi</div>
                     </div>
-                    
+
                     <!-- Donut Chart -->
                     <div class="w-40 h-40 mx-auto mb-4">
                         <canvas id="weeklyChart"></canvas>
                     </div>
-                    
+
                     <!-- Qo'shimcha ma'lumotlar -->
                     <div class="grid grid-cols-2 gap-4 text-center">
                         <div>
@@ -257,14 +260,14 @@
                             <i class="fas fa-user-check text-green-600"></i>
                         </div>
                     </div>
-                    
+
                     <!-- Tugallangan testlar -->
                     <div class="bg-blue-600 text-white rounded-lg p-4">
                         <div class="text-sm opacity-80">Tugallangan testlar</div>
                         <div class="text-2xl font-bold">{{ isset($studentActivity) ? $studentActivity['completed_tests'] : '0' }}</div>
                         <div class="text-xs opacity-70">Jami</div>
                     </div>
-                    
+
                     <!-- O'rtacha natija -->
                     <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
                         <div class="flex justify-between items-center">
@@ -277,7 +280,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Eng yaxshi natija -->
                     <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
                         <div class="flex justify-between items-center">
@@ -328,11 +331,11 @@ const mainChart = new Chart(mainCtx, {
             legend: { display: false }
         },
         scales: {
-            x: { 
+            x: {
                 grid: { display: false },
                 ticks: { color: '#9ca3af' }
             },
-            y: { 
+            y: {
                 grid: { color: '#f3f4f6' },
                 ticks: { color: '#9ca3af' }
             }
@@ -373,7 +376,7 @@ const weeklyChart = new Chart(weeklyCtx, {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: { 
+            legend: {
                 display: true,
                 position: 'top',
                 labels: {
@@ -463,7 +466,7 @@ const studentsChart = new Chart(studentsCtx, {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: { 
+            legend: {
                 display: true,
                 position: 'top'
             },
@@ -494,17 +497,17 @@ const studentsChart = new Chart(studentsCtx, {
             }
         },
         scales: {
-            x: { 
+            x: {
                 grid: { display: false },
-                ticks: { 
+                ticks: {
                     color: '#9ca3af',
                     maxRotation: 45,
                     minRotation: 45
                 }
             },
-            y: { 
+            y: {
                 grid: { color: '#f3f4f6' },
-                ticks: { 
+                ticks: {
                     color: '#9ca3af',
                     callback: function(value) {
                         return value + ' ball';
@@ -526,7 +529,7 @@ function toggleUserMenu() {
 document.addEventListener('click', function(event) {
     const userMenuButton = document.getElementById('userMenuButton');
     const userDropdown = document.getElementById('userDropdown');
-    
+
     if (!userMenuButton.contains(event.target) && !userDropdown.contains(event.target)) {
         userDropdown.classList.add('hidden');
     }

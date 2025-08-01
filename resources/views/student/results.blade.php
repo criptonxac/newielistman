@@ -48,10 +48,10 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $attempt->created_at->format('d.m.Y H:i') }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     @if($attempt->status === 'completed')
-                                        <a href="{{ route('tests.results', ['test' => $attempt->test->slug, 'attempt' => $attempt->id]) }}" 
+                                        <a href="{{ route('student.tests.result', ['test' => $attempt->test->slug, 'attempt' => $attempt->id]) }}" 
                                            class="text-blue-600 hover:text-blue-900">Natijalarni ko'rish</a>
                                     @elseif($attempt->status === 'in_progress')
-                                        <a href="{{ route('tests.take', ['test' => $attempt->test->slug, 'attempt' => $attempt->id]) }}" 
+                                        <a href="{{ route('student.tests.take', ['test' => $attempt->test->slug, 'attempt' => $attempt->id]) }}" 
                                            class="text-green-600 hover:text-green-900">Davom etish</a>
                                     @endif
                                 </td>
@@ -68,7 +68,7 @@
                     <i class="fas fa-clipboard-list text-gray-400 text-6xl mb-4"></i>
                     <h3 class="text-lg font-medium text-gray-900 mb-2">Hali test topshirmadingiz</h3>
                     <p class="text-gray-500 mb-6">IELTS familiarisation testlarini boshlash uchun test sahifasiga o'ting</p>
-                    <a href="{{ route('student.tests') }}" 
+                    <a href="{{ route('student.tests.index') }}" 
                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
                         Testlarni ko'rish
                     </a>
