@@ -897,5 +897,4 @@ document.getElementById('success-modal').addEventListener('click', function(e) {
     }
 });
 </script>
-
 @endsection
