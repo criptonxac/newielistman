@@ -7,7 +7,7 @@ class SimpleAudioUploadManager {
         this.config = {
             debug: true,
             uploadUrl: '/audio/upload',
-            maxFileSize: 100 * 1024 * 1024, // 100MB
+            maxFileSize: 20 * 1024 * 1024, // 20MB
             allowedTypes: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/m4a', 'audio/aac', 'audio/flac', 'audio/mp4'],
             allowedExtensions: ['mp3', 'wav', 'ogg', 'm4a', 'aac', 'flac', 'webm'],
             timeout: 10 * 60 * 1000, // 10 minutes
@@ -228,12 +228,80 @@ class SimpleAudioUploadManager {
             xhr.open('POST', this.config.uploadUrl, true);
             xhr.timeout = this.config.timeout;
             
-            // Set headers
+            // Add additional data to form
+            const currentTestId = document.querySelector('input[name="test_id"]')?.value || '1';
+            const currentPartId = document.querySelector('input[name="part_id"]')?.value || '1';
             const csrfToken = this.getCSRFToken();
-            if (csrfToken) {
-                xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+            
+            // Add required fields to form data
+            formData.append('_token', csrfToken);
+            formData.append('test_id', currentTestId);
+            formData.append('part_id', currentPartId);
+            
+            // Add any additional fields that might be needed for validation
+            const additionalFields = {};
+            ['test_id', 'part_id', '_token', 'test_part', 'question_id'].forEach(field => {
+                const element = document.querySelector(`[name="${field}"]`);
+                if (element && element.value) {
+                    formData.append(field, element.value);
+                    additionalFields[field] = element.value;
+                }
+            });
+            
+            // Add debug information
+            const debugInfo = {
+                timestamp: new Date().toISOString(),
+                file: {
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    lastModified: file.lastModified,
+                    lastModifiedDate: file.lastModifiedDate ? file.lastModifiedDate.toISOString() : null
+                },
+                formData: {
+                    ...additionalFields,
+                    file: `[File: ${file.name}, ${file.size} bytes, ${file.type}]`
+                },
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': null // Let the browser set the correct content type with boundary
+                },
+                testId: currentTestId,
+                partId: currentPartId,
+                csrfToken: !!csrfToken,
+                url: this.config.uploadUrl,
+                method: 'POST',
+                withCredentials: true
             }
+            
+            this.log('Sending file upload request:', debugInfo);
+            
+            // Set headers
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.setRequestHeader('Accept', 'application/json');
+            
+            // Add error handler for XHR
+            xhr.onerror = () => {
+                this.log('XHR Error:', {
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    response: xhr.responseText,
+                    readyState: xhr.readyState
+                });
+                reject(new Error(`Network error: ${xhr.statusText}`));
+            };
+            
+            // Add load handler
+            xhr.onload = () => {
+                this.log('XHR Response:', {
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    response: xhr.responseText,
+                    headers: xhr.getAllResponseHeaders()
+                });
+            };
             
             // Send the request
             xhr.send(formData);

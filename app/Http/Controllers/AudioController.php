@@ -227,6 +227,7 @@ class AudioController extends Controller
     public function uploadChunk(Request $request)
     {
         try {
+            // Increase PHP limits for large file uploads
             ini_set('upload_max_filesize', '100M');
             ini_set('post_max_size', '100M');
             ini_set('memory_limit', '256M');
@@ -234,20 +235,51 @@ class AudioController extends Controller
             ini_set('max_input_time', '600');
             set_time_limit(600);
 
+            // Log detailed request information
             Log::info('Chunk upload request received', [
                 'ip' => $request->ip(),
+                'method' => $request->method(),
+                'url' => $request->fullUrl(),
+                'content_type' => $request->header('Content-Type'),
                 'content_length' => $request->header('Content-Length'),
                 'file_count' => count($request->allFiles()),
-                'params' => $request->except(['file', 'chunk']),
+                'input_params' => $request->except(['file', 'chunk', '_token']),
+                'upload_params' => [
+                    'file_keys' => array_keys($request->allFiles()),
+                    'has_file' => $request->hasFile('file'),
+                    'has_chunk' => $request->hasFile('chunk'),
+                ],
+                'php_limits' => [
+                    'upload_max_filesize' => ini_get('upload_max_filesize'),
+                    'post_max_size' => ini_get('post_max_size'),
+                    'memory_limit' => ini_get('memory_limit'),
+                    'max_execution_time' => ini_get('max_execution_time'),
+                    'max_input_time' => ini_get('max_input_time'),
+                    'max_file_uploads' => ini_get('max_file_uploads'),
+                ]
             ]);
 
+            // Check for file in the request
             if (empty($request->allFiles())) {
                 Log::warning('No files found in chunk request', [
-                    'all_input' => $request->all()
+                    'all_input' => array_keys($request->all()),
+                    'files' => $request->allFiles(),
+                    'request_headers' => $request->headers->all()
                 ]);
-                return response()->json(['success' => false, 'message' => 'Chunk fayli topilmadi.'], 400);
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Chunk fayli topilmadi.',
+                    'debug' => [
+                        'file_keys' => array_keys($request->allFiles()),
+                        'has_file' => $request->hasFile('file'),
+                        'has_chunk' => $request->hasFile('chunk'),
+                        'content_type' => $request->header('Content-Type'),
+                        'content_length' => $request->header('Content-Length'),
+                    ]
+                ], 400);
             }
 
+            // Process the chunked upload
             return $this->handleChunkedUpload($request);
 
         } catch (Exception $e) {
@@ -265,6 +297,7 @@ class AudioController extends Controller
     public function finalizeUpload(Request $request)
     {
         try {
+            // Increase PHP limits for large file operations
             ini_set('upload_max_filesize', '100M');
             ini_set('post_max_size', '100M');
             ini_set('memory_limit', '256M');
@@ -272,18 +305,52 @@ class AudioController extends Controller
             ini_set('max_input_time', '600');
             set_time_limit(600);
 
-            Log::info('Finalize upload request', [
+            // Log the finalize request with detailed information
+            Log::info('Finalize upload request received', [
                 'ip' => $request->ip(),
-                'file_id' => $request->input('file_id'),
-                'file_name' => $request->input('file_name'),
-                'file_size' => $request->input('file_size'),
+                'method' => $request->method(),
+                'url' => $request->fullUrl(),
+                'content_type' => $request->header('Content-Type'),
+                'content_length' => $request->header('Content-Length'),
+                'request_data' => $request->except(['_token']),
+                'file_params' => [
+                    'file_id' => $request->input('file_id'),
+                    'file_name' => $request->input('file_name'),
+                    'file_size' => $request->input('file_size'),
+                    'chunk_index' => $request->input('chunk_index'),
+                    'total_chunks' => $request->input('total_chunks'),
+                ],
+                'php_limits' => [
+                    'upload_max_filesize' => ini_get('upload_max_filesize'),
+                    'post_max_size' => ini_get('post_max_size'),
+                    'memory_limit' => ini_get('memory_limit'),
+                    'max_execution_time' => ini_get('max_execution_time'),
+                    'max_input_time' => ini_get('max_input_time'),
+                ]
             ]);
 
-            if (!$request->has('file_id') || !$request->has('file_name') || !$request->has('file_size')) {
-                Log::warning('Missing required parameters in finalize request', [
-                    'all_input' => $request->all()
+            // Validate required parameters
+            $requiredParams = ['file_id', 'file_name', 'file_size'];
+            $missingParams = array_filter($requiredParams, function($param) use ($request) {
+                return !$request->has($param) || empty($request->input($param));
+            });
+
+            if (!empty($missingParams)) {
+                $errorMessage = 'Zarur parametrlar etishmayapti: ' . implode(', ', $missingParams);
+                
+                Log::warning($errorMessage, [
+                    'missing_params' => $missingParams,
+                    'provided_params' => $request->only($requiredParams),
+                    'all_input' => $request->except(['_token']),
+                    'headers' => $request->headers->all()
                 ]);
-                return response()->json(['success' => false, 'message' => 'Zarur parametrlar etishmayapti'], 400);
+                
+                return response()->json([
+                    'success' => false, 
+                    'message' => $errorMessage,
+                    'missing_params' => array_values($missingParams),
+                    'provided_params' => $request->only($requiredParams)
+                ], 400);
             }
 
             return $this->finalizeChunkedUpload($request);
@@ -303,6 +370,16 @@ class AudioController extends Controller
     private function handleChunkedUpload(Request $request)
     {
         try {
+            // Log the start of chunk processing
+            Log::debug('Starting to handle chunked upload', [
+                'request_data' => $request->except(['file', 'chunk', '_token']),
+                'has_file' => $request->hasFile('file'),
+                'has_chunk' => $request->hasFile('chunk'),
+                'all_files' => array_keys($request->allFiles()),
+                'content_type' => $request->header('Content-Type'),
+                'content_length' => $request->header('Content-Length')
+            ]);
+
             // Validate chunk metadata
             $validated = $request->validate([
                 'chunk_index' => 'required|integer|min:0',
@@ -318,21 +395,61 @@ class AudioController extends Controller
                 'file_size.required' => 'Fayl hajmi ko\'rsatilmagan',
             ]);
 
+            // Log validation passed
+            Log::debug('Chunk metadata validated', [
+                'chunk_index' => $validated['chunk_index'],
+                'total_chunks' => $validated['total_chunks'],
+                'file_id' => $validated['file_id'],
+                'file_name' => $validated['file_name'],
+                'file_size' => $validated['file_size']
+            ]);
+
             // Detect file key in request
             $fileKey = $this->detectFileKey($request);
             if (!$fileKey) {
-                Log::error('No chunk file found in request');
-                return response()->json(['success' => false, 'message' => 'Chunk fayli topilmadi'], 400);
+                $errorMessage = 'Chunk fayli topilmadi. Tekshirilgan kalitlar: ' . 
+                              implode(', ', array_keys($request->allFiles()));
+                
+                Log::error($errorMessage, [
+                    'available_files' => $request->allFiles(),
+                    'request_data' => $request->except(['_token']),
+                    'headers' => $request->headers->all()
+                ]);
+                
+                return response()->json([
+                    'success' => false, 
+                    'message' => $errorMessage,
+                    'debug' => [
+                        'available_file_keys' => array_keys($request->allFiles()),
+                        'content_type' => $request->header('Content-Type'),
+                        'content_length' => $request->header('Content-Length'),
+                        'request_method' => $request->method()
+                    ]
+                ], 400);
             }
 
             // Validate chunk file
             $chunkFile = $request->file($fileKey);
             if (!$chunkFile || !$chunkFile->isValid()) {
+                $errorMessage = $chunkFile ? 
+                    $this->getUploadErrorMessage($chunkFile->getError()) : 
+                    'Fayl yuklanmadi';
+                
                 Log::error('Invalid chunk file', [
+                    'file_key' => $fileKey,
+                    'original_name' => $chunkFile ? $chunkFile->getClientOriginalName() : null,
+                    'size' => $chunkFile ? $chunkFile->getSize() : 0,
                     'error' => $chunkFile ? $chunkFile->getError() : 'No file',
-                    'error_message' => $chunkFile ? $this->getUploadErrorMessage($chunkFile->getError()) : 'No file'
+                    'error_message' => $errorMessage,
+                    'request_data' => $request->except(['_token'])
                 ]);
-                return response()->json(['success' => false, 'message' => 'Noto\'g\'ri chunk fayli'], 400);
+                
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Noto\'g\'ri chunk fayli: ' . $errorMessage,
+                    'error_code' => $chunkFile ? $chunkFile->getError() : 'NO_FILE',
+                    'error_message' => $errorMessage
+                ], 400);
             }
 
             // Create temp directory for chunks if it doesn't exist
@@ -409,111 +526,277 @@ class AudioController extends Controller
      */
     private function finalizeChunkedUpload(Request $request)
     {
+        // Log the start of chunk merging
+        Log::debug('Starting to finalize chunked upload', [
+            'file_id' => $request->input('file_id'),
+            'file_name' => $request->input('file_name'),
+            'file_size' => $request->input('file_size'),
+            'test_id' => $request->input('test_id'),
+            'part_id' => $request->input('part_id')
+        ]);
+        
+        $fileId = $request->input('file_id');
+        $fileName = $request->input('file_name');
+        $fileSize = $request->input('file_size');
+        $testId = $request->input('test_id');
+        $part = $request->input('part_id', 'part1');
+        
+        // Validate required parameters
+        if (empty($fileId) || empty($fileName) || empty($fileSize)) {
+            $error = 'Missing required parameters for chunk finalization';
+            Log::error($error, [
+                'file_id' => $fileId,
+                'file_name' => $fileName,
+                'file_size' => $fileSize
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => $error,
+                'missing_fields' => array_filter([
+                    empty($fileId) ? 'file_id' : null,
+                    empty($fileName) ? 'file_name' : null,
+                    empty($fileSize) ? 'file_size' : null
+                ])
+            ], 400);
+        }
         try {
-            // Get request data
-            $fileId = $request->input('file_id');
-            $fileName = $request->input('file_name');
-            $fileSize = (int)$request->input('file_size');
-            $testId = $request->input('test_id');
-            $part = $request->input('part', 'part1');
-
-            // Check if chunk directory exists
+            // Path to the chunk directory and info file
             $chunkDir = storage_path('app/tmp/' . $this->tempChunkDir . '/' . $fileId);
-            if (!file_exists($chunkDir)) {
-                Log::error('Chunk directory not found', ['dir' => $chunkDir]);
-                return response()->json(['success' => false, 'message' => 'Chunk papkasi topilmadi'], 400);
-            }
-
-            // Check info file
             $infoPath = $chunkDir . '/info.json';
-            if (!file_exists($infoPath)) {
-                Log::error('Chunk info file not found', ['path' => $infoPath]);
-                return response()->json(['success' => false, 'message' => 'Chunk ma\'lumotlari topilmadi'], 400);
+            
+            // Log directory and file info
+            Log::debug('Checking chunk directory and info file', [
+                'chunk_dir' => $chunkDir,
+                'info_path' => $infoPath,
+                'directory_exists' => file_exists($chunkDir),
+                'info_file_exists' => file_exists($infoPath)
+            ]);
+
+            // Validate chunk directory and info file
+            if (!file_exists($chunkDir) || !is_dir($chunkDir)) {
+                $error = 'Chunk directory not found';
+                Log::error($error, ['directory' => $chunkDir]);
+                return response()->json(['success' => false, 'message' => $error], 400);
             }
 
-            // Read info file
+            if (!file_exists($infoPath) || !is_readable($infoPath)) {
+                $error = 'Chunk info file not found or not readable';
+                Log::error($error, ['path' => $infoPath]);
+                return response()->json(['success' => false, 'message' => $error], 400);
+            }
+            
+            // Read and validate info file
             $info = json_decode(file_get_contents($infoPath), true);
-            if (!$info) {
-                Log::error('Invalid chunk info file', ['path' => $infoPath]);
-                return response()->json(['success' => false, 'message' => 'Chunk ma\'lumotlari noto\'g\'ri'], 400);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $error = 'Invalid chunk info format';
+                Log::error($error, ['error' => json_last_error_msg()]);
+                return response()->json(['success' => false, 'message' => $error], 400);
             }
 
-            // Verify all chunks are received
-            $totalChunks = $info['total_chunks'];
-            $receivedChunks = count($info['received_chunks']);
-
-            if ($receivedChunks < $totalChunks) {
-                Log::warning('Not all chunks received', [
-                    'received' => $receivedChunks,
-                    'total' => $totalChunks,
-                    'missing' => array_diff(range(0, $totalChunks - 1), $info['received_chunks'])
-                ]);
+            // Validate required chunk information
+            if (!isset($info['total_chunks'], $info['file_name'], $info['file_size'], $info['received_chunks'])) {
+                $error = 'Missing required chunk information in info file';
+                Log::error($error, ['info' => $info]);
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Barcha chunklar qabul qilinmagan',
-                    'data' => [
-                        'received' => $receivedChunks,
-                        'total' => $totalChunks
-                    ]
+                    'success' => false, 
+                    'message' => $error,
+                    'missing_fields' => array_diff(
+                        ['total_chunks', 'file_name', 'file_size', 'received_chunks'],
+                        array_keys($info)
+                    )
                 ], 400);
             }
-
-            // Create temp file for merging
-            $tempMergedPath = $chunkDir . '/' . $fileName;
-            $mergedFile = fopen($tempMergedPath, 'wb');
-
-            if (!$mergedFile) {
-                Log::error('Failed to create merged file', ['path' => $tempMergedPath]);
-                return response()->json(['success' => false, 'message' => 'Faylni birlashtirish uchun yaratib bo\'lmadi'], 500);
-            }
-
-            // Merge chunks in order
-            for ($i = 0; $i < $totalChunks; $i++) {
-                $chunkPath = $chunkDir . '/chunk_' . $i;
-                if (!file_exists($chunkPath)) {
-                    Log::error('Chunk file missing during merge', ['chunk' => $i, 'path' => $chunkPath]);
-                    fclose($mergedFile);
-                    return response()->json(['success' => false, 'message' => 'Chunk fayli topilmadi: ' . $i], 500);
-                }
-
-                $chunkContent = file_get_contents($chunkPath);
-                fwrite($mergedFile, $chunkContent);
-                unset($chunkContent); // Free memory
-            }
-
-            fclose($mergedFile);
-
-            // Verify file size with 5% tolerance
-            $actualSize = filesize($tempMergedPath);
-            $sizeDiff = abs($actualSize - $fileSize);
-            $tolerance = $fileSize * 0.05; // 5% tolerance
-
-            if ($sizeDiff > $tolerance) {
-                Log::error('File size mismatch', [
-                    'expected' => $fileSize,
-                    'actual' => $actualSize,
-                    'difference' => $sizeDiff,
-                    'tolerance' => $tolerance
+            
+            $totalChunks = (int)$info['total_chunks'];
+            $receivedChunks = is_array($info['received_chunks']) ? count($info['received_chunks']) : 0;
+            
+            // Log chunk validation info
+            Log::debug('Validating chunks', [
+                'expected_chunks' => $totalChunks,
+                'received_chunks' => $receivedChunks,
+                'received_chunks_list' => $info['received_chunks']
+            ]);
+            
+            // Check if all chunks are received
+            if ($receivedChunks !== $totalChunks) {
+                $missingChunks = array_diff(range(0, $totalChunks - 1), $info['received_chunks']);
+                $error = 'Not all chunks received. Missing: ' . implode(', ', $missingChunks);
+                
+                Log::error($error, [
+                    'expected' => $totalChunks,
+                    'received' => $receivedChunks,
+                    'missing' => $missingChunks
                 ]);
-                return response()->json(['success' => false, 'message' => 'Fayl hajmi mos kelmaydi'], 400);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Barcha chunk lar yuklanmagan',
+                    'received' => $receivedChunks,
+                    'missing_chunks' => $missingChunks
+                ], 400);
+            }
+            
+            // Create a temporary file for merging chunks
+            $tempMergedPath = tempnam(sys_get_temp_dir(), 'merged_');
+            if ($tempMergedPath === false) {
+                $error = 'Failed to create temporary file for merging';
+                Log::error($error, ['tmp_dir' => sys_get_temp_dir()]);
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Chunk larni birlashtirishda xatolik',
+                    'error' => $error
+                ], 500);
+            }
+            
+            Log::debug('Created temporary file for merging', ['path' => $tempMergedPath]);
+            
+            // Open the temporary file for writing
+            $mergedFile = fopen($tempMergedPath, 'wb');
+            if ($mergedFile === false) {
+                $error = 'Failed to open temporary file for writing';
+                Log::error($error, ['path' => $tempMergedPath]);
+                @unlink($tempMergedPath); // Clean up
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Chunk larni birlashtirishda xatolik',
+                    'error' => $error
+                ], 500);
             }
 
-            // Create UploadedFile instance from merged file
-            $uploadedFile = new \Illuminate\Http\UploadedFile(
-                $tempMergedPath,
-                $fileName,
-                mime_content_type($tempMergedPath),
-                null,
-                true // Test mode to avoid moving the file again
-            );
+            // Merge chunks with error handling
+            $totalBytes = 0;
+            
+            try {
+                for ($i = 0; $i < $totalChunks; $i++) {
+                    $chunkPath = $chunkDir . '/chunk_' . $i;
+                    
+                    // Verify chunk exists
+                    if (!file_exists($chunkPath)) {
+                        throw new Exception("Chunk $i not found: $chunkPath");
+                    }
+                    
+                    // Read and write chunk
+                    $chunkData = file_get_contents($chunkPath);
+                    if ($chunkData === false) {
+                        throw new Exception("Failed to read chunk $i");
+                    }
+                    
+                    $bytes = fwrite($mergedFile, $chunkData);
+                    if ($bytes === false) {
+                        throw new Exception("Failed to write chunk $i");
+                    }
+                    
+                    $totalBytes += $bytes;
+                    unset($chunkData); // Free memory
+                }
+                
+                // Close file handle
+                fclose($mergedFile);
+                $mergedFile = null;
+                
+                // Verify size
+                $actualSize = filesize($tempMergedPath);
+                $tolerance = $fileSize * 0.05;
+                
+                if (abs($actualSize - $fileSize) > $tolerance) {
+                    throw new Exception("File size mismatch. Expected: $fileSize, Got: $actualSize");
+                }
+                
+                Log::info('Merged chunks successfully', [
+                    'file' => $tempMergedPath,
+                    'size' => $actualSize,
+                    'chunks' => $totalChunks
+                ]);
+                
+            } catch (Exception $e) {
+                // Clean up on error
+                if ($mergedFile) @fclose($mergedFile);
+                if (file_exists($tempMergedPath)) @unlink($tempMergedPath);
+                
+                Log::error('Merge failed: ' . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Chunk larni birlashtirishda xatolik',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
 
-            // Process the file as a normal upload
-            $result = $this->processAndSaveFile($uploadedFile, $testId, $part);
-
-            // Clean up chunk files
-            $this->cleanupChunks($chunkDir);
-
-            return response()->json($result);
+            try {
+                // Verify file exists and is readable
+                if (!file_exists($tempMergedPath) || !is_readable($tempMergedPath)) {
+                    throw new Exception('Merged file not found or not readable');
+                }
+                
+                // Get MIME type
+                $mimeType = mime_content_type($tempMergedPath);
+                if ($mimeType === false) {
+                    throw new Exception('Failed to determine MIME type of merged file');
+                }
+                
+                // Create UploadedFile instance
+                $uploadedFile = new \Illuminate\Http\UploadedFile(
+                    $tempMergedPath,
+                    $fileName,
+                    $mimeType,
+                    null,
+                    true // Test mode to avoid moving the file again
+                );
+                
+                Log::debug('Created UploadedFile instance', [
+                    'path' => $tempMergedPath,
+                    'name' => $fileName,
+                    'mime' => $mimeType,
+                    'size' => filesize($tempMergedPath)
+                ]);
+                
+                // Process the file
+                $result = $this->processAndSaveFile($uploadedFile, $testId, $part);
+                
+                // Verify processing was successful
+                if (!is_object($result) || !method_exists($result, 'getData')) {
+                    throw new Exception('Invalid response from processAndSaveFile');
+                }
+                
+                $responseData = $result->getData();
+                if (!isset($responseData->success) || $responseData->success !== true) {
+                    throw new Exception('File processing failed: ' . ($responseData->message ?? 'Unknown error'));
+                }
+                
+                Log::info('Successfully processed uploaded file', [
+                    'file' => $fileName,
+                    'test_id' => $testId,
+                    'part' => $part
+                ]);
+                
+                return $result;
+                
+            } catch (Exception $e) {
+                Log::error('File processing failed: ' . $e->getMessage(), [
+                    'exception' => get_class($e),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'temp_file' => $tempMergedPath ?? null,
+                    'file_exists' => isset($tempMergedPath) ? file_exists($tempMergedPath) : null
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Faylni qayta ishlashda xatolik: ' . $e->getMessage()
+                ], 500);
+                
+            } finally {
+                // Always clean up temporary files
+                try {
+                    if (!empty($tempMergedPath) && file_exists($tempMergedPath)) {
+                        @unlink($tempMergedPath);
+                    }
+                    if (!empty($chunkDir) && is_dir($chunkDir)) {
+                        $this->cleanupChunks($chunkDir);
+                    }
+                } catch (Exception $e) {
+                    Log::error('Error during cleanup: ' . $e->getMessage());
+                }
+            }
 
         } catch (Exception $e) {
             Log::error('Error finalizing chunked upload', [
@@ -529,20 +812,68 @@ class AudioController extends Controller
      */
     private function detectFileKey(Request $request)
     {
-        $fileKeys = ['file', 'chunk', 'audio_file', 'audio_chunk'];
+        // List of possible file field names to check
+        $fileKeys = ['file', 'chunk', 'audio_file', 'audio_chunk', 'audio'];
+        
+        // Log all files in the request for debugging
+        $allFiles = $request->allFiles();
+        Log::debug('Detecting file key in request', [
+            'available_file_keys' => array_keys($allFiles),
+            'request_content_type' => $request->header('Content-Type'),
+            'request_method' => $request->method(),
+            'request_headers' => $request->headers->all()
+        ]);
 
+        // First, check for explicitly defined file keys
         foreach ($fileKeys as $key) {
-            if ($request->hasFile($key) && $request->file($key)->isValid()) {
-                return $key;
+            if ($request->hasFile($key)) {
+                $file = $request->file($key);
+                if ($file->isValid()) {
+                    Log::debug("Found valid file with key: $key", [
+                        'original_name' => $file->getClientOriginalName(),
+                        'size' => $file->getSize(),
+                        'mime_type' => $file->getMimeType(),
+                        'error' => $file->getError(),
+                        'error_message' => $this->getUploadErrorMessage($file->getError())
+                    ]);
+                    return $key;
+                } else {
+                    Log::warning("Invalid file found with key: $key", [
+                        'error_code' => $file->getError(),
+                        'error_message' => $this->getUploadErrorMessage($file->getError())
+                    ]);
+                }
             }
         }
 
         // If no predefined keys found, try to find any file in the request
-        foreach ($request->allFiles() as $key => $file) {
-            if ($file->isValid()) {
+        foreach ($allFiles as $key => $file) {
+            if (is_array($file)) {
+                // Handle array of files
+                foreach ($file as $f) {
+                    if ($f->isValid()) {
+                        Log::debug("Found valid file in array with key: $key");
+                        return $key;
+                    }
+                }
+            } elseif ($file->isValid()) {
+                Log::debug("Found valid file with dynamic key: $key");
                 return $key;
             }
         }
+
+        // Log detailed error if no valid file was found
+        $errorMessage = 'No valid file found in request. Available keys: ' . implode(', ', array_keys($allFiles));
+        Log::error($errorMessage, [
+            'available_files' => array_map(function($file) {
+                return is_array($file) ? 'array(' . count($file) . ')' : (
+                    is_object($file) ? get_class($file) : gettype($file)
+                );
+            }, $allFiles),
+            'request_data' => $request->except(['_token']),
+            'content_type' => $request->header('Content-Type'),
+            'request_method' => $request->method()
+        ]);
 
         return null;
     }

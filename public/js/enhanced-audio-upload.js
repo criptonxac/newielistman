@@ -601,8 +601,14 @@ class EnhancedAudioUploadManager {
                 { type: originalFile ? originalFile.type : 'application/octet-stream' }
             );
 
-            // Append the chunk file with the correct field name
+            // Append the chunk file with a more reliable field name
+            // Use 'file' as the primary field name since it's the first one checked by the backend
+            formData.append('file', chunkFile);
+            
+            // Also include the chunk data in the form
             formData.append('chunk', chunkFile);
+            
+            // Add chunk metadata
             formData.append('chunk_index', chunkIndex.toString());
             formData.append('total_chunks', totalChunks.toString());
             formData.append('file_id', fileId);
@@ -611,6 +617,9 @@ class EnhancedAudioUploadManager {
             // Add file size - this is required by the server
             if (originalFile) {
                 formData.append('file_size', originalFile.size.toString());
+            } else {
+                // Fallback to chunk size if original file is not available
+                formData.append('file_size', chunk.size.toString());
             }
 
             // Add CSRF token
@@ -625,6 +634,21 @@ class EnhancedAudioUploadManager {
 
             if (testId) formData.append('test_id', testId);
             if (partId) formData.append('part_id', partId);
+            
+            // Log form data for debugging
+            this.log(`📤 Uploading chunk ${chunkIndex + 1} of ${totalChunks} for file ${fileId} (${fileName})`, {
+                chunkIndex,
+                totalChunks,
+                fileId,
+                fileName,
+                fileSize: originalFile ? originalFile.size : chunk.size,
+                testId,
+                partId,
+                formData: Array.from(formData.entries()).map(([key, value]) => ({
+                    key,
+                    value: value instanceof File ? `${value.name} (${value.size} bytes)` : value
+                }))
+            });
 
             const xhr = new XMLHttpRequest();
 
@@ -680,10 +704,14 @@ class EnhancedAudioUploadManager {
     finalizeChunkedUpload(fileId, file) {
         return new Promise((resolve, reject) => {
             const formData = new FormData();
+            
+            // Add all required fields with consistent naming
             formData.append('file_id', fileId);
             formData.append('file_name', file.name);
             formData.append('file_size', file.size.toString());
             formData.append('finalize', 'true');
+            formData.append('chunk_index', '0');  // Required by the server
+            formData.append('total_chunks', '1');  // Required by the server
 
             // Add CSRF token and other data
             const csrfToken = this.getCSRFToken();
@@ -691,11 +719,25 @@ class EnhancedAudioUploadManager {
                 formData.append('_token', csrfToken);
             }
 
+            // Get test and part information
             const testId = document.querySelector('input[name="test_id"]')?.value;
             const partId = document.querySelector('input[name="part_id"]')?.value || document.querySelector('input[name="part"]')?.value;
 
             if (testId) formData.append('test_id', testId);
             if (partId) formData.append('part_id', partId);
+            
+            // Log the finalization request
+            this.log('📤 Finalizing chunked upload', {
+                fileId,
+                fileName: file.name,
+                fileSize: file.size,
+                testId,
+                partId,
+                formData: Array.from(formData.entries()).map(([key, value]) => ({
+                    key,
+                    value: value
+                }))
+            });
 
             const xhr = new XMLHttpRequest();
 

@@ -53,8 +53,31 @@ class TestAudioFile extends Model
     // Methods
     public function deleteFile()
     {
-        if (Storage::exists($this->file_path)) {
-            Storage::delete($this->file_path);
+        try {
+            // Try deleting from public storage first
+            $publicPath = 'public/' . ltrim($this->file_path, '/');
+            if (Storage::exists($publicPath)) {
+                Storage::delete($publicPath);
+                \Log::info("Deleted file from public storage: " . $publicPath);
+                return true;
+            }
+            
+            // If not found in public, try direct path
+            if (Storage::exists($this->file_path)) {
+                Storage::delete($this->file_path);
+                \Log::info("Deleted file using direct path: " . $this->file_path);
+                return true;
+            }
+            
+            \Log::warning("File not found for deletion: " . $this->file_path);
+            return false;
+            
+        } catch (\Exception $e) {
+            \Log::error("Error deleting file: " . $e->getMessage(), [
+                'file_path' => $this->file_path,
+                'exception' => $e
+            ]);
+            return false;
         }
     }
 }

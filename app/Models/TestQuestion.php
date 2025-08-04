@@ -9,19 +9,26 @@ class TestQuestion extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'test_id',
-        'part_number',
-        'question_number',
-        'question_text',
-        'question_type',
-        'options',
-        'correct_answer',
-        'correct_answers',
-        'points',
-        'explanation',
-        'image_path'
-    ];
+    protected $guarded = []; // Barcha maydonlarni mass assignment uchun ochiq qilish
+    
+    // Yoki aniq maydonlarni belgilash kerak bo'lsa:
+    // protected $fillable = [
+    //     'test_id',
+    //     'part_number',
+    //     'question_number',
+    //     'question_text',
+    //     'question_type',
+    //     'options',
+    //     'correct_answer',
+    //     'correct_answers',
+    //     'points',
+    //     'explanation',
+    //     'image_path',
+    //     'sort_order',
+    //     'created_by'
+    // ];
+    
+    // created_at va updated_at avtomatik to'ldiriladi, shuning uchun ularni kiritish shart emas
 
     protected $casts = [
         'options' => 'array',

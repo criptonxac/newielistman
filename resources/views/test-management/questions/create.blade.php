@@ -489,7 +489,7 @@
                     <h3 class="text-xl font-semibold text-white mb-2">Audio fayllarni yuklash</h3>
                     <p class="text-white/80 text-sm mb-6 max-w-md">Fayllarni tanlash uchun bosing yoki bu yerga olib tashlang.<br>Bir vaqtda bir nechta faylni yuklashingiz mumkin.</p>
 
-                    <input type="file" id="audio-upload" class="hidden" accept="audio/*">
+                    <input type="file" id="audio-upload" name="audio_file" class="hidden" accept="audio/*">
                     <input type="hidden" name="test_id" value="{{ $test->id ?? 1 }}">
                     <input type="hidden" name="part_id" value="{{ $part->id ?? 1 }}">
 
@@ -762,6 +762,45 @@
     </div>
 </div>
 
+<!-- Success Modal -->
+<div id="success-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-[100] flex items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95 -translate-y-5" id="success-modal-content">
+        <div class="p-6 relative">
+            <!-- Close Button -->
+            <button onclick="hideSuccessModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            
+            <!-- Success Icon -->
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            
+            <!-- Message -->
+            <div class="text-center">
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Muvaffaqiyatli saqlandi!</h3>
+                <p id="success-message" class="text-gray-600 mb-6">Ma'lumotlar muvaffaqiyatli saqlandi</p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex justify-center space-x-3">
+                <button onclick="hideSuccessModal()" class="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    Yaxshi
+                </button>
+            </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="h-1.5 bg-green-100 rounded-b-2xl overflow-hidden">
+            <div id="progress-bar" class="h-full bg-green-500 w-0 transition-all duration-3000 ease-linear"></div>
+        </div>
+    </div>
+</div>
+
 <!-- Help Modal -->
 <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
@@ -839,8 +878,24 @@
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
 <script src="{{ asset('js/questions-management.js') }}"></script>
-{{--<script src="{{ asset('js/enhanced-audio-upload.js') }}"></script>--}}
-<script src="{{ asset('js/simple-audio-upload.js') }}"></script>
-{{--<script src="{{ asset('js/audio-upload.js') }}"></script>--}}
+<script src="{{ asset('js/enhanced-audio-upload.js') }}"></script>
+<!-- <script src="{{ asset('js/simple-audio-upload.js') }}"></script> -->
+<!-- <script src="{{ asset('js/audio-upload.js') }}"></script> -->
+
+<script>
+// ESC tugmasi bilan modalni yopish
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.getElementById('success-modal').classList.add('hidden');
+    }
+});
+
+// Tashqariga bosganda modalni yopish
+document.getElementById('success-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.classList.add('hidden');
+    }
+});
+</script>
 
 @endsection

@@ -11,8 +11,29 @@ window.questionTemplate = null;
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Questions management system initializing...');
     initializeQuestionsManagement();
+    
+    // Agar sessionda xabar saqlangan bo'lsa, uni ko'rsatish
+    const successMessage = sessionStorage.getItem('showSuccessMessage');
+    if (successMessage) {
+        try {
+            const { message, questionsCount } = JSON.parse(successMessage);
+            let fullMessage = message;
+            
+            // Agar savollar soni mavjud bo'lsa, qo'shamiz
+            if (questionsCount !== undefined && questionsCount !== null) {
+                fullMessage = `${message}<br><span class="text-green-700 font-semibold">Jami savollar soni: ${questionsCount}</span>`;
+            }
+            
+            // Modalni ko'rsatish
+            showSuccessModal(fullMessage);
+            
+            // Sessiondan o'chirib tashlash
+            sessionStorage.removeItem('showSuccessMessage');
+        } catch (e) {
+            console.error('Error parsing success message:', e);
+        }
+    }
 });
 
 function initializeQuestionsManagement() {
@@ -392,6 +413,129 @@ function validateQuestionsForm() {
     }
     
     return true;
+}
+
+// Form yuborishni boshqarish
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('questions-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Form ma'lumotlarini yuborish
+            const formData = new FormData(form);
+            
+            // Yuborishni boshlash
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data); // Debug uchun
+                if (data.redirect) {
+                    // Redirect qilish va session orqali xabarni o'tkazish
+                    const successData = {
+                        message: data.message || 'Savollar muvaffaqiyatli saqlandi!',
+                        questionsCount: data.questions_count || 0
+                    };
+                    console.log('Saving to session:', successData);
+                    sessionStorage.setItem('showSuccessMessage', JSON.stringify(successData));
+                    window.location.href = data.redirect;
+                } else {
+                    // Agar redirect bo'lmasa, modalni ko'rsatish
+                    const message = data.message || 'Savol muvaffaqiyatli saqlandi!';
+                    if (data.questions_count !== undefined) {
+                        message += `<br><span class="text-green-700 font-semibold">Jami savollar soni: ${data.questions_count}</span>`;
+                    }
+                    showSuccessModal(message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                let errorMessage = 'Xatolik yuz berdi';
+                if (error.message) {
+                    errorMessage = error.message;
+                } else if (error.errors) {
+                    errorMessage = Object.values(error.errors).join('\n');
+                }
+                alert(errorMessage);
+            });
+        });
+    }
+});
+
+// Muvaffaqiyat modalini ko'rsatish
+function showSuccessModal(message) {
+    const modal = document.getElementById('success-modal');
+    const messageElement = document.getElementById('success-message');
+    const progressBar = document.getElementById('progress-bar');
+    
+    if (modal && messageElement && progressBar) {
+        // Xabar matnini yangilash (HTML formatini qo'llab-quvvatlash uchun innerHTML ishlatamiz)
+        messageElement.innerHTML = message;
+        
+        // Progress bar ni qayta tiklash
+        progressBar.style.width = '0';
+        
+        // Modalni ko'rsatish
+        modal.classList.remove('hidden');
+        
+        // Animatsiya uchun vaqt berish
+        setTimeout(() => {
+            modal.classList.add('opacity-100');
+            document.getElementById('success-modal-content').classList.remove('scale-95', '-translate-y-5');
+            document.getElementById('success-modal-content').classList.add('scale-100', 'translate-y-0');
+            
+            // Progress bar animatsiyasi
+            progressBar.style.width = '100%';
+            
+            // 3 soniyadan keyin modalni yopish
+            setTimeout(hideSuccessModal, 3000);
+        }, 50);
+    }
+}
+
+// Modalni yopish funksiyasi
+function hideSuccessModal() {
+    const modal = document.getElementById('success-modal');
+    if (modal) {
+        // Chiqish animatsiyasi
+        modal.classList.remove('opacity-100');
+        document.getElementById('success-modal-content').classList.remove('scale-100', 'translate-y-0');
+        document.getElementById('success-modal-content').classList.add('scale-95', '-translate-y-5');
+        
+        // Animatsiya tugagach modalni yashirish
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+}
+
+// ESC tugmasi bosilganda modalni yopish
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        hideSuccessModal();
+    }
+});
+
+// Modal tashqarisiga bosilganda yopish
+const modal = document.getElementById('success-modal');
+if (modal) {
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            hideSuccessModal();
+        }
+    });
 }
 
 // Export functions for external use

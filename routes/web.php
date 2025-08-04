@@ -3,7 +3,6 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AudioController;
 use App\Http\Controllers\EnumController;
-use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ListeningTestController;
 use App\Http\Controllers\ReadingTestController;
 use App\Http\Controllers\StudentController;
@@ -12,6 +11,7 @@ use App\Http\Controllers\TestCategoryController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\TestManagementController;
 use App\Http\Controllers\TestResultController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TestTypeController;
 use App\Http\Controllers\WritingTestController;
 use App\Models\Category;
@@ -19,6 +19,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 require __DIR__ . '/auth.php';
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +31,11 @@ require __DIR__ . '/auth.php';
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+// Audio upload endpoint
+Route::post('audio/upload', [TestManagementController::class, 'uploadAudio'])
+    ->name('audio.upload')
+    ->middleware(['auth', 'verified']);
 
 // ==========================================
 // PUBLIC ROUTES
@@ -81,10 +88,10 @@ Route::get('/dashboard', [AdminController::class, 'dashboardRedirect'])
 // Direct access to admin panel
 Route::get('/admin', function() {
     return redirect()->route('admin.dashboard');
-})->middleware(['auth', 'verified', 'admin'])->name('admin.direct');
+})->middleware(['auth', 'verified', 'role:admin'])->name('admin.direct');
 
 Route::prefix('admin')->name('admin.')
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'verified'])
     ->group(function () {
 
         // Dashboard
@@ -339,12 +346,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('audio.stream.path');
 });
 
-
-
-// File downloads (keeping your existing route)
-Route::get('/download/{type}/{id}', [HomeController::class, 'download'])
-    ->middleware(['auth', 'verified'])
-    ->name('download.file');
 
 
 // ==========================================
