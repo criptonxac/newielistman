@@ -16,6 +16,7 @@ class Test extends Model
         'description',
         'type',
         'duration_minutes',
+        'time_limit',
         'pass_score',
         'is_active',
         'attempts_allowed',
@@ -25,6 +26,7 @@ class Test extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'duration_minutes' => 'integer',
+        'time_limit' => 'integer',
         'pass_score' => 'integer',
         'attempts_allowed' => 'integer'
     ];
@@ -102,5 +104,22 @@ class Test extends Model
             ->where('part_number', $partNumber)
             ->orderBy('play_order')
             ->get();
+    }
+
+    /**
+     * Check if test has audio files
+     */
+    public function hasAudio()
+    {
+        return $this->audioFiles()->exists();
+    }
+
+    /**
+     * Get audio URL (accessor)
+     */
+    public function getAudioUrlAttribute()
+    {
+        $firstAudio = $this->audioFiles()->first();
+        return $firstAudio ? $firstAudio->file_path : null;
     }
 }

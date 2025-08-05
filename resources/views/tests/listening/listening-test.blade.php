@@ -21,32 +21,15 @@
 
 
 <div class="container listening-test-container">
-    <!-- Test Categories Navigation -->
-    <div class="bg-blue-600 text-white py-4 mb-4">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-8">
-                    <a href="{{ route('categories.index') }}" class="text-white hover:text-blue-200 px-3 py-2 text-sm font-medium transition-colors">
-                        <i class="fas fa-list-ul mr-1"></i> Kategoriyalar
-                    </a>
-                    <a href="{{ route('student.tests') }}" class="text-white hover:text-blue-200 px-3 py-2 text-sm font-medium transition-colors">
-                        <i class="fas fa-file-alt mr-1"></i> Barcha Testlar
-                    </a>
-                    <a href="{{ route('student.results') }}" class="text-white hover:text-blue-200 px-3 py-2 text-sm font-medium transition-colors">
-                        <i class="fas fa-chart-line mr-1"></i> Natijalar
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Header -->
+     <!-- Header -->
     <div class="header">
-        <div>
+        <div style="flex: 1;">
             <h1>{{ $test->title }}</h1>
             <div>IELTS Listening Test</div>
+            <div class="timer" id="timer" data-time-seconds="{{ $test->time_limit * 60 }}">{{ $test->time_limit }}:00</div>
         </div>
-        <div class="timer" id="timer" data-time-seconds="{{ $test->duration_minutes * 60 }}">{{ $test->duration_minutes }}:00</div>
+        
     </div>
 
     <!-- Parts Navigation -->
@@ -82,13 +65,16 @@
                     </div>
                     
                     <audio id="audioPlayer" controls style="width: 100%; margin-top: 1rem;">
-                        <source src="{{ $audioFiles['part1'] }}" type="audio/mpeg" id="audioSource">
+                        <source src="{{ $audioUrl }}" type="audio/mpeg" id="audioSource">
                         Your browser does not support the audio element.
                     </audio>
                 </div>
                 
                 <div style="background: white; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
-                    <h4>Instructions</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="margin: 0;">Instructions</h4>
+                        
+                    </div>
                     <ul class="text-sm">
                         <li>Listen carefully to the audio</li>
                         <li>You can only play the audio ONCE</li>
@@ -120,8 +106,27 @@
                     
                     <!-- Dynamic Questions for Part 1 -->
                     @php $questionNumber = 1; @endphp
-                    @foreach($part1Questions as $question)
-                        {!! $questionRenderer->render($question, $questionNumber++, $userAnswers) !!}
+                    @foreach($questionsByPart[1] ?? [] as $question)
+                        <div class="question-item mb-4">
+                            <div class="question-text mb-2">
+                                <strong>{{ $questionNumber++ }}.</strong> {{ $question->question_text }}
+                            </div>
+                            @if($question->question_type === 'multiple_choice')
+                                <div class="options">
+                                    @foreach(json_decode($question->options, true) as $key => $option)
+                                        <label class="block mb-2">
+                                            <input type="radio" name="question_{{ $question->id }}" value="{{ $key }}" 
+                                                {{ isset($existingAnswers[$question->id]) && $existingAnswers[$question->id]->answer_text == $key ? 'checked' : '' }}>
+                                            {{ $key }}. {{ $option }}
+                                        </label>
+                                    @endforeach
+                                </div>
+                            @else
+                                <input type="text" name="question_{{ $question->id }}" 
+                                    value="{{ $existingAnswers[$question->id]->answer_text ?? '' }}" 
+                                    class="w-full p-2 border rounded" placeholder="Javobingizni kiriting...">
+                            @endif
+                        </div>
                     @endforeach
                 </div>
             </div>
@@ -137,8 +142,27 @@
                     
                     <!-- Dynamic Questions for Part 2 -->
                     @php $questionNumber = 11; @endphp
-                    @foreach($part2Questions as $question)
-                        {!! $questionRenderer->render($question, $questionNumber++, $userAnswers) !!}
+                    @foreach($questionsByPart[2] ?? [] as $question)
+                        <div class="question-item mb-4">
+                            <div class="question-text mb-2">
+                                <strong>{{ $questionNumber++ }}.</strong> {{ $question->question_text }}
+                            </div>
+                            @if($question->question_type === 'multiple_choice')
+                                <div class="options">
+                                    @foreach(json_decode($question->options, true) as $key => $option)
+                                        <label class="block mb-2">
+                                            <input type="radio" name="question_{{ $question->id }}" value="{{ $key }}" 
+                                                {{ isset($existingAnswers[$question->id]) && $existingAnswers[$question->id]->answer_text == $key ? 'checked' : '' }}>
+                                            {{ $key }}. {{ $option }}
+                                        </label>
+                                    @endforeach
+                                </div>
+                            @else
+                                <input type="text" name="question_{{ $question->id }}" 
+                                    value="{{ $existingAnswers[$question->id]->answer_text ?? '' }}" 
+                                    class="w-full p-2 border rounded" placeholder="Javobingizni kiriting...">
+                            @endif
+                        </div>
                     @endforeach
                 </div>
             </div>
@@ -154,8 +178,27 @@
                     
                     <!-- Dynamic Questions for Part 3 -->
                     @php $questionNumber = 21; @endphp
-                    @foreach($part3Questions as $question)
-                        {!! $questionRenderer->render($question, $questionNumber++, $userAnswers) !!}
+                    @foreach($questionsByPart[3] ?? [] as $question)
+                        <div class="question-item mb-4">
+                            <div class="question-text mb-2">
+                                <strong>{{ $questionNumber++ }}.</strong> {{ $question->question_text }}
+                            </div>
+                            @if($question->question_type === 'multiple_choice')
+                                <div class="options">
+                                    @foreach(json_decode($question->options, true) as $key => $option)
+                                        <label class="block mb-2">
+                                            <input type="radio" name="question_{{ $question->id }}" value="{{ $key }}" 
+                                                {{ isset($existingAnswers[$question->id]) && $existingAnswers[$question->id]->answer_text == $key ? 'checked' : '' }}>
+                                            {{ $key }}. {{ $option }}
+                                        </label>
+                                    @endforeach
+                                </div>
+                            @else
+                                <input type="text" name="question_{{ $question->id }}" 
+                                    value="{{ $existingAnswers[$question->id]->answer_text ?? '' }}" 
+                                    class="w-full p-2 border rounded" placeholder="Javobingizni kiriting...">
+                            @endif
+                        </div>
                     @endforeach
                 </div>
             </div>
@@ -171,8 +214,27 @@
                     
                     <!-- Dynamic Questions for Part 4 -->
                     @php $questionNumber = 31; @endphp
-                    @foreach($part4Questions as $question)
-                        {!! $questionRenderer->render($question, $questionNumber++, $userAnswers) !!}
+                    @foreach($questionsByPart[4] ?? [] as $question)
+                        <div class="question-item mb-4">
+                            <div class="question-text mb-2">
+                                <strong>{{ $questionNumber++ }}.</strong> {{ $question->question_text }}
+                            </div>
+                            @if($question->question_type === 'multiple_choice')
+                                <div class="options">
+                                    @foreach(json_decode($question->options, true) as $key => $option)
+                                        <label class="block mb-2">
+                                            <input type="radio" name="question_{{ $question->id }}" value="{{ $key }}" 
+                                                {{ isset($existingAnswers[$question->id]) && $existingAnswers[$question->id]->answer_text == $key ? 'checked' : '' }}>
+                                            {{ $key }}. {{ $option }}
+                                        </label>
+                                    @endforeach
+                                </div>
+                            @else
+                                <input type="text" name="question_{{ $question->id }}" 
+                                    value="{{ $existingAnswers[$question->id]->answer_text ?? '' }}" 
+                                    class="w-full p-2 border rounded" placeholder="Javobingizni kiriting...">
+                            @endif
+                        </div>
                     @endforeach
                 </div>
             </div>
@@ -198,10 +260,10 @@
 <script>
     // Pass Laravel variables to JavaScript
     window.audioFiles = {
-        part1: "{{ $audioFiles['part1'] }}",
-        part2: "{{ $audioFiles['part2'] }}",
-        part3: "{{ $audioFiles['part3'] }}",
-        part4: "{{ $audioFiles['part4'] }}"
+        part1: "{{ $audioUrl }}",
+        part2: "{{ $audioUrl }}",
+        part3: "{{ $audioUrl }}",
+        part4: "{{ $audioUrl }}"
     };
     
     window.routes = {

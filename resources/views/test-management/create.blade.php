@@ -72,6 +72,13 @@
             <div class="mb-4">
                 <label for="attempts_allowed" class="block text-gray-700 text-sm font-bold mb-2">Ruxsat etilgan urinishlar soni:</label>
                 <input type="number" name="attempts_allowed" id="attempts_allowed" value="{{ old('attempts_allowed', 1) }}" min="1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <p class="text-gray-600 text-xs mt-1">Student necha marta test topshira olishini belgilaydi</p>
+            </div>
+            
+            <div class="mb-4">
+                <label for="time_limit" class="block text-gray-700 text-sm font-bold mb-2">Vaqt chegarasi (daqiqalarda):</label>
+                <input type="number" name="time_limit" id="time_limit" value="{{ old('time_limit', 30) }}" min="1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                <p class="text-gray-600 text-xs mt-1">Test uchun berilgan vaqt (daqiqalarda)</p>
             </div>
             
             <div class="mb-4">

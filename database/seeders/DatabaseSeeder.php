@@ -50,12 +50,9 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now()
         ]);
         
-        // Seed test data
+        // Seed only test categories
         $this->call([
             TestCategorySeeder::class,
-            TestSeeder::class,
-            TestQuestionSeeder::class,
-            TestDataSeeder::class,
         ]);
     }
 }

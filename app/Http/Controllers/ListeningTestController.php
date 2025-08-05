@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Test;
 use App\Models\TestAttempt;
 use App\Models\TestAnswer;
-use App\Models\Question;
+use App\Models\TestQuestion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -28,8 +28,8 @@ class ListeningTestController extends Controller
             return redirect()->back()->with('error', 'Bu testni topshira olmaysiz.');
         }
 
-        // Check if test is listening type
-        if ($test->type !== 'listening') {
+        // Check if test is listening type, familiarisation, or practice
+        if (!in_array($test->type, ['listening', 'familiarisation', 'practice'])) {
             return redirect()->back()->with('error', 'Bu listening test emas.');
         }
 
@@ -37,26 +37,19 @@ class ListeningTestController extends Controller
         $attempt = TestAttempt::create([
             'user_id' => Auth::id(),
             'test_id' => $test->id,
-            'attempt_code' => $this->generateAttemptCode(),
-            'status' => 'started',
+            'status' => 'in_progress',
             'started_at' => now(),
-            'current_part' => 1,
-            'current_question' => 1,
-            'total_questions' => $test->questions()->count(),
-            'time_remaining_seconds' => ($test->time_limit ?? 30) * 60,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
         ]);
 
-        return redirect()->route('listening.unified', ['test' => $test->slug, 'attempt' => $attempt->attempt_code]);
+        return redirect()->route('listening.unified', ['test' => $test->slug, 'attempt' => $attempt->id]);
     }
 
     /**
      * Show unified listening test (all parts in one page)
      */
-    public function unifiedTest(Test $test, $attemptCode)
+    public function unifiedTest(Test $test, $attemptId)
     {
-        $attempt = TestAttempt::where('attempt_code', $attemptCode)
+        $attempt = TestAttempt::where('id', $attemptId)
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
@@ -68,19 +61,19 @@ class ListeningTestController extends Controller
         // Get questions grouped by parts
         $questionsByPart = $test->questions()
             ->orderBy('part_number')
-            ->orderBy('question_number_in_part')
+            ->orderBy('question_number')
             ->get()
             ->groupBy('part_number');
 
         // Get existing answers
-        $existingAnswers = TestAnswer::where('attempt_id', $attempt->id)
+        $existingAnswers = TestAnswer::where('test_attempt_id', $attempt->id)
             ->get()
-            ->keyBy('question_id');
+            ->keyBy('test_question_id');
 
         // Audio URL
         $audioUrl = $test->hasAudio() ? $test->audio_url : null;
 
-        return view('tests.listening.unified', compact(
+        return view('tests.listening.listening-test', compact(
             'test',
             'attempt', 
             'questionsByPart',
@@ -90,34 +83,46 @@ class ListeningTestController extends Controller
     }
 
     /**
+     * Show instructions page
+     */
+    public function instructions(Test $test, $attemptId)
+    {
+        $attempt = TestAttempt::where('id', $attemptId)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        return view('tests.listening.instructions', compact('test', 'attempt'));
+    }
+
+    /**
      * Show specific part
      */
-    public function part1(Test $test, $attemptCode)
+    public function part1(Test $test, $attemptId)
     {
-        return $this->showPart($test, $attemptCode, 1);
+        return $this->showPart($test, $attemptId, 1);
     }
 
-    public function part2(Test $test, $attemptCode)
+    public function part2(Test $test, $attemptId)
     {
-        return $this->showPart($test, $attemptCode, 2);
+        return $this->showPart($test, $attemptId, 2);
     }
 
-    public function part3(Test $test, $attemptCode)
+    public function part3(Test $test, $attemptId)
     {
-        return $this->showPart($test, $attemptCode, 3);
+        return $this->showPart($test, $attemptId, 3);
     }
 
-    public function part4(Test $test, $attemptCode)
+    public function part4(Test $test, $attemptId)
     {
-        return $this->showPart($test, $attemptCode, 4);
+        return $this->showPart($test, $attemptId, 4);
     }
 
     /**
      * Show a specific part
      */
-    private function showPart(Test $test, $attemptCode, int $part)
+    private function showPart(Test $test, $attemptId, int $part)
     {
-        $attempt = TestAttempt::where('attempt_code', $attemptCode)
+        $attempt = TestAttempt::where('id', $attemptId)
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
@@ -127,20 +132,17 @@ class ListeningTestController extends Controller
         // Get questions for this part
         $questions = $test->questions()
             ->where('part_number', $part)
-            ->orderBy('question_number_in_part')
+            ->orderBy('question_number')
             ->get();
 
         // Get existing answers for this part
-        $existingAnswers = TestAnswer::where('attempt_id', $attempt->id)
-            ->whereIn('question_id', $questions->pluck('id'))
+        $existingAnswers = TestAnswer::where('test_attempt_id', $attempt->id)
+            ->whereIn('test_question_id', $questions->pluck('id'))
             ->get()
-            ->keyBy('question_id');
+            ->keyBy('test_question_id');
 
         // Audio URL
         $audioUrl = $test->hasAudio() ? $test->audio_url : null;
-
-        // Part configuration
-        $partConfig = $test->getPartConfig($part);
 
         return view("tests.listening.part{$part}", compact(
             'test',
@@ -148,17 +150,16 @@ class ListeningTestController extends Controller
             'questions',
             'existingAnswers',
             'audioUrl',
-            'partConfig',
-            'part'
+            'part',
         ));
     }
 
     /**
      * Save individual answer (AJAX)
      */
-    public function saveAnswer(Request $request, Test $test, $attemptCode)
+    public function saveAnswer(Request $request, Test $test, $attemptId)
     {
-        $attempt = TestAttempt::where('attempt_code', $attemptCode)
+        $attempt = TestAttempt::where('id', $attemptId)
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
@@ -167,12 +168,12 @@ class ListeningTestController extends Controller
         }
 
         $request->validate([
-            'question_id' => 'required|exists:questions,id',
+            'question_id' => 'required|exists:test_questions,id',
             'answer' => 'required',
             'question_type' => 'required|string'
         ]);
 
-        $question = Question::where('id', $request->question_id)
+        $question = TestQuestion::where('id', $request->question_id)
             ->where('test_id', $test->id)
             ->firstOrFail();
 
@@ -182,8 +183,8 @@ class ListeningTestController extends Controller
         // Save or update answer
         $testAnswer = TestAnswer::updateOrCreate(
             [
-                'attempt_id' => $attempt->id,
-                'question_id' => $question->id,
+                'test_attempt_id' => $attempt->id,
+                'test_question_id' => $question->id,
             ],
             [
                 'user_answer' => $processedAnswer['user_answer'],
@@ -215,14 +216,14 @@ class ListeningTestController extends Controller
     /**
      * Submit all answers and complete test
      */
-    public function submitAnswers(Request $request, Test $test, $attemptCode)
+    public function submitAnswers(Request $request, Test $test, $attemptId)
     {
-        $attempt = TestAttempt::where('attempt_code', $attemptCode)
+        $attempt = TestAttempt::where('id', $attemptId)
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
         if ($attempt->status === 'completed') {
-            return redirect()->route('listening.complete', ['test' => $test->slug, 'attempt' => $attemptCode]);
+            return redirect()->route('listening.complete', ['test' => $test->slug, 'attempt' => $attemptId]);
         }
 
         DB::beginTransaction();
@@ -238,8 +239,8 @@ class ListeningTestController extends Controller
                             
                             TestAnswer::updateOrCreate(
                                 [
-                                    'attempt_id' => $attempt->id,
-                                    'question_id' => $questionId,
+                                    'test_attempt_id' => $attempt->id,
+                                    'test_question_id' => $questionId,
                                 ],
                                 [
                                     'user_answer' => $processedAnswer['user_answer'],
@@ -264,7 +265,7 @@ class ListeningTestController extends Controller
 
             DB::commit();
 
-            return redirect()->route('listening.complete', ['test' => $test->slug, 'attempt' => $attemptCode]);
+            return redirect()->route('listening.complete', ['test' => $test->slug, 'attempt' => $attemptId]);
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -276,9 +277,9 @@ class ListeningTestController extends Controller
     /**
      * Show completion page
      */
-    public function complete(Test $test, $attemptCode)
+    public function complete(Test $test, $attemptId)
     {
-        $attempt = TestAttempt::where('attempt_code', $attemptCode)
+        $attempt = TestAttempt::where('id', $attemptId)
             ->where('user_id', Auth::id())
             ->where('status', 'completed')
             ->with(['test', 'testAnswers.question'])
@@ -290,9 +291,9 @@ class ListeningTestController extends Controller
     /**
      * Get time remaining (AJAX)
      */
-    public function getTimeRemaining(Request $request, Test $test, $attemptCode)
+    public function getTimeRemaining(Request $request, Test $test, $attemptId)
     {
-        $attempt = TestAttempt::where('attempt_code', $attemptCode)
+        $attempt = TestAttempt::where('id', $attemptId)
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
@@ -389,7 +390,7 @@ class ListeningTestController extends Controller
      */
     private function calculateScore(TestAttempt $attempt)
     {
-        $testAnswers = TestAnswer::where('attempt_id', $attempt->id)
+        $testAnswers = TestAnswer::where('test_attempt_id', $attempt->id)
             ->with('question')
             ->get();
 
@@ -469,6 +470,11 @@ class ListeningTestController extends Controller
      */
     private function convertToBandScore(int $correctAnswers, int $totalQuestions): float
     {
+        // Check for division by zero
+        if ($totalQuestions == 0) {
+            return 0.0;
+        }
+        
         if ($totalQuestions != 40) {
             // If not standard 40 questions, use percentage
             $percentage = ($correctAnswers / $totalQuestions) * 100;
@@ -516,7 +522,7 @@ class ListeningTestController extends Controller
      */
     private function updateAttemptProgress(TestAttempt $attempt)
     {
-        $answeredQuestions = TestAnswer::where('attempt_id', $attempt->id)->count();
+        $answeredQuestions = TestAnswer::where('test_attempt_id', $attempt->id)->count();
         $totalQuestions = $attempt->total_questions;
 
         $attempt->update([
@@ -537,8 +543,8 @@ class ListeningTestController extends Controller
                 ->where('part_number', $part)
                 ->pluck('id');
                 
-            $answeredInPart = TestAnswer::where('attempt_id', $attempt->id)
-                ->whereIn('question_id', $partQuestions)
+            $answeredInPart = TestAnswer::where('test_attempt_id', $attempt->id)
+                ->whereIn('test_question_id', $partQuestions)
                 ->count();
                 
             $progress["part_{$part}"] = [
@@ -580,15 +586,5 @@ class ListeningTestController extends Controller
         $this->calculateScore($attempt);
     }
 
-    /**
-     * Generate unique attempt code
-     */
-    private function generateAttemptCode(): string
-    {
-        do {
-            $code = 'LA' . strtoupper(substr(uniqid(), -8)); // LA = Listening Attempt
-        } while (TestAttempt::where('attempt_code', $code)->exists());
 
-        return $code;
-    }
 }

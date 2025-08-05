@@ -205,7 +205,8 @@ class TestManagementController extends Controller
             'description' => 'nullable|string',
             'type' => 'required|in:practice,sample,familiarisation,mock,real',
             'duration_minutes' => 'required|integer|min:1',
-            'pass_score' => 'required|integer|min:0|max:100',
+            'time_limit' => 'required|integer|min:1',
+            'pass_score' => 'nullable|integer|min:0|max:100',
             'attempts_allowed' => 'required|integer|min:1',
             'is_active' => 'boolean'
         ]);
@@ -263,7 +264,8 @@ class TestManagementController extends Controller
             'description' => 'nullable|string',
             'type' => 'required|in:practice,sample,familiarisation,mock,real',
             'duration_minutes' => 'required|integer|min:1',
-            'pass_score' => 'required|integer|min:0|max:100',
+            'time_limit' => 'required|integer|min:1',
+            'pass_score' => 'nullable|integer|min:0|max:100',
             'attempts_allowed' => 'required|integer|min:1',
             'is_active' => 'boolean'
         ]);

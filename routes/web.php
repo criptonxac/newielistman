@@ -389,13 +389,3 @@ Route::prefix('api')->name('api.')
             });
         });
     });
-
-// ==========================================
-// FALLBACK & ERROR ROUTES
-// ==========================================
-
-// Handle 404 for test routes specifically
-Route::fallback(function () {
-    return response()->view('errors.404', [], 404);
-});
-
