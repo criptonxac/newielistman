@@ -20,7 +20,7 @@
     @endif
 
     <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
-        <form action="{{ route('test-management.store') }}" method="POST">
+        <form action="{{ route('test-management.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <div class="mb-4">
@@ -33,11 +33,7 @@
                 <textarea name="description" id="description" rows="3" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ old('description') }}</textarea>
             </div>
             
-            <div class="mb-4 reading-passage-container" style="display: none;">
-                <label for="reading_passage" class="block text-gray-700 text-sm font-bold mb-2">O'qish uchun matn (Reading test uchun):</label>
-                <textarea name="reading_passage" id="reading_passage" rows="10" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ old('reading_passage') }}</textarea>
-                <p class="text-sm text-gray-600 mt-1">Bu matn reading test sahifasida ko'rsatiladi.</p>
-            </div>
+
             
             <div class="mb-4">
                 <label for="test_category_id" class="block text-gray-700 text-sm font-bold mb-2">Kategoriya:</label>
@@ -96,6 +92,25 @@
                 </button>
             </div>
             
+            <!-- Reading Passage (faqat Reading testlari uchun) -->
+            <div class="mb-4 reading-passage-container" style="display: none;">
+                <label for="passage" class="block text-gray-700 text-sm font-bold mb-2">Reading Passage (Matn):</label>
+                <textarea name="passage" id="passage" rows="15" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Reading test uchun matnni shu yerga kiriting...">{{ old('passage') }}</textarea>
+                <p class="text-gray-600 text-xs mt-1">Bu matn Reading test sahifasida ko'rsatiladi</p>
+            </div>
+            
+            <!-- Audio Files (faqat Listening testlari uchun) -->
+            <div class="mb-4 audio-upload-container" style="display: block;">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Audio Fayllar:</label>
+                
+                <!-- Audio fayllar yuklash -->
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                    <label for="audio_files" class="block text-sm text-gray-600 mb-2">Audio fayllar yuklash:</label>
+                    <input type="file" name="audio_files[]" id="audio_files" multiple accept="audio/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <p class="text-xs text-gray-500 mt-1">MP3, WAV, OGG formatlarini qo'llab-quvvatlaydi. Bir nechta fayl tanlash mumkin.</p>
+                </div>
+            </div>
+            
             <div class="mb-4 flex items-center">
                 <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active') ? 'checked' : '' }} class="mr-2">
                 <label for="is_active" class="text-gray-700 text-sm font-bold">Faol</label>
@@ -142,20 +157,38 @@
             }
         });
         
-        // Reading passage ko'rsatish/yashirish
+        // Reading passage va Audio upload ko'rsatish/yashirish
         const categorySelect = document.getElementById('test_category_id');
         const readingPassageContainer = document.querySelector('.reading-passage-container');
+        const audioUploadContainer = document.querySelector('.audio-upload-container');
+        
+        console.log('Category select:', categorySelect);
+        console.log('Reading passage container:', readingPassageContainer);
+        console.log('Audio upload container:', audioUploadContainer);
         
         // Kategoriya o'zgarganida tekshirish
         categorySelect.addEventListener('change', function() {
             const selectedOption = categorySelect.options[categorySelect.selectedIndex];
             const categoryName = selectedOption.textContent.trim().toLowerCase();
             
+            console.log('Selected category:', categoryName);
+            
             // Agar reading kategoriyasi bo'lsa, matn maydonini ko'rsatish
             if (categoryName.includes('reading') || categoryName.includes('o\'qish')) {
+                console.log('Showing reading passage container');
                 readingPassageContainer.style.display = 'block';
             } else {
+                console.log('Hiding reading passage container');
                 readingPassageContainer.style.display = 'none';
+            }
+            
+            // Agar listening kategoriyasi bo'lsa, audio upload ko'rsatish
+            if (categoryName.includes('listening') || categoryName.includes('tinglash')) {
+                console.log('Showing audio upload container');
+                audioUploadContainer.style.display = 'block';
+            } else {
+                console.log('Hiding audio upload container');
+                audioUploadContainer.style.display = 'none';
             }
         });
         
@@ -166,6 +199,10 @@
             
             if (categoryName.includes('reading') || categoryName.includes('o\'qish')) {
                 readingPassageContainer.style.display = 'block';
+            }
+            
+            if (categoryName.includes('listening') || categoryName.includes('tinglash')) {
+                audioUploadContainer.style.display = 'block';
             }
         }
     });

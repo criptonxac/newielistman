@@ -81,11 +81,9 @@
                                     <label class="block text-gray-700 text-sm font-bold mb-1">Savol turi:</label>
                                     <select name="questions[{{ $question->id }}][question_type]" class="question-type shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                                         <option value="multiple_choice" {{ $question->question_type == 'multiple_choice' ? 'selected' : '' }}>Ko'p tanlovli (Radio)</option>
-                                        <option value="short_answer" {{ $question->question_type == 'short_answer' ? 'selected' : '' }}>Ko'p to'g'ri javobli (Checkbox)</option>
-                                        <option value="true_false" {{ $question->question_type == 'true_false' ? 'selected' : '' }}>To'g'ri/Noto'g'ri</option>
                                         <option value="fill_blank" {{ $question->question_type == 'fill_blank' ? 'selected' : '' }}>Bo'sh joyni to'ldirish</option>
-                                        <option value="matching" {{ $question->question_type == 'matching' ? 'selected' : '' }}>Moslashtirish</option>
-                                        <option value="matching" {{ $question->question_type == 'drag_drop' ? 'selected' : '' }}>Drag-and-Drop</option>
+                                        <option value="true_false" {{ $question->question_type == 'true_false' ? 'selected' : '' }}>To'g'ri/Noto'g'ri</option>
+                                        <option value="drag_drop" {{ $question->question_type == 'drag_drop' ? 'selected' : '' }}>Drag & Drop</option>
                                         <option value="essay" {{ $question->question_type == 'essay' ? 'selected' : '' }}>Insho</option>
                                     </select>
                                 </div>
@@ -95,7 +93,7 @@
                                     <input type="number" name="questions[{{ $question->id }}][points]" value="{{ $question->points }}" min="1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                                 </div>
                                 
-                                <div class="mb-3 options-container {{ in_array($question->question_type, ['multiple_choice', 'short_answer']) ? '' : 'hidden' }}">
+                                <div class="mb-3 options-container {{ in_array($question->question_type, ['multiple_choice', 'drag_drop']) ? '' : 'hidden' }}">
                                     <label class="block text-gray-700 text-sm font-bold mb-1">Variantlar:</label>
                                     <div class="options-list">
                                         @if(isset($question->options) && is_array($question->options))
@@ -194,13 +192,11 @@
             <div class="mb-3">
                 <label class="block text-gray-700 text-sm font-bold mb-1">Savol turi:</label>
                 <select name="questions[new_QUESTION_INDEX][question_type]" class="question-type shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                    <option value="">Turni tanlang</option>
+                    <option value="">Savol turini tanlang</option>
                     <option value="multiple_choice">Ko'p tanlovli (Radio)</option>
-                    <option value="short_answer">Ko'p to'g'ri javobli (Checkbox)</option>
-                    <option value="true_false">To'g'ri/Noto'g'ri</option>
                     <option value="fill_blank">Bo'sh joyni to'ldirish</option>
-                    <option value="matching">Moslashtirish</option>
-                    <option value="matching">Drag-and-Drop</option>
+                    <option value="true_false">To'g'ri/Noto'g'ri</option>
+                    <option value="drag_drop">Drag & Drop</option>
                     <option value="essay">Insho</option>
                 </select>
             </div>
@@ -309,7 +305,8 @@
             if (questionTypeSelect) {
                 questionTypeSelect.addEventListener('change', function() {
                     const optionsContainer = question.querySelector('.options-container');
-                    if (this.value === 'multiple_choice' || this.value === 'short_answer') {
+                    const type = this.value;
+                    if (type === 'multiple_choice' || type === 'drag_drop') {
                         optionsContainer.classList.remove('hidden');
                     } else {
                         optionsContainer.classList.add('hidden');

@@ -33,9 +33,15 @@ class TestQuestion extends Model
     protected $casts = [
         'options' => 'array',
         'correct_answers' => 'array',
+        'form_structure' => 'array',
+        'drag_items' => 'array',
+        'drop_zones' => 'array',
         'points' => 'integer',
         'part_number' => 'integer',
-        'question_number' => 'integer'
+        'question_number' => 'integer',
+        'show_option_letters' => 'boolean',
+        'min_words' => 'integer',
+        'max_words' => 'integer'
     ];
 
     // Relationships
@@ -56,7 +62,7 @@ class TestQuestion extends Model
             return strtolower(trim($userAnswer)) === strtolower(trim($this->correct_answer));
         }
         
-        if ($this->question_type === 'fill_blank' || $this->question_type === 'short_answer') {
+        if ($this->question_type === 'fill_blank') {
             // Case insensitive comparison for fill blank
             $correctAnswer = strtolower(trim($this->correct_answer));
             $userAnswer = strtolower(trim($userAnswer));
@@ -73,7 +79,7 @@ class TestQuestion extends Model
             return $userAnswer === $correctAnswer;
         }
         
-        if ($this->question_type === 'matching' || $this->question_type === 'table_completion') {
+        if ($this->question_type === 'drag_drop') {
             // For complex question types, implement custom logic
             return $this->checkComplexAnswer($userAnswer);
         }

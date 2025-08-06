@@ -397,6 +397,49 @@
     </div>
     @endif
 
+    <!-- Reading Passage Display (faqat Reading testlari uchun) -->
+    @if($test->category && (str_contains(strtolower($test->category->name), 'reading') || str_contains(strtolower($test->category->name), 'o\'qish')))
+    <div class="bg-white shadow-lg rounded-xl overflow-hidden mb-8 border border-gray-100">
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-100">
+            <h2 class="text-xl font-semibold text-gray-800 flex items-center">
+                <svg class="w-6 h-6 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                Reading Passage (Matn)
+            </h2>
+        </div>
+        <div class="p-6">
+            @if($test->passage && !empty(trim($test->passage)))
+                <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                    <div class="prose max-w-none">
+                        {!! nl2br(e($test->passage)) !!}
+                    </div>
+                </div>
+                <p class="text-sm text-gray-600 mt-3">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Bu matn test topshiruvchilar uchun ko'rsatiladi
+                </p>
+            @else
+                <div class="text-center py-8">
+                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <p class="text-gray-500 text-lg mb-2">Reading passage mavjud emas</p>
+                    <p class="text-gray-400 text-sm">Test yaratishda passage matnini qo'shishni unutdingiz</p>
+                    <a href="{{ route('test-management.edit', $test->slug) }}" class="inline-flex items-center mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        Testni tahrirlash
+                    </a>
+                </div>
+            @endif
+        </div>
+    </div>
+    @endif
+
     <!-- Enhanced Test Information Card -->
     <div class="bg-white shadow-lg rounded-xl overflow-hidden mb-8 border border-gray-100">
         <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
@@ -666,10 +709,8 @@
                                             <label class="block text-gray-700 text-sm font-semibold mb-2">Savol turi:</label>
                                             <select name="questions[{{ $question->id }}][question_type]" class="question-type w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" required>
                                                 <option value="multiple_choice" {{ $question->question_type == 'multiple_choice' ? 'selected' : '' }}>Ko'p tanlovli (Radio)</option>
-                                                <option value="short_answer" {{ $question->question_type == 'short_answer' ? 'selected' : '' }}>Ko'p to'g'ri javobli (Checkbox)</option>
-                                                <option value="true_false" {{ $question->question_type == 'true_false' ? 'selected' : '' }}>To'g'ri/Noto'g'ri</option>
                                                 <option value="fill_blank" {{ $question->question_type == 'fill_blank' ? 'selected' : '' }}>Bo'sh joyni to'ldirish</option>
-                                                <option value="matching" {{ $question->question_type == 'matching' ? 'selected' : '' }}>Moslashtirish</option>
+                                                <option value="true_false" {{ $question->question_type == 'true_false' ? 'selected' : '' }}>To'g'ri/Noto'g'ri</option>
                                                 <option value="drag_drop" {{ $question->question_type == 'drag_drop' ? 'selected' : '' }}>Drag & Drop</option>
                                                 <option value="essay" {{ $question->question_type == 'essay' ? 'selected' : '' }}>Insho</option>
                                             </select>
@@ -877,7 +918,7 @@
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
-<script src="{{ asset('js/questions-management.js') }}"></script>
+<!-- <script src="{{ asset('js/questions-management.js') }}"></script> -->
 <script src="{{ asset('js/enhanced-audio-upload.js') }}"></script>
 <!-- <script src="{{ asset('js/simple-audio-upload.js') }}"></script> -->
 <!-- <script src="{{ asset('js/audio-upload.js') }}"></script> -->
