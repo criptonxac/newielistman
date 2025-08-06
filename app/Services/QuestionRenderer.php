@@ -7,7 +7,7 @@ use App\Models\Question;
 class QuestionRenderer
 {
     /**
-     * Render a question based on its format for IELTS Listening
+     * Render a question based on its type - only 5 supported types
      * 
      * @param Question $question
      * @param int $questionNumber
@@ -20,40 +20,22 @@ class QuestionRenderer
         // Get user answer for this question if it exists
         $userAnswer = $userAnswers[$question->id] ?? null;
         
-        // Render based on IELTS question format
-        switch ($question->question_format) {
-            case 'gap_filling':
-                return self::renderGapFilling($question, $questionNumber, $userAnswer, $isAdmin);
-                
+        // Render based on question type - only 5 supported types
+        switch ($question->question_type ?? $question->type) {
             case 'multiple_choice':
                 return self::renderMultipleChoice($question, $questionNumber, $userAnswer, $isAdmin);
                 
-            case 'matching':
-                return self::renderMatching($question, $questionNumber, $userAnswer, $isAdmin);
+            case 'fill_blank':
+                return self::renderFillBlank($question, $questionNumber, $userAnswer, $isAdmin);
                 
-            case 'map_labeling':
-                return self::renderMapLabeling($question, $questionNumber, $userAnswer, $isAdmin);
+            case 'true_false':
+                return self::renderTrueFalse($question, $questionNumber, $userAnswer, $isAdmin);
                 
-            case 'classification':
-                return self::renderClassification($question, $questionNumber, $userAnswer, $isAdmin);
+            case 'drag_drop':
+                return self::renderDragDrop($question, $questionNumber, $userAnswer, $isAdmin);
                 
-            case 'flow_chart':
-                return self::renderFlowChart($question, $questionNumber, $userAnswer, $isAdmin);
-                
-            case 'table_completion':
-                return self::renderTableCompletion($question, $questionNumber, $userAnswer, $isAdmin);
-                
-            case 'note_completion':
-                return self::renderNoteCompletion($question, $questionNumber, $userAnswer, $isAdmin);
-                
-            case 'sentence_completion':
-                return self::renderSentenceCompletion($question, $questionNumber, $userAnswer, $isAdmin);
-                
-            case 'summary_completion':
-                return self::renderSummaryCompletion($question, $questionNumber, $userAnswer, $isAdmin);
-                
-            case 'short_answer':
-                return self::renderShortAnswer($question, $questionNumber, $userAnswer, $isAdmin);
+            case 'essay':
+                return self::renderEssay($question, $questionNumber, $userAnswer, $isAdmin);
                 
             default:
                 return self::renderDefault($question, $questionNumber, $userAnswer, $isAdmin);
@@ -61,68 +43,7 @@ class QuestionRenderer
     }
 
     /**
-     * IELTS Gap Filling (Form Completion) - Part 1
-     */
-    private static function renderGapFilling(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
-    {
-        $gaps = json_decode($question->gaps_data, true) ?? [];
-        $userAnswers = is_array($userAnswer) ? $userAnswer : [];
-        
-        $html = '<div class="ielts-question gap-filling" data-question-id="' . $question->id . '">';
-        
-        // Question header
-        $html .= '<div class="question-header">';
-        $html .= '<span class="question-number">' . $questionNumber . '</span>';
-        $html .= '<div class="word-limit-hint">' . ($question->word_limit ?? 'ONE WORD AND/OR A NUMBER') . '</div>';
-        $html .= '</div>';
-        
-        // Context text
-        if ($question->context_text) {
-            $html .= '<div class="context-text">' . nl2br(htmlspecialchars($question->context_text)) . '</div>';
-        }
-        
-        // Question text with form fields
-        $html .= '<div class="question-content">';
-        $html .= '<h4>' . htmlspecialchars($question->question_text) . '</h4>';
-        
-        // Form fields
-        $html .= '<div class="form-fields">';
-        foreach ($gaps as $index => $gap) {
-            $gapNumber = $gap['number'] ?? ($questionNumber + $index);
-            $currentAnswer = $userAnswers[$index] ?? '';
-            
-            $html .= '<div class="form-field">';
-            $html .= '<label>' . htmlspecialchars($gap['label'] ?? $gap['text']) . '</label>';
-            $html .= '<div class="input-with-number">';
-            $html .= '<span class="field-number">' . $gapNumber . '</span>';
-            $html .= '<input type="text" ';
-            $html .= 'name="answers[' . $question->id . '][' . $index . ']" ';
-            $html .= 'value="' . htmlspecialchars($currentAnswer) . '" ';
-            $html .= 'class="gap-input" ';
-            $html .= 'placeholder="' . ($question->word_limit ?? 'ONE WORD AND/OR A NUMBER') . '" ';
-            $html .= 'data-question-id="' . $question->id . '" ';
-            $html .= 'data-gap-index="' . $index . '">';
-            $html .= '</div>';
-            $html .= '</div>';
-        }
-        $html .= '</div>'; // form-fields
-        $html .= '</div>'; // question-content
-        
-        // Admin preview
-        if ($isAdmin && $question->acceptable_answers) {
-            $html .= '<div class="admin-answers">';
-            $html .= '<strong>Acceptable answers:</strong> ';
-            $html .= htmlspecialchars(json_encode($question->acceptable_answers));
-            $html .= '</div>';
-        }
-        
-        $html .= '</div>'; // ielts-question
-        
-        return $html;
-    }
-
-    /**
-     * Multiple Choice - All Parts
+     * Multiple Choice Questions
      */
     private static function renderMultipleChoice(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
     {
@@ -133,7 +54,6 @@ class QuestionRenderer
         // Question header
         $html .= '<div class="question-header">';
         $html .= '<span class="question-number">' . $questionNumber . '</span>';
-        $html .= '<div class="instruction">Choose the correct letter, A, B, or C.</div>';
         $html .= '</div>';
         
         // Question text
@@ -169,399 +89,318 @@ class QuestionRenderer
     }
 
     /**
-     * Matching - Part 2
+     * Fill in the Blank Questions
      */
-    private static function renderMatching(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
+    private static function renderFillBlank(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
     {
-        $matchingItems = json_decode($question->matching_items, true) ?? [];
-        $matchingCategories = json_decode($question->matching_categories, true) ?? [];
-        $userAnswers = is_array($userAnswer) ? $userAnswer : json_decode($userAnswer, true) ?? [];
-        
-        $html = '<div class="ielts-question matching" data-question-id="' . $question->id . '">';
-        
-        // Header
-        $html .= '<div class="question-header">';
-        $html .= '<span class="question-number">Questions ' . $questionNumber . '-' . ($questionNumber + count($matchingItems) - 1) . '</span>';
-        $html .= '<div class="instruction">Choose the correct answer and move it into the gap.</div>';
-        $html .= '</div>';
-        
-        // Question text
-        $html .= '<div class="question-text">' . nl2br(htmlspecialchars($question->question_text)) . '</div>';
-        
-        // Matching interface
-        $html .= '<div class="matching-container">';
-        
-        // Left side - Items to match
-        $html .= '<div class="matching-items">';
-        $html .= '<h4>People/Items</h4>';
-        foreach ($matchingItems as $index => $item) {
-            $html .= '<div class="matching-item" data-item-id="' . $index . '">';
-            $html .= '<span class="item-number">' . ($questionNumber + $index) . '</span>';
-            $html .= '<span class="item-text">' . htmlspecialchars($item['text']) . '</span>';
-            $html .= '</div>';
-        }
-        $html .= '</div>';
-        
-        // Right side - Categories
-        $html .= '<div class="matching-categories">';
-        $html .= '<h4>Responsibilities</h4>';
-        foreach ($matchingCategories as $catIndex => $category) {
-            $html .= '<div class="matching-category drag-drop-zone" ';
-            $html .= 'data-category-id="' . $catIndex . '" ';
-            $html .= 'data-question-id="' . $question->id . '">';
-            $html .= '<div class="category-label">' . htmlspecialchars($category['text']) . '</div>';
-            $html .= '<div class="drop-zone" data-placeholder="Drop here"></div>';
-            $html .= '</div>';
-        }
-        $html .= '</div>';
-        
-        $html .= '</div>'; // matching-container
-        
-        // Hidden inputs for answers
-        foreach ($matchingItems as $index => $item) {
-            $value = $userAnswers[$index] ?? '';
-            $html .= '<input type="hidden" name="answers[' . $question->id . '][' . $index . ']" value="' . htmlspecialchars($value) . '">';
+        // Check if it's form completion type
+        if ($question->question_format === 'form_completion' && $question->form_structure) {
+            return self::renderFormCompletion($question, $questionNumber, $userAnswer, $isAdmin);
         }
         
-        $html .= '</div>';
+        // Check if it's passage fill type
+        if ($question->question_format === 'passage_fill') {
+            return self::renderPassageFill($question, $questionNumber, $userAnswer, $isAdmin);
+        }
         
-        return $html;
+        // Default simple fill blank
+        return self::renderSimpleFillBlank($question, $questionNumber, $userAnswer, $isAdmin);
     }
-
+    
     /**
-     * Map Labeling - Part 2
+     * Form Completion (like Home Insurance Quotation Form)
      */
-    private static function renderMapLabeling(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
+    private static function renderFormCompletion(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
     {
-        $mapData = json_decode($question->map_data, true) ?? [];
-        $mapLabels = $mapData['labels'] ?? [];
-        $mapAreas = $mapData['areas'] ?? [];
-        $userAnswers = is_array($userAnswer) ? $userAnswer : json_decode($userAnswer, true) ?? [];
+        $html = '<div class="ielts-question form-completion" data-question-id="' . $question->id . '">';
         
-        $html = '<div class="ielts-question map-labeling" data-question-id="' . $question->id . '">';
-        
-        // Header
+        // Question header
         $html .= '<div class="question-header">';
-        $html .= '<span class="question-number">Questions ' . $questionNumber . '-' . ($questionNumber + count($mapAreas) - 1) . '</span>';
-        $html .= '<div class="instruction">Label the map. Choose the correct answer and move it into the gap.</div>';
+        $html .= '<span class="question-number">Questions ' . $questionNumber . '</span>';
         $html .= '</div>';
         
-        // Question text
-        $html .= '<div class="question-text">' . nl2br(htmlspecialchars($question->question_text)) . '</div>';
+        // Instructions
+        $html .= '<div class="question-instructions">';
+        $html .= '<p>Complete the form below.</p>';
+        $html .= '<p><strong>Write NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.</strong></p>';
+        $html .= '</div>';
         
-        // Map container
-        $html .= '<div class="map-container">';
+        // Question text (form title)
+        $html .= '<div class="form-title">' . htmlspecialchars($question->question_text) . '</div>';
         
-        // Map image with clickable areas
-        if (isset($mapData['image'])) {
-            $html .= '<div class="map-image-container">';
-            $html .= '<img src="' . asset($mapData['image']) . '" alt="Map for labeling" class="map-image">';
+        // Form structure
+        $formStructure = is_array($question->form_structure) ? $question->form_structure : json_decode($question->form_structure, true);
+        
+        if ($formStructure && isset($formStructure['fields'])) {
+            $html .= '<div class="form-container">';
             
-            // Clickable areas
-            foreach ($mapAreas as $index => $area) {
-                $currentAnswer = $userAnswers[$index] ?? '';
-                $html .= '<div class="map-area clickable-area" ';
-                $html .= 'style="left: ' . $area['x'] . '%; top: ' . $area['y'] . '%;" ';
-                $html .= 'data-area-id="' . $index . '" ';
-                $html .= 'data-question-id="' . $question->id . '">';
-                $html .= '<span class="area-number">' . ($questionNumber + $index) . '</span>';
-                if ($currentAnswer) {
-                    $html .= '<div class="area-answer">' . htmlspecialchars($currentAnswer) . '</div>';
-                }
-                $html .= '</div>';
-            }
-            
-            $html .= '</div>';
-        }
-        
-        // Available labels
-        $html .= '<div class="map-labels">';
-        $html .= '<h4>Available Labels</h4>';
-        $html .= '<div class="labels-grid">';
-        foreach ($mapLabels as $label) {
-            $html .= '<div class="map-label draggable-label" draggable="true" data-label="' . htmlspecialchars($label) . '">';
-            $html .= htmlspecialchars($label);
-            $html .= '</div>';
-        }
-        $html .= '</div>';
-        $html .= '</div>';
-        
-        $html .= '</div>'; // map-container
-        
-        // Hidden inputs
-        foreach ($mapAreas as $index => $area) {
-            $value = $userAnswers[$index] ?? '';
-            $html .= '<input type="hidden" name="answers[' . $question->id . '][' . $index . ']" value="' . htmlspecialchars($value) . '">';
-        }
-        
-        $html .= '</div>';
-        
-        return $html;
-    }
-
-    /**
-     * Classification - Part 3
-     */
-    private static function renderClassification(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
-    {
-        $classificationItems = json_decode($question->classification_items, true) ?? [];
-        $categories = json_decode($question->classification_categories, true) ?? [];
-        $userAnswers = is_array($userAnswer) ? $userAnswer : json_decode($userAnswer, true) ?? [];
-        
-        $html = '<div class="ielts-question classification" data-question-id="' . $question->id . '">';
-        
-        // Header
-        $html .= '<div class="question-header">';
-        $html .= '<span class="question-number">Questions ' . $questionNumber . '-' . ($questionNumber + count($classificationItems) - 1) . '</span>';
-        $html .= '<div class="instruction">Choose the correct answer for each fossil category and move it into the gap.</div>';
-        $html .= '</div>';
-        
-        // Question text
-        $html .= '<div class="question-text">' . nl2br(htmlspecialchars($question->question_text)) . '</div>';
-        
-        // Classification interface
-        $html .= '<div class="classification-container">';
-        
-        // Left side - Features to classify
-        $html .= '<div class="features-list">';
-        $html .= '<h4>Features</h4>';
-        foreach ($classificationItems as $index => $item) {
-            $html .= '<div class="classification-item">';
-            $html .= '<span class="item-number">' . ($questionNumber + $index) . '</span>';
-            $html .= '<span class="item-text">' . htmlspecialchars($item['text']) . '</span>';
-            $html .= '</div>';
-        }
-        $html .= '</div>';
-        
-        // Right side - Categories
-        $html .= '<div class="categories-list">';
-        $html .= '<h4>Categories</h4>';
-        foreach ($categories as $catIndex => $category) {
-            $html .= '<div class="classification-category">';
-            $html .= '<div class="category-header">' . htmlspecialchars($category['text']) . '</div>';
-            $html .= '<div class="category-features drop-zone" ';
-            $html .= 'data-category-id="' . $catIndex . '" ';
-            $html .= 'data-question-id="' . $question->id . '"></div>';
-            $html .= '</div>';
-        }
-        $html .= '</div>';
-        
-        $html .= '</div>'; // classification-container
-        
-        // Hidden inputs
-        foreach ($classificationItems as $index => $item) {
-            $value = $userAnswers[$index] ?? '';
-            $html .= '<input type="hidden" name="answers[' . $question->id . '][' . $index . ']" value="' . htmlspecialchars($value) . '">';
-        }
-        
-        $html .= '</div>';
-        
-        return $html;
-    }
-
-    /**
-     * Flow Chart - Part 3
-     */
-    private static function renderFlowChart(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
-    {
-        $flowSteps = json_decode($question->flow_steps, true) ?? [];
-        $userAnswers = is_array($userAnswer) ? $userAnswer : [];
-        
-        $html = '<div class="ielts-question flow-chart" data-question-id="' . $question->id . '">';
-        
-        // Header
-        $html .= '<div class="question-header">';
-        $html .= '<span class="question-number">Questions ' . $questionNumber . '-' . ($questionNumber + count(array_filter($flowSteps, function($step) { return $step['type'] === 'input'; })) - 1) . '</span>';
-        $html .= '<div class="instruction">Complete the flow-chart. Choose the correct answer and move it into the gap.</div>';
-        $html .= '</div>';
-        
-        // Question text
-        $html .= '<div class="question-text">' . nl2br(htmlspecialchars($question->question_text)) . '</div>';
-        
-        // Flow chart
-        $html .= '<div class="flow-chart-container">';
-        $inputIndex = 0;
-        
-        foreach ($flowSteps as $stepIndex => $step) {
-            $html .= '<div class="flow-step">';
-            
-            if ($step['type'] === 'text') {
-                $html .= '<div class="flow-text">' . htmlspecialchars($step['content']) . '</div>';
-            } elseif ($step['type'] === 'input') {
-                $currentAnswer = $userAnswers[$inputIndex] ?? '';
-                $html .= '<div class="flow-input-container">';
-                $html .= '<span class="input-number">' . ($questionNumber + $inputIndex) . '</span>';
-                $html .= '<input type="text" ';
-                $html .= 'name="answers[' . $question->id . '][' . $inputIndex . ']" ';
-                $html .= 'value="' . htmlspecialchars($currentAnswer) . '" ';
-                $html .= 'class="flow-input" ';
-                $html .= 'placeholder="' . ($step['placeholder'] ?? 'Answer') . '" ';
-                $html .= 'data-question-id="' . $question->id . '" ';
-                $html .= 'data-input-index="' . $inputIndex . '">';
-                $html .= '</div>';
-                $inputIndex++;
-            }
-            
-            // Arrow (except for last step)
-            if ($stepIndex < count($flowSteps) - 1) {
-                $html .= '<div class="flow-arrow">↓</div>';
-            }
-            
-            $html .= '</div>';
-        }
-        
-        $html .= '</div>'; // flow-chart-container
-        $html .= '</div>';
-        
-        return $html;
-    }
-
-    /**
-     * Table Completion - Part 4
-     */
-    private static function renderTableCompletion(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
-    {
-        $tableStructure = json_decode($question->table_structure, true) ?? [];
-        $userAnswers = is_array($userAnswer) ? $userAnswer : [];
-        
-        $html = '<div class="ielts-question table-completion" data-question-id="' . $question->id . '">';
-        
-        // Header
-        $html .= '<div class="question-header">';
-        $html .= '<span class="question-number">Questions ' . $questionNumber . '-' . ($questionNumber + count(array_filter(array_flatten($tableStructure), function($cell) { return isset($cell['type']) && $cell['type'] === 'input'; })) - 1) . '</span>';
-        $html .= '<div class="instruction">Complete the table. Write ONE WORD ONLY for each answer.</div>';
-        $html .= '</div>';
-        
-        // Question text
-        $html .= '<div class="question-text">' . nl2br(htmlspecialchars($question->question_text)) . '</div>';
-        
-        // Table
-        $html .= '<table class="completion-table">';
-        $inputIndex = 0;
-        
-        foreach ($tableStructure as $rowIndex => $row) {
-            $html .= '<tr class="' . ($rowIndex === 0 ? 'header-row' : 'data-row') . '">';
-            
-            foreach ($row as $colIndex => $cell) {
-                $html .= '<td class="table-cell">';
+            foreach ($formStructure['fields'] as $field) {
+                $html .= '<div class="form-row">';
+                $html .= '<span class="form-label">' . htmlspecialchars($field['label']) . '</span>';
                 
-                if ($cell['type'] === 'text') {
-                    $html .= '<span class="cell-text">' . htmlspecialchars($cell['content']) . '</span>';
-                } elseif ($cell['type'] === 'input') {
-                    $currentAnswer = $userAnswers[$inputIndex] ?? '';
-                    $html .= '<div class="table-input-container">';
-                    $html .= '<span class="input-number">' . ($questionNumber + $inputIndex) . '</span>';
+                if ($field['type'] === 'input') {
+                    $fieldAnswer = is_array($userAnswer) ? ($userAnswer[$field['number']] ?? '') : '';
                     $html .= '<input type="text" ';
-                    $html .= 'name="answers[' . $question->id . '][' . $inputIndex . ']" ';
-                    $html .= 'value="' . htmlspecialchars($currentAnswer) . '" ';
-                    $html .= 'class="table-input" ';
-                    $html .= 'placeholder="ONE WORD ONLY" ';
+                    $html .= 'name="answers[' . $question->id . '][' . $field['number'] . ']" ';
+                    $html .= 'value="' . htmlspecialchars($fieldAnswer) . '" ';
+                    $html .= 'class="form-input" ';
+                    $html .= 'placeholder="' . $field['number'] . '" ';
                     $html .= 'data-question-id="' . $question->id . '" ';
-                    $html .= 'data-input-index="' . $inputIndex . '">';
-                    $html .= '</div>';
-                    $inputIndex++;
+                    $html .= 'data-field-number="' . $field['number'] . '">';
                 }
                 
-                $html .= '</td>';
+                if (isset($field['suffix'])) {
+                    $html .= '<span class="form-suffix">' . htmlspecialchars($field['suffix']) . '</span>';
+                }
+                
+                $html .= '</div>';
             }
             
-            $html .= '</tr>';
+            $html .= '</div>';
+        } else {
+            // Fallback to simple structure
+            $html .= '<div class="form-container">';
+            $html .= '<div class="form-row">';
+            $html .= '<span class="form-label">Name:</span>';
+            $html .= '<input type="text" name="answers[' . $question->id . ']" value="' . htmlspecialchars($userAnswer ?? '') . '" class="form-input" placeholder="1">';
+            $html .= '<span class="form-suffix">Court</span>';
+            $html .= '</div>';
+            $html .= '</div>';
         }
         
-        $html .= '</table>';
+        if ($isAdmin) {
+            $html .= '<div class="admin-answers"><strong>Correct:</strong> ' . htmlspecialchars($question->correct_answer) . '</div>';
+        }
+        
         $html .= '</div>';
         
         return $html;
     }
-
+    
     /**
-     * Note/Sentence/Summary Completion
+     * Passage Fill (text with gaps)
      */
-    private static function renderNoteCompletion(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
+    private static function renderPassageFill(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
     {
-        return self::renderTextWithBlanks($question, $questionNumber, $userAnswer, 'note-completion', $isAdmin);
-    }
-
-    private static function renderSentenceCompletion(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
-    {
-        return self::renderTextWithBlanks($question, $questionNumber, $userAnswer, 'sentence-completion', $isAdmin);
-    }
-
-    private static function renderSummaryCompletion(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
-    {
-        return self::renderTextWithBlanks($question, $questionNumber, $userAnswer, 'summary-completion', $isAdmin);
-    }
-
-    /**
-     * Generic text with blanks renderer
-     */
-    private static function renderTextWithBlanks(Question $question, int $questionNumber, $userAnswer, string $type, bool $isAdmin = false)
-    {
-        $userAnswers = is_array($userAnswer) ? $userAnswer : [];
+        $html = '<div class="ielts-question passage-fill" data-question-id="' . $question->id . '">';
         
-        $html = '<div class="ielts-question ' . $type . '" data-question-id="' . $question->id . '">';
-        
-        // Header
+        // Question header
         $html .= '<div class="question-header">';
-        $html .= '<span class="question-number">' . $questionNumber . '</span>';
-        $html .= '<div class="word-limit">' . ($question->word_limit ?? 'ONE WORD ONLY') . '</div>';
+        $html .= '<span class="question-number">Questions ' . $questionNumber . '</span>';
         $html .= '</div>';
         
-        // Question text with blanks
+        // Instructions
+        $html .= '<div class="question-instructions">';
+        $html .= '<p>Complete the form below.</p>';
+        $html .= '<p><strong>Write NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.</strong></p>';
+        $html .= '</div>';
+        
+        // Passage with gaps
         $questionText = $question->question_text;
-        $blankIndex = 0;
         
-        $pattern = '/\[blank\]|_{3,}|\[\s*_+\s*\]|\(\s*' . $questionNumber . '\s*\)/i';
-        
-        $html .= '<div class="text-with-blanks">';
-        $html .= preg_replace_callback($pattern, function($matches) use ($question, &$blankIndex, $userAnswers, $questionNumber) {
-            $currentAnswer = $userAnswers[$blankIndex] ?? '';
-            $inputNumber = $questionNumber + $blankIndex;
-            $blankIndex++;
+        // Replace numbered placeholders with input fields
+        $questionText = preg_replace_callback('/\{(\d+)\}/', function($matches) use ($question, $userAnswer) {
+            $number = $matches[1];
+            $fieldAnswer = is_array($userAnswer) ? ($userAnswer[$number] ?? '') : '';
             
-            return '<span class="blank-container">' .
-                   '<span class="blank-number">' . $inputNumber . '</span>' .
-                   '<input type="text" ' .
-                   'name="answers[' . $question->id . '][' . ($blankIndex-1) . ']" ' .
-                   'value="' . htmlspecialchars($currentAnswer) . '" ' .
-                   'class="blank-input" ' .
+            return '<input type="text" ' .
+                   'name="answers[' . $question->id . '][' . $number . ']" ' .
+                   'value="' . htmlspecialchars($fieldAnswer) . '" ' .
+                   'class="passage-input" ' .
+                   'placeholder="' . $number . '" ' .
                    'data-question-id="' . $question->id . '" ' .
-                   'data-blank-index="' . ($blankIndex-1) . '">' .
-                   '</span>';
+                   'data-field-number="' . $number . '">';
         }, $questionText);
-        $html .= '</div>';
+        
+        $html .= '<div class="passage-content">' . $questionText . '</div>';
+        
+        if ($isAdmin) {
+            $html .= '<div class="admin-answers"><strong>Correct:</strong> ' . htmlspecialchars($question->correct_answer) . '</div>';
+        }
         
         $html .= '</div>';
         
         return $html;
     }
-
+    
     /**
-     * Short Answer Questions
+     * Simple Fill Blank
      */
-    private static function renderShortAnswer(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
+    private static function renderSimpleFillBlank(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
     {
-        $html = '<div class="ielts-question short-answer" data-question-id="' . $question->id . '">';
+        $html = '<div class="ielts-question fill-blank" data-question-id="' . $question->id . '">';
         
+        // Question header
         $html .= '<div class="question-header">';
         $html .= '<span class="question-number">' . $questionNumber . '</span>';
-        $html .= '<div class="instruction">Answer the questions below. Write NO MORE THAN THREE WORDS AND/OR A NUMBER for each answer.</div>';
         $html .= '</div>';
         
+        $html .= '<div class="question-content">';
         $html .= '<div class="question-text">' . nl2br(htmlspecialchars($question->question_text)) . '</div>';
         
         $html .= '<div class="answer-container">';
         $html .= '<input type="text" ';
         $html .= 'name="answers[' . $question->id . ']" ';
         $html .= 'value="' . htmlspecialchars($userAnswer ?? '') . '" ';
-        $html .= 'class="short-answer-input" ';
-        $html .= 'placeholder="NO MORE THAN THREE WORDS AND/OR A NUMBER" ';
-        $html .= 'data-question-id="' . $question->id . '">';
+        $html .= 'class="fill-blank-input" ';
+        $html .= 'data-question-id="' . $question->id . '" ';
+        $html .= 'placeholder="Your answer here...">';
+        $html .= '</div>';
         $html .= '</div>';
         
         if ($isAdmin) {
-            $html .= '<div class="admin-answers"><strong>Acceptable answers:</strong> ' . htmlspecialchars(json_encode($question->acceptable_answers)) . '</div>';
+            $html .= '<div class="admin-answers"><strong>Correct:</strong> ' . htmlspecialchars($question->correct_answer) . '</div>';
         }
+        
+        $html .= '</div>';
+        
+        return $html;
+    }
+
+    /**
+     * True/False Questions
+     */
+    private static function renderTrueFalse(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
+    {
+        $html = '<div class="ielts-question true-false" data-question-id="' . $question->id . '">';
+        
+        $html .= '<div class="question-header">';
+        $html .= '<span class="question-number">' . $questionNumber . '</span>';
+        $html .= '</div>';
+        
+        $html .= '<div class="question-content">';
+        $html .= '<div class="question-text">' . nl2br(htmlspecialchars($question->question_text)) . '</div>';
+        
+        $html .= '<div class="true-false-options">';
+        $html .= '<label class="radio-option">';
+        $html .= '<input type="radio" name="answers[' . $question->id . ']" value="true" ' . ($userAnswer === 'true' ? 'checked' : '') . '>';
+        $html .= '<span>True</span>';
+        $html .= '</label>';
+        $html .= '<label class="radio-option">';
+        $html .= '<input type="radio" name="answers[' . $question->id . ']" value="false" ' . ($userAnswer === 'false' ? 'checked' : '') . '>';
+        $html .= '<span>False</span>';
+        $html .= '</label>';
+        $html .= '</div>';
+        $html .= '</div>';
+        
+        if ($isAdmin) {
+            $html .= '<div class="admin-answers"><strong>Correct:</strong> ' . htmlspecialchars($question->correct_answer) . '</div>';
+        }
+        
+        $html .= '</div>';
+        
+        return $html;
+    }
+
+    /**
+     * Drag and Drop Questions
+     */
+    private static function renderDragDrop(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
+    {
+        $dragItems = is_array($question->drag_items) ? $question->drag_items : json_decode($question->drag_items, true) ?? [];
+        $dropZones = is_array($question->drop_zones) ? $question->drop_zones : json_decode($question->drop_zones, true) ?? [];
+        
+        $html = '<div class="ielts-question drag-drop" data-question-id="' . $question->id . '">';
+        
+        // Question header
+        $html .= '<div class="question-header">';
+        $html .= '<span class="question-number">Questions ' . $questionNumber . '</span>';
+        $html .= '</div>';
+        
+        // Instructions
+        $html .= '<div class="question-instructions">';
+        $html .= '<p>Choose <strong>FIVE</strong> answers from the box and write the correct letter, <strong>A-H</strong>, next to questions ' . $questionNumber . '.</p>';
+        $html .= '</div>';
+        
+        // Question text
+        $html .= '<div class="question-text">' . nl2br(htmlspecialchars($question->question_text)) . '</div>';
+        
+        // Matching table
+        $html .= '<table class="matching-table">';
+        $html .= '<thead>';
+        $html .= '<tr>';
+        $html .= '<th>Continent</th>';
+        $html .= '<th>Answer</th>';
+        $html .= '</tr>';
+        $html .= '</thead>';
+        $html .= '<tbody>';
+        
+        // Drop zones (table rows)
+        foreach ($dropZones as $zone) {
+            $zoneId = $zone['id'] ?? '';
+            $zoneLabel = $zone['label'] ?? '';
+            $zoneAnswer = is_array($userAnswer) ? ($userAnswer[$zoneId] ?? '') : '';
+            
+            $html .= '<tr>';
+            $html .= '<td><strong>' . htmlspecialchars($zoneId) . '</strong> ' . htmlspecialchars($zoneLabel) . '</td>';
+            $html .= '<td>';
+            $html .= '<div class="drop-zone" data-zone-id="' . htmlspecialchars($zoneId) . '" data-question-id="' . $question->id . '">';
+            
+            if ($zoneAnswer) {
+                $html .= '<span class="dropped-item">' . htmlspecialchars($zoneAnswer) . '</span>';
+            } else {
+                $html .= '<span class="drop-placeholder">Drop here</span>';
+            }
+            
+            $html .= '<input type="hidden" name="answers[' . $question->id . '][' . $zoneId . ']" value="' . htmlspecialchars($zoneAnswer) . '" class="drop-input">';
+            $html .= '</div>';
+            $html .= '</td>';
+            $html .= '</tr>';
+        }
+        
+        $html .= '</tbody>';
+        $html .= '</table>';
+        
+        // Draggable options
+        $html .= '<div class="drag-options">';
+        $html .= '<div class="options-grid">';
+        
+        $letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+        foreach ($dragItems as $index => $item) {
+            $letter = $letters[$index] ?? ($index + 1);
+            $html .= '<div class="drag-item" data-value="' . htmlspecialchars($letter) . '" draggable="true">';
+            $html .= '<span class="item-letter">' . $letter . '</span> ' . htmlspecialchars($item);
+            $html .= '</div>';
+        }
+        
+        $html .= '</div>';
+        $html .= '</div>';
+        
+        if ($isAdmin) {
+            $html .= '<div class="admin-answers"><strong>Correct:</strong> ' . htmlspecialchars($question->correct_answer) . '</div>';
+        }
+        
+        $html .= '</div>';
+        
+        return $html;
+    }
+
+    /**
+     * Essay Questions
+     */
+    private static function renderEssay(Question $question, int $questionNumber, $userAnswer, bool $isAdmin = false)
+    {
+        $html = '<div class="ielts-question essay" data-question-id="' . $question->id . '">';
+        
+        $html .= '<div class="question-header">';
+        $html .= '<span class="question-number">' . $questionNumber . '</span>';
+        $html .= '<div class="word-limit-hint">' . ($question->word_limit ?? 'Minimum 250 words') . '</div>';
+        $html .= '</div>';
+        
+        $html .= '<div class="question-content">';
+        $html .= '<div class="question-text">' . nl2br(htmlspecialchars($question->question_text)) . '</div>';
+        
+        $html .= '<div class="essay-container">';
+        $html .= '<textarea name="answers[' . $question->id . ']" ';
+        $html .= 'class="essay-textarea" ';
+        $html .= 'rows="15" ';
+        $html .= 'data-question-id="' . $question->id . '" ';
+        $html .= 'placeholder="Write your essay here...">';
+        $html .= htmlspecialchars($userAnswer ?? '');
+        $html .= '</textarea>';
+        $html .= '<div class="word-counter">Words: <span class="word-count">0</span></div>';
+        $html .= '</div>';
+        $html .= '</div>';
         
         $html .= '</div>';
         
@@ -587,79 +426,6 @@ class QuestionRenderer
         $html .= 'value="' . htmlspecialchars($userAnswer ?? '') . '" ';
         $html .= 'class="default-input" ';
         $html .= 'data-question-id="' . $question->id . '">';
-        $html .= '</div>';
-        
-        $html .= '</div>';
-        
-        return $html;
-    }
-
-    /**
-     * Render question for admin/teacher form creation
-     */
-    public static function renderForAdmin(Question $question, int $index)
-    {
-        $formats = [
-            'gap_filling' => 'Gap Filling (Form Completion)',
-            'multiple_choice' => 'Multiple Choice',
-            'matching' => 'Matching',
-            'map_labeling' => 'Map Labeling',
-            'classification' => 'Classification',
-            'flow_chart' => 'Flow Chart',
-            'table_completion' => 'Table Completion',
-            'note_completion' => 'Note Completion',
-            'sentence_completion' => 'Sentence Completion',
-            'summary_completion' => 'Summary Completion',
-            'short_answer' => 'Short Answer'
-        ];
-
-        $html = '<div class="admin-question-form" data-question-index="' . $index . '">';
-        $html .= '<h4>Question ' . ($index + 1) . '</h4>';
-        
-        // Question format selector
-        $html .= '<div class="form-group">';
-        $html .= '<label>Question Format:</label>';
-        $html .= '<select name="questions[' . $index . '][question_format]" class="question-format-selector">';
-        foreach ($formats as $value => $label) {
-            $selected = ($question->question_format === $value) ? 'selected' : '';
-            $html .= '<option value="' . $value . '" ' . $selected . '>' . $label . '</option>';
-        }
-        $html .= '</select>';
-        $html .= '</div>';
-        
-        // Part number
-        $html .= '<div class="form-group">';
-        $html .= '<label>Part:</label>';
-        $html .= '<select name="questions[' . $index . '][part_number]">';
-        for ($i = 1; $i <= 4; $i++) {
-            $selected = ($question->part_number === $i) ? 'selected' : '';
-            $html .= '<option value="' . $i . '" ' . $selected . '>Part ' . $i . '</option>';
-        }
-        $html .= '</select>';
-        $html .= '</div>';
-        
-        // Question text
-        $html .= '<div class="form-group">';
-        $html .= '<label>Question Text:</label>';
-        $html .= '<textarea name="questions[' . $index . '][question_text]" rows="3">' . htmlspecialchars($question->question_text ?? '') . '</textarea>';
-        $html .= '</div>';
-        
-        // Context text
-        $html .= '<div class="form-group">';
-        $html .= '<label>Context Text (optional):</label>';
-        $html .= '<textarea name="questions[' . $index . '][context_text]" rows="2">' . htmlspecialchars($question->context_text ?? '') . '</textarea>';
-        $html .= '</div>';
-        
-        // Word limit
-        $html .= '<div class="form-group">';
-        $html .= '<label>Word Limit:</label>';
-        $html .= '<input type="text" name="questions[' . $index . '][word_limit]" value="' . htmlspecialchars($question->word_limit ?? 'ONE WORD AND/OR A NUMBER') . '">';
-        $html .= '</div>';
-        
-        // Acceptable answers
-        $html .= '<div class="form-group">';
-        $html .= '<label>Acceptable Answers (JSON):</label>';
-        $html .= '<textarea name="questions[' . $index . '][acceptable_answers]" rows="2">' . htmlspecialchars(json_encode($question->acceptable_answers ?? [])) . '</textarea>';
         $html .= '</div>';
         
         $html .= '</div>';

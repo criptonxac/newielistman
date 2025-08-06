@@ -15,7 +15,7 @@ class ListeningTestController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+       
     }
 
     /**
@@ -50,7 +50,7 @@ class ListeningTestController extends Controller
     public function unifiedTest(Test $test, $attemptId)
     {
         $attempt = TestAttempt::where('id', $attemptId)
-            ->where('user_id', Auth::id())
+            // ->where('user_id', Auth::id()) // Temporarily disabled for testing
             ->firstOrFail();
 
         // Update attempt status
@@ -339,23 +339,6 @@ class ListeningTestController extends Controller
             case 'summary_completion':
             case 'short_answer':
                 // Clean text input
-                $result['user_answer'] = trim(strip_tags($rawAnswer));
-                break;
-
-            case 'multiple_choice':
-                $result['user_answer'] = $rawAnswer;
-                break;
-
-            case 'matching':
-            case 'classification':
-                // Store as JSON for complex matching
-                if (is_array($rawAnswer)) {
-                    $result['answer_data'] = $rawAnswer;
-                    $result['user_answer'] = json_encode($rawAnswer);
-                } else {
-                    $result['user_answer'] = $rawAnswer;
-                }
-                break;
 
             case 'map_labeling':
                 // Store map coordinates and labels

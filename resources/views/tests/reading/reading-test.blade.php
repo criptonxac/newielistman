@@ -52,25 +52,61 @@
             <div class="overflow-y-auto" style="height: calc(100vh - 300px);">
                 <!-- Part 1 Content -->
                 <div id="part1-content" class="test-content active">
-                    <h2 class="text-xl font-bold mb-4">{{ isset($passages[0]) ? $passages[0]->title : 'Reading Passage 1' }}</h2>
+                    <h2 class="text-xl font-bold mb-4">Reading Passage 1</h2>
                     <div class="prose max-w-none reading-passage">
-                        {!! isset($passages[0]) ? $passages[0]->content : '<p>Passage content not available</p>' !!}
+                        @if($test->passage && !empty(trim($test->passage)))
+                            {!! nl2br(e($test->passage)) !!}
+                        @else
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    <p class="text-yellow-800 font-medium">Reading passage mavjud emas</p>
+                                </div>
+                                <p class="text-yellow-700 text-sm mt-1">Bu test uchun o'qish matni qo'shilmagan.</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 
                 <!-- Part 2 Content -->
                 <div id="part2-content" class="test-content hidden">
-                    <h2 class="text-xl font-bold mb-4">{{ isset($passages[1]) ? $passages[1]->title : 'Reading Passage 2' }}</h2>
+                    <h2 class="text-xl font-bold mb-4">Reading Passage 2</h2>
                     <div class="prose max-w-none reading-passage">
-                        {!! isset($passages[1]) ? $passages[1]->content : '<p>Passage content not available</p>' !!}
+                        @if($test->passage && !empty(trim($test->passage)))
+                            {!! nl2br(e($test->passage)) !!}
+                        @else
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    <p class="text-yellow-800 font-medium">Reading passage mavjud emas</p>
+                                </div>
+                                <p class="text-yellow-700 text-sm mt-1">Bu test uchun o'qish matni qo'shilmagan.</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 
                 <!-- Part 3 Content -->
                 <div id="part3-content" class="test-content hidden">
-                    <h2 class="text-xl font-bold mb-4">{{ isset($passages[2]) ? $passages[2]->title : 'Reading Passage 3' }}</h2>
+                    <h2 class="text-xl font-bold mb-4">Reading Passage 3</h2>
                     <div class="prose max-w-none reading-passage">
-                        {!! isset($passages[2]) ? $passages[2]->content : '<p>Passage content not available</p>' !!}
+                        @if($test->passage && !empty(trim($test->passage)))
+                            {!! nl2br(e($test->passage)) !!}
+                        @else
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    <p class="text-yellow-800 font-medium">Reading passage mavjud emas</p>
+                                </div>
+                                <p class="text-yellow-700 text-sm mt-1">Bu test uchun o'qish matni qo'shilmagan.</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -207,17 +243,17 @@
             initializeRadioHandling();
         }
         
-        // Initialize drag and drop functionality
-        if (typeof initializeDragAndDrop === 'function') {
-            initializeDragAndDrop();
-        }
+        // Question types are initialized automatically by question-types.js
     });
 </script>
 @endsection
 
+<script src="{{ asset('js/question-types.js') }}"></script>
+
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/ielts-custom.css') }}">
 <link rel="stylesheet" href="{{ asset('css/reading-test.css') }}">
+<link rel="stylesheet" href="{{ asset('css/question-types.css') }}">
 <meta name="test-slug" content="{{ $test->slug }}">
 <meta name="current-part" content="{{ $attempt->current_part }}">
 <meta name="attempt-code" content="{{ $attempt->attempt_code }}">

@@ -20,7 +20,7 @@
     @endif
 
     <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
-        <form action="{{ route('test-management.update', $test) }}" method="POST">
+        <form action="{{ route('test-management.update', $test) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             
@@ -110,6 +110,47 @@
                 </button>
             </div>
             
+            <!-- Reading Passage (faqat Reading testlari uchun) -->
+            <div class="mb-4 reading-passage-container" style="display: {{ ($test->category && (str_contains(strtolower($test->category->name), 'reading') || str_contains(strtolower($test->category->name), 'o\'qish'))) ? 'block' : 'none' }};">
+                <label for="passage" class="block text-gray-700 text-sm font-bold mb-2">Reading Passage (Matn):</label>
+                <textarea name="passage" id="passage" rows="15" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Reading test uchun matnni shu yerga kiriting...">{{ old('passage', $test->passage ?? '') }}</textarea>
+                <p class="text-gray-600 text-xs mt-1">Bu matn Reading test sahifasida ko'rsatiladi</p>
+            </div>
+            
+            <!-- Audio Files (faqat Listening testlari uchun) -->
+            <div class="mb-4 audio-upload-container" style="display: {{ ($test->category && (str_contains(strtolower($test->category->name), 'listening') || str_contains(strtolower($test->category->name), 'tinglash'))) ? 'block' : 'none' }};">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Audio Fayllar:</label>
+                
+                <!-- Mavjud audio fayllar -->
+                @if($test->audioFiles && $test->audioFiles->count() > 0)
+                    <div class="mb-4">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Mavjud audio fayllar:</h4>
+                        <div class="space-y-2">
+                            @foreach($test->audioFiles as $audio)
+                            <div class="flex items-center justify-between bg-gray-50 p-3 rounded">
+                                <div>
+                                    <span class="text-sm font-medium">{{ $audio->file_name }}</span>
+                                    <span class="text-xs text-gray-500 ml-2">({{ $audio->formatted_duration }})</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <audio controls class="h-8">
+                                        <source src="{{ $audio->url }}" type="audio/mpeg">
+                                    </audio>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+                
+                <!-- Yangi audio fayllar yuklash -->
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                    <label for="audio_files" class="block text-sm text-gray-600 mb-2">Yangi audio fayllar yuklash:</label>
+                    <input type="file" name="audio_files[]" id="audio_files" multiple accept="audio/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <p class="text-xs text-gray-500 mt-1">MP3, WAV, OGG formatlarini qo'llab-quvvatlaydi. Bir nechta fayl tanlash mumkin.</p>
+                </div>
+            </div>
+            
             <div class="mb-4 flex items-center">
                 <input type="checkbox" name="is_active" id="is_active" value="1" {{ old('is_active', $test->is_active) ? 'checked' : '' }} class="mr-2">
                 <label for="is_active" class="text-gray-700 text-sm font-bold">Faol</label>
@@ -156,9 +197,10 @@
             }
         });
         
-        // Reading passage ko'rsatish/yashirish
+        // Reading passage va Audio upload ko'rsatish/yashirish
         const categorySelect = document.getElementById('test_category_id');
         const readingPassageContainer = document.querySelector('.reading-passage-container');
+        const audioUploadContainer = document.querySelector('.audio-upload-container');
         
         // Kategoriya o'zgarganida tekshirish
         categorySelect.addEventListener('change', function() {
@@ -171,6 +213,13 @@
             } else {
                 readingPassageContainer.style.display = 'none';
             }
+            
+            // Agar listening kategoriyasi bo'lsa, audio upload ko'rsatish
+            if (categoryName.includes('listening') || categoryName.includes('tinglash')) {
+                audioUploadContainer.style.display = 'block';
+            } else {
+                audioUploadContainer.style.display = 'none';
+            }
         });
         
         // Sahifa yuklanganda ham tekshirish
@@ -180,6 +229,10 @@
             
             if (categoryName.includes('reading') || categoryName.includes('o\'qish')) {
                 readingPassageContainer.style.display = 'block';
+            }
+            
+            if (categoryName.includes('listening') || categoryName.includes('tinglash')) {
+                audioUploadContainer.style.display = 'block';
             }
         }
     });

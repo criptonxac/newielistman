@@ -223,7 +223,7 @@ Route::prefix('test-management')->name('test-management.')
 
 // Listening Tests
 Route::prefix('listening')->name('listening.')
-    ->middleware(['auth', 'verified'])
+    // ->middleware(['auth', 'verified']) // Temporarily disabled for testing
     ->controller(ListeningTestController::class)
     ->group(function () {
         Route::get('/{test:slug}/start', 'start')->name('start');

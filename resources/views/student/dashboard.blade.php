@@ -17,7 +17,7 @@
                         <div class="ml-5 w-0 flex-1">
                             <dl>
                                 <dt class="text-sm font-medium text-gray-500 truncate">Yakunlangan Testlar</dt>
-                                <dd class="text-3xl font-bold text-gray-900">{{ $stats['completed_tests'] }}</dd>
+                                <dd class="text-3xl font-bold text-gray-900">{{ isset($stats) ? $stats['completed_tests'] : 0 }}</dd>
                             </dl>
                         </div>
                     </div>
@@ -33,7 +33,7 @@
                         <div class="ml-5 w-0 flex-1">
                             <dl>
                                 <dt class="text-sm font-medium text-gray-500 truncate">O'rtacha Ball</dt>
-                                <dd class="text-3xl font-bold text-gray-900">{{ number_format($stats['average_score'], 1) }}%</dd>
+                                <dd class="text-3xl font-bold text-gray-900">{{ isset($stats) ? number_format($stats['average_score'], 1) : 0 }}%</dd>
                             </dl>
                         </div>
                     </div>
@@ -49,7 +49,7 @@
                         <div class="ml-5 w-0 flex-1">
                             <dl>
                                 <dt class="text-sm font-medium text-gray-500 truncate">Eng Yuqori Ball</dt>
-                                <dd class="text-3xl font-bold text-gray-900">{{ $stats['highest_score'] }}%</dd>
+                                <dd class="text-3xl font-bold text-gray-900">{{ isset($stats) ? $stats['highest_score'] : 0 }}%</dd>
                             </dl>
                         </div>
                     </div>
@@ -65,7 +65,7 @@
                         <div class="ml-5 w-0 flex-1">
                             <dl>
                                 <dt class="text-sm font-medium text-gray-500 truncate">Sarflangan Vaqt</dt>
-                                <dd class="text-3xl font-bold text-gray-900">{{ $stats['total_time'] }}s</dd>
+                                <dd class="text-3xl font-bold text-gray-900">{{ isset($stats) ? $stats['total_time'] : 0 }}s</dd>
                             </dl>
                         </div>
                     </div>
@@ -83,6 +83,7 @@
                             <i class="fas fa-list-ul mr-2 text-blue-500"></i>Mavjud Testlar
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            @if(isset($test_categories) && $test_categories)
                             @foreach($test_categories as $category)
                             <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                                 <div class="flex items-center mb-3">
@@ -101,6 +102,7 @@
                                 </a>
                             </div>
                             @endforeach
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -115,7 +117,7 @@
                             <i class="fas fa-history mr-2 text-green-500"></i>So'nggi Natijalar
                         </h3>
                         <div class="space-y-3">
-                            @forelse($recent_attempts as $attempt)
+                            @forelse(isset($recent_attempts) ? $recent_attempts : [] as $attempt)
                             <div class="border border-gray-200 rounded-lg p-3">
                                 <div class="flex justify-between items-start">
                                     <div>

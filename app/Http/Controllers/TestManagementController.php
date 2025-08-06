@@ -207,9 +207,17 @@ class TestManagementController extends Controller
             'duration_minutes' => 'required|integer|min:1',
             'time_limit' => 'required|integer|min:1',
             'pass_score' => 'nullable|integer|min:0|max:100',
+            'passage' => 'nullable|string',
             'attempts_allowed' => 'required|integer|min:1',
             'is_active' => 'boolean'
         ]);
+        
+        // Audio files validation (optional)
+        if ($request->hasFile('audio_files')) {
+            $request->validate([
+                'audio_files.*' => 'file|mimes:mp3,wav,ogg,m4a|max:10240'
+            ]);
+        }
 
         $validated['created_by'] = Auth::id();
         $validated['is_active'] = $request->has('is_active');
@@ -227,6 +235,26 @@ class TestManagementController extends Controller
         $validated['slug'] = $slug;
 
         $test = Test::create($validated);
+        
+        \Log::info('Test created successfully', [
+            'test_id' => $test->id,
+            'category_slug' => $test->category ? $test->category->slug : null,
+            'has_audio_files' => $request->hasFile('audio_files'),
+            'audio_files_count' => $request->hasFile('audio_files') ? count($request->file('audio_files')) : 0
+        ]);
+
+        // Audio fayllarni yuklash (Listening uchun)
+        if ($test->category && $test->category->slug === 'listening' && $request->hasFile('audio_files')) {
+            \Log::info('Starting audio upload for test', ['test_id' => $test->id]);
+            $this->handleAudioUpload($request, $test);
+            \Log::info('Audio upload completed for test', ['test_id' => $test->id]);
+        } else {
+            \Log::info('No audio upload needed', [
+                'test_id' => $test->id,
+                'category_slug' => $test->category ? $test->category->slug : null,
+                'has_audio_files' => $request->hasFile('audio_files')
+            ]);
+        }
 
         return redirect()
             ->route('test-management.questions.create', $test->id)
@@ -266,9 +294,17 @@ class TestManagementController extends Controller
             'duration_minutes' => 'required|integer|min:1',
             'time_limit' => 'required|integer|min:1',
             'pass_score' => 'nullable|integer|min:0|max:100',
+            'passage' => 'nullable|string',
             'attempts_allowed' => 'required|integer|min:1',
             'is_active' => 'boolean'
         ]);
+        
+        // Audio files validation (optional)
+        if ($request->hasFile('audio_files')) {
+            $request->validate([
+                'audio_files.*' => 'file|mimes:mp3,wav,ogg,m4a|max:10240'
+            ]);
+        }
 
         $validated['is_active'] = $request->has('is_active');
         $validated['slug'] = \Illuminate\Support\Str::slug($validated['title']);
@@ -298,7 +334,7 @@ class TestManagementController extends Controller
         $test->delete();
 
         return redirect()
-            ->route('teacher.tests.index')
+            ->route('test-management.index')
             ->with('success', 'Test muvaffaqiyatli o\'chirildi.');
     }
 
@@ -367,9 +403,15 @@ class TestManagementController extends Controller
         \Log::info('Raw request data: ' . file_get_contents('php://input'));
         
         if ($request->has('questions')) {
-            $questions = $request->questions;
-            \Log::info('Questions count: ' . count($questions));
-            \Log::info('Questions data: ' . json_encode($questions, JSON_PRETTY_PRINT));
+        $questions = $request->questions;
+        
+        // Agar JSON string bo'lsa, decode qilish
+        if (is_string($questions)) {
+            $questions = json_decode($questions, true);
+        }
+        
+        \Log::info('Questions count: ' . count($questions));
+        \Log::info('Questions data: ' . json_encode($questions, JSON_PRETTY_PRINT));
             
             // Validate each question
             foreach ($questions as $id => &$question) {
@@ -432,133 +474,7 @@ class TestManagementController extends Controller
         try {
             // Audio fayllarni yuklash (Listening uchun)
             if ($test->category && $test->category->slug === 'listening' && $request->hasFile('audio_files')) {
-                $files = $request->file('audio_files');
-                if (!is_array($files)) {
-                    $files = [$files];
-                }
-
-                \Log::info('Audio files found in request', [
-                    'file_count' => count($files),
-                    'file_names' => collect($files)->map(function($file) { 
-                        return $file ? $file->getClientOriginalName() : 'null'; 
-                    }),
-                    'request_data' => $request->all()
-                ]);
-                
-                // Avvalgi audio fayllarni o'chirib tashlash
-                $test->audioFiles()->delete();
-                
-                // Yangi fayllarni yuklash
-                foreach ($files as $index => $audioFile) {
-                    if (!$audioFile || !$audioFile->isValid()) {
-                        \Log::error('Invalid file in request', [
-                            'index' => $index,
-                            'file' => $audioFile ? $audioFile->getClientOriginalName() : 'null',
-                            'is_valid' => $audioFile ? $audioFile->isValid() : false,
-                            'error' => $audioFile ? $audioFile->getError() : 'No file'
-                        ]);
-                        continue;
-                    }
-
-                    // Fayl hajmi va formati tekshirish
-                    $maxSize = 10 * 1024 * 1024; // 10MB in bytes
-                    $allowedMimeTypes = [
-                        'audio/mpeg', 
-                        'audio/mp3', 
-                        'audio/wav', 
-                        'audio/ogg',
-                        'audio/x-wav',
-                        'audio/x-m4a'
-                    ];
-                    
-                    $mimeType = $audioFile->getMimeType();
-                    $fileSize = $audioFile->getSize();
-                    
-                    if (!in_array($mimeType, $allowedMimeTypes)) {
-                        $error = "Noto'g'ri fayl formati: {$mimeType}. Faqat MP3, WAV yoki OGG fayllarini yuklashingiz mumkin.";
-                        \Log::error($error, [
-                            'file' => $audioFile->getClientOriginalName(),
-                            'mime_type' => $mimeType,
-                            'allowed_types' => $allowedMimeTypes
-                        ]);
-                        throw new \Exception($error);
-                    }
-                    
-                    if ($fileSize > $maxSize) {
-                        $error = "Fayl hajmi " . round($fileSize/1024/1024, 2) . "MB, maksimal ruxsat etilgan hajm " . ($maxSize/1024/1024) . "MB";
-                        \Log::error($error, [
-                            'file' => $audioFile->getClientOriginalName(),
-                            'size' => $fileSize,
-                            'max_size' => $maxSize
-                        ]);
-                        throw new \Exception($error);
-                    }
-                    
-                    // Papka mavjudligini tekshirish
-                    $directory = 'audio/tests/' . $test->id;
-                    $fullPath = storage_path('app/public/' . $directory);
-                    
-                    if (!file_exists($fullPath)) {
-                        if (!mkdir($fullPath, 0755, true)) {
-                            $error = "Papka yaratib bo'lmadi: " . $fullPath;
-                            \Log::error($error);
-                            throw new \Exception($error);
-                        }
-                    }
-                    
-                    // Faylni saqlash
-                    try {
-                        $path = $audioFile->storeAs(
-                            $directory, 
-                            time() . '_' . preg_replace('/[^a-zA-Z0-9_.-]/', '_', $audioFile->getClientOriginalName()),
-                            'public'
-                        );
-                        
-                        if (!$path) {
-                            throw new \Exception('Faylni saqlab bo\'lmadi');
-                        }
-                        
-                        // Fayl mavjudligini tekshirish
-                        $fullPath = storage_path('app/public/' . $path);
-                        if (!file_exists($fullPath)) {
-                            throw new \Exception("Fayl saqlanganiga qaramay topilmadi: " . $fullPath);
-                        }
-                        
-                        // Fayl haqida ma'lumotlarni saqlash
-                        TestAudioFile::create([
-                            'test_id' => $test->id,
-                            'file_path' => $path,
-                            'file_name' => $audioFile->getClientOriginalName(),
-                            'part_number' => 1,
-                            'play_order' => $index + 1,
-                            'auto_play' => true,
-                            'duration_seconds' => 0
-                        ]);
-                        
-                        \Log::info('Audio file uploaded successfully', [
-                            'file_name' => $audioFile->getClientOriginalName(),
-                            'saved_path' => $path,
-                            'full_path' => $fullPath,
-                            'size' => $fileSize,
-                            'mime_type' => $mimeType
-                        ]);
-                        
-                    } catch (\Exception $e) {
-                        \Log::error('Error saving audio file', [
-                            'file' => $audioFile->getClientOriginalName(),
-                            'error' => $e->getMessage(),
-                            'trace' => $e->getTraceAsString()
-                        ]);
-                        throw new \Exception("Faylni saqlashda xatolik: " . $e->getMessage());
-                    }
-                }
-                \Log::info('All audio files processed successfully');
-            } else {
-                \Log::info('No audio files found in request or not a listening test', [
-                    'has_files' => $request->hasFile('audio_files'),
-                    'category_slug' => $test->category ? $test->category->slug : null,
-                    'is_listening' => $test->category && $test->category->slug === 'listening'
-                ]);
+                $this->handleAudioUpload($request, $test);
             }
 
             $savedQuestions = [];
@@ -754,17 +670,23 @@ class TestManagementController extends Controller
     /**
      * Yangi savol qo'shish
      */
-    public function addQuestion(Test $test)
+    public function addQuestion(Test $test, Request $request)
     {
         // Teacher faqat o'z testiga savol qo'shishi mumkin
         if (Auth::user()->isTeacher() && $test->created_by !== Auth::id()) {
             abort(403);
         }
 
-        $questionNumber = $test->questions()->count() + 1;
+        $currentPage = $request->get('page', 1);
+        $questionsPerPage = 10;
+        $existingQuestionsCount = $test->questions()->count();
+        
+        // Har sahifa uchun savol raqamini hisoblash
+        $questionNumber = (($currentPage - 1) * $questionsPerPage) + $existingQuestionsCount + 1;
+        
         $layout = Auth::user()->isAdmin() ? 'admin.dashboard' : 'teacher.dashboard';
 
-        return view('test-management.questions.add', compact('test', 'questionNumber', 'layout'));
+        return view('test-management.questions.add', compact('test', 'questionNumber', 'layout', 'currentPage'));
     }
 
     /**
@@ -1268,5 +1190,134 @@ class TestManagementController extends Controller
                 'line' => config('app.debug') ? $e->getLine() : null
             ], 500);
         }
+    }
+
+    /**
+     * Handle audio file upload for tests
+     */
+    private function handleAudioUpload(Request $request, Test $test)
+    {
+        $files = $request->file('audio_files');
+        if (!is_array($files)) {
+            $files = [$files];
+        }
+
+        \Log::info('Audio files found in request', [
+            'file_count' => count($files),
+            'file_names' => collect($files)->map(function($file) { 
+                return $file ? $file->getClientOriginalName() : 'null'; 
+            }),
+            'test_id' => $test->id
+        ]);
+        
+        // Avvalgi audio fayllarni o'chirib tashlash
+        $test->audioFiles()->delete();
+        
+        // Yangi fayllarni yuklash
+        foreach ($files as $index => $audioFile) {
+            if (!$audioFile || !$audioFile->isValid()) {
+                \Log::error('Invalid file in request', [
+                    'index' => $index,
+                    'file' => $audioFile ? $audioFile->getClientOriginalName() : 'null',
+                    'is_valid' => $audioFile ? $audioFile->isValid() : false,
+                    'error' => $audioFile ? $audioFile->getError() : 'No file'
+                ]);
+                continue;
+            }
+
+            // Fayl hajmi va formati tekshirish
+            $maxSize = 10 * 1024 * 1024; // 10MB in bytes
+            $allowedMimeTypes = [
+                'audio/mpeg', 
+                'audio/mp3', 
+                'audio/wav', 
+                'audio/ogg',
+                'audio/x-wav',
+                'audio/x-m4a'
+            ];
+            
+            $mimeType = $audioFile->getMimeType();
+            $fileSize = $audioFile->getSize();
+            
+            if (!in_array($mimeType, $allowedMimeTypes)) {
+                $error = "Noto'g'ri fayl formati: {$mimeType}. Faqat MP3, WAV yoki OGG fayllarini yuklashingiz mumkin.";
+                \Log::error($error, [
+                    'file' => $audioFile->getClientOriginalName(),
+                    'mime_type' => $mimeType,
+                    'allowed_types' => $allowedMimeTypes
+                ]);
+                throw new \Exception($error);
+            }
+            
+            if ($fileSize > $maxSize) {
+                $error = "Fayl hajmi " . round($fileSize/1024/1024, 2) . "MB, maksimal ruxsat etilgan hajm " . ($maxSize/1024/1024) . "MB";
+                \Log::error($error, [
+                    'file' => $audioFile->getClientOriginalName(),
+                    'size' => $fileSize,
+                    'max_size' => $maxSize
+                ]);
+                throw new \Exception($error);
+            }
+            
+            // Papka mavjudligini tekshirish
+            $directory = 'audio/tests/' . $test->id;
+            $fullPath = storage_path('app/public/' . $directory);
+            
+            if (!file_exists($fullPath)) {
+                if (!mkdir($fullPath, 0755, true)) {
+                    $error = "Papka yaratib bo'lmadi: " . $fullPath;
+                    \Log::error($error);
+                    throw new \Exception($error);
+                }
+            }
+            
+            // Faylni saqlash
+            try {
+                $path = $audioFile->storeAs(
+                    $directory, 
+                    time() . '_' . preg_replace('/[^a-zA-Z0-9_.-]/', '_', $audioFile->getClientOriginalName()),
+                    'public'
+                );
+                
+                if (!$path) {
+                    throw new \Exception('Faylni saqlab bo\'lmadi');
+                }
+                
+                // Fayl mavjudligini tekshirish
+                $fullPath = storage_path('app/public/' . $path);
+                if (!file_exists($fullPath)) {
+                    throw new \Exception("Fayl saqlanganiga qaramay topilmadi: " . $fullPath);
+                }
+                
+                // Fayl haqida ma'lumotlarni saqlash
+                TestAudioFile::create([
+                    'test_id' => $test->id,
+                    'file_path' => $path,
+                    'file_name' => $audioFile->getClientOriginalName(),
+                    'part_number' => 1,
+                    'play_order' => $index + 1,
+                    'auto_play' => true,
+                    'duration_seconds' => 0
+                ]);
+                
+                \Log::info('Audio file uploaded successfully', [
+                    'file_name' => $audioFile->getClientOriginalName(),
+                    'saved_path' => $path,
+                    'full_path' => $fullPath,
+                    'size' => $fileSize,
+                    'mime_type' => $mimeType,
+                    'test_id' => $test->id
+                ]);
+                
+            } catch (\Exception $e) {
+                \Log::error('Error saving audio file', [
+                    'file' => $audioFile->getClientOriginalName(),
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                throw new \Exception("Faylni saqlashda xatolik: " . $e->getMessage());
+            }
+        }
+        \Log::info('All audio files processed successfully for test', ['test_id' => $test->id]);
     }
 }

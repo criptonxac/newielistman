@@ -48,22 +48,22 @@ class ReadingTestController extends Controller
             
             // If no passages found, create default ones
             if ($passages->isEmpty()) {
-                // Create default passages from reading_passage field if available
-                if (!empty($test->reading_passage)) {
+                // Create default passages from passage field if available
+                if (!empty($test->passage)) {
                     $passages = collect([
                         (object)[
                             'title' => 'Reading Passage 1',
-                            'content' => $test->reading_passage,
+                            'content' => $test->passage,
                             'part' => 1
                         ],
                         (object)[
-                            'title' => 'Reading Passage 2',
-                            'content' => $test->reading_passage,
+                            'title' => 'Reading Passage 2', 
+                            'content' => $test->passage,
                             'part' => 2
                         ],
                         (object)[
                             'title' => 'Reading Passage 3',
-                            'content' => $test->reading_passage,
+                            'content' => $test->passage,
                             'part' => 3
                         ]
                     ]);
@@ -396,11 +396,6 @@ class ReadingTestController extends Controller
                     }, $rawAnswer);
                 }
                 return $this->normalizeAnswer($rawAnswer);
-                
-            case 'matching':
-            case 'classification':
-                // Return as is (usually an array of matches)
-                return $rawAnswer;
                 
             default:
                 // Default processing

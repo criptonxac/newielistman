@@ -18,6 +18,7 @@ class Test extends Model
         'duration_minutes',
         'time_limit',
         'pass_score',
+        'passage',
         'is_active',
         'attempts_allowed',
         'created_by'
@@ -120,6 +121,6 @@ class Test extends Model
     public function getAudioUrlAttribute()
     {
         $firstAudio = $this->audioFiles()->first();
-        return $firstAudio ? $firstAudio->file_path : null;
+        return $firstAudio ? $firstAudio->url : null;
     }
 }
