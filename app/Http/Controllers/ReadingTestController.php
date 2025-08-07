@@ -70,10 +70,10 @@ class ReadingTestController extends Controller
         $validated = $request->validate([
             'app_test_id' => 'required|exists:app_test,id',
             'title' => 'required|string|max:255',
-            'body' => 'required|string', // Frontend dan JSON string keladi
+            'body' => 'nullable|string', // Frontend dan JSON string keladi
             // Qo'shimcha maydonlar (ixtiyoriy, agar frontend dan alohida kelsa)
             'content_title' => 'nullable|string|max:255',
-            'content_image' => 'nullable|url',
+            'content_image' => 'nullable|string',
             'content_body' => 'nullable|string',
         ]);
 
@@ -87,6 +87,11 @@ class ReadingTestController extends Controller
             $validated['body'] = json_encode($contentData);
         }
 
+
+        // Agar body bo'sh bo'lsa, default JSON qo'yamiz
+        if (empty($validated['body'])) {
+            $validated['body'] = json_encode(['title' => '', 'image' => '', 'body' => '']);
+        }
         // JSON formatini tekshirish
         $bodyArray = json_decode($validated['body'], true);
         if (json_last_error() !== JSON_ERROR_NONE) {
@@ -134,10 +139,10 @@ class ReadingTestController extends Controller
         $validated = $request->validate([
             'app_test_id' => 'required|exists:app_test,id',
             'title' => 'required|string|max:255',
-            'body' => 'required|string', // Frontend dan JSON string keladi
+            'body' => 'nullable|string', // Frontend dan JSON string keladi
             // Qo'shimcha maydonlar (ixtiyoriy, agar frontend dan alohida kelsa)
             'content_title' => 'nullable|string|max:255',
-            'content_image' => 'nullable|url',
+            'content_image' => 'nullable|string',
             'content_body' => 'nullable|string',
         ]);
 
@@ -247,7 +252,7 @@ class ReadingTestController extends Controller
         $items = $query->orderBy('id', 'desc')->paginate(15);
         $types = ReadingTestItem::getTypes();
 
-        return view('reading-test-items.index', compact('readingTest', 'items', 'types'));
+        return view('reading-tests.items.index', compact('readingTest', 'items', 'types'));
     }
 
     /**
@@ -256,7 +261,7 @@ class ReadingTestController extends Controller
     public function itemCreate(ReadingTest $readingTest)
     {
         $types = ReadingTestItem::getTypes();
-        return view('reading-test-items.create', compact('readingTest', 'types'));
+        return view('reading-tests.items.create', compact('readingTest', 'types'));
     }
 
     /**
@@ -266,11 +271,16 @@ class ReadingTestController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'body' => 'required|array',
+            'body' => 'nullable|string',
             'type' => ['required', 'string', Rule::in(array_keys(ReadingTestItem::getTypes()))],
         ]);
 
         $validated['reading_test_id'] = $readingTest->id;
+        
+        // Agar body bo'sh bo'lsa, default JSON qo'yamiz
+        if (empty($validated['body'])) {
+            $validated['body'] = json_encode(['title' => '', 'body' => '', 'image_url' => '']);
+        }
 
         ReadingTestItem::create($validated);
 
@@ -284,7 +294,7 @@ class ReadingTestController extends Controller
      */
     public function itemShow(ReadingTest $readingTest, ReadingTestItem $item)
     {
-        return view('reading-test-items.show', compact('readingTest', 'item'));
+        return view('reading-tests.items.show', compact('readingTest', 'item'));
     }
 
     /**
@@ -293,7 +303,7 @@ class ReadingTestController extends Controller
     public function itemEdit(ReadingTest $readingTest, ReadingTestItem $item)
     {
         $types = ReadingTestItem::getTypes();
-        return view('reading-test-items.edit', compact('readingTest', 'item', 'types'));
+        return view('reading-tests.items.edit', compact('readingTest', 'item', 'types'));
     }
 
     /**
@@ -303,9 +313,14 @@ class ReadingTestController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'body' => 'required|array',
+            'body' => 'nullable|string',
             'type' => ['required', 'string', Rule::in(array_keys(ReadingTestItem::getTypes()))],
         ]);
+        
+        // Agar body bo'sh bo'lsa, default JSON qo'yamiz
+        if (empty($validated['body'])) {
+            $validated['body'] = json_encode(['title' => '', 'body' => '', 'image_url' => '']);
+        }
 
         $item->update($validated);
 

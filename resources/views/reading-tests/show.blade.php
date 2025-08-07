@@ -5,6 +5,9 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Reading Test ma'lumotlari</h1>
         <div class="flex space-x-2">
+            <a href="{{ route('reading-tests.items.index', $readingTest) }}" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
+                <i class="fas fa-list mr-2"></i>Items
+            </a>
             <a href="{{ route('reading-tests.edit', $readingTest) }}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
                 Tahrirlash
             </a>
