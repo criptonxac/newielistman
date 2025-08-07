@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\TestStatus;
 use App\Enums\TestType;
-use App\Models\Test;
+use App\Models\AppTest;
 use Illuminate\Http\Request;
 
 class TestTypeController extends Controller
@@ -23,9 +23,8 @@ class TestTypeController extends Controller
         }
         
         // Testlarni type bo'yicha olish
-        $tests = Test::where('type', $type)
+        $tests = AppTest::where('type', $type)
             ->where('is_active', true)
-            ->with('category')
             ->get();
         
         return view('tests.by-type', [

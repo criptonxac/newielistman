@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\AppTest;
 
 class User extends Authenticatable
 {
@@ -159,7 +160,7 @@ class User extends Authenticatable
      */
     public function canAttemptTest($testId): bool
     {
-        $test = Test::find($testId);
+        $test = AppTest::find($testId);
         if (!$test) {
             return false;
         }
@@ -258,8 +259,7 @@ class User extends Authenticatable
      */
     public function getAvailableTests()
     {
-        return Test::active()
-            ->with(['category', 'audioFiles'])
+        return AppTest::active()
             ->get()
             ->filter(function($test) {
                 return $this->canAttemptTest($test->id);

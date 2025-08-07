@@ -2,638 +2,356 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Test;
-use App\Models\TestAttempt;
-use App\Models\TestAnswer;
-use App\Models\Question;
-use App\Services\QuestionRenderer;
+use App\Models\ReadingTest;
+use App\Models\ReadingTestItem;
+use App\Models\AppTest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class ReadingTestController extends Controller
 {
-    /**
-     * Unified reading test view that shows all parts in one page
-     */
-    public function unifiedTest(Test $test, $attemptCode)
+    public function __construct()
     {
-        $attempt = TestAttempt::where('attempt_code', $attemptCode)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-        
-        // Update attempt status
-        if ($attempt->status === 'started') {
-            $attempt->update(['status' => 'in_progress']);
-        }
-        
-        // Get all questions for the test grouped by parts
-        $questionsByPart = $test->questions()
-            ->orderBy('part_number')
-            ->orderBy('question_number_in_part')
-            ->get()
-            ->groupBy('part_number');
-        
-        // Get existing answers
-        $existingAnswers = TestAnswer::where('attempt_id', $attempt->id)
-            ->get()
-            ->keyBy('question_id');
-        
-        // Get passages for the test
-        $passages = [];
-        try {
-            // Try to get passages from relationship if it exists
-            $passages = $test->passages()->get();
-            
-            // If no passages found, create default ones
-            if ($passages->isEmpty()) {
-                // Create default passages from passage field if available
-                if (!empty($test->passage)) {
-                    $passages = collect([
-                        (object)[
-                            'title' => 'Reading Passage 1',
-                            'content' => $test->passage,
-                            'part' => 1
-                        ],
-                        (object)[
-                            'title' => 'Reading Passage 2', 
-                            'content' => $test->passage,
-                            'part' => 2
-                        ],
-                        (object)[
-                            'title' => 'Reading Passage 3',
-                            'content' => $test->passage,
-                            'part' => 3
-                        ]
-                    ]);
-                }
+        $this->middleware('auth');
+        $this->middleware(function ($request, $next) {
+            if (!Auth::user()->isAdmin() && !Auth::user()->isTeacher()) {
+                abort(403, 'Faqat admin va teacher foydalanuvchilar reading test boshqara oladi');
             }
-        } catch (\Exception $e) {
-            \Log::warning('Error loading test passages: ' . $e->getMessage());
-            // Create passages with user content as fallback
-            $userContent = '<p>Bu yerda IELTS Reading Test uchun matn bo\'lishi kerak. Siz o\'quvchilar uchun tayyorlangan matnni ko\'rmoqdasiz. Bu matn o\'quvchilarning o\'qish ko\'nikmalarini rivojlantirish va baholash uchun ishlatiladi.</p>
-<p>IELTS Reading testida odatda ilmiy, akademik va umumiy mavzulardagi matnlar beriladi. Har bir qismda 13-14 ta savol bo\'lib, jami 40 ta savolga javob berishingiz kerak.</p>
-<p>Matnni diqqat bilan o\'qing va berilgan savollarga javob bering. Vaqtingizni to\'g\'ri taqsimlang - Reading testi uchun 60 daqiqa beriladi.</p>';
-            
-            $passages = collect([
-                (object)[
-                    'title' => 'Reading Passage 1',
-                    'content' => $userContent,
-                    'part' => 1
-                ],
-                (object)[
-                    'title' => 'Reading Passage 2',
-                    'content' => $userContent,
-                    'part' => 2
-                ],
-                (object)[
-                    'title' => 'Reading Passage 3',
-                    'content' => $userContent,
-                    'part' => 3
-                ]
-            ]);
-        }
-        
-        return view('tests.reading.reading-test', compact(
-            'test', 
-            'attempt', 
-            'questionsByPart',
-            'existingAnswers',
-            'passages'
-        ));
+            return $next($request);
+        });
     }
-    public function start(Test $test, Request $request)
+
+    /**
+     * Reading Test - Barcha testlar ro'yxati
+     */
+    public function index(Request $request)
     {
-        // Check if user can take this test
-        if (!$test->canUserAttempt(Auth::user()->id)) {
-            return redirect()->back()->with('error', 'Bu testni topshira olmaysiz.');
+        $query = ReadingTest::with('appTest');
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhereHas('appTest', function($appQuery) use ($search) {
+                      $appQuery->where('title', 'like', "%{$search}%");
+                  });
+            });
         }
 
-        // Check if test is reading type
-        if ($test->type !== 'reading') {
-            return redirect()->back()->with('error', 'Bu reading test emas.');
+        // Filter by app_test_id
+        if ($request->filled('app_test_id')) {
+            $query->where('app_test_id', $request->get('app_test_id'));
         }
 
-        // Create new attempt
-        $attempt = TestAttempt::create([
-            'user_id' => Auth::id(),
-            'test_id' => $test->id,
-            'attempt_code' => $this->generateAttemptCode(),
-            'status' => 'started',
-            'started_at' => now(),
-            'current_part' => 1,
-            'current_question' => 1,
-            'total_questions' => $test->questions()->count(),
-            'time_remaining_seconds' => ($test->time_limit ?? 60) * 60,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
+        $readingTests = $query->orderBy('id', 'desc')->paginate(15);
+        $appTests = AppTest::active()->get();
+
+        $layout = Auth::user()->isAdmin() ? 'layouts.main' : 'layouts.teacher';
+        return view('reading-tests.index', compact('readingTests', 'appTests', 'layout'));
+    }
+
+    /**
+     * Reading Test - Yangi test yaratish formasi
+     */
+    public function create()
+    {
+        $appTests = AppTest::active()->get();
+        $layout = Auth::user()->isAdmin() ? 'layouts.main' : 'layouts.teacher';
+        return view('reading-tests.create', compact('appTests', 'layout'));
+    }
+
+    /**
+     * Reading Test - Yangi testni saqlash
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'app_test_id' => 'required|exists:app_test,id',
+            'title' => 'required|string|max:255',
+            'body' => 'required|string', // Frontend dan JSON string keladi
+            // Qo'shimcha maydonlar (ixtiyoriy, agar frontend dan alohida kelsa)
+            'content_title' => 'nullable|string|max:255',
+            'content_image' => 'nullable|url',
+            'content_body' => 'nullable|string',
         ]);
 
-        return redirect()->route('reading.unified', ['test' => $test->slug, 'attempt' => $attempt->attempt_code]);
+        // Agar alohida content maydonlari kelgan bo'lsa, ularni JSON ga yig'amiz
+        if ($request->has('content_title') || $request->has('content_image') || $request->has('content_body')) {
+            $contentData = [
+                'title' => $validated['content_title'] ?? '',
+                'image' => $validated['content_image'] ?? '',
+                'body' => $validated['content_body'] ?? ''
+            ];
+            $validated['body'] = json_encode($contentData);
+        }
+
+        // JSON formatini tekshirish
+        $bodyArray = json_decode($validated['body'], true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return back()->withErrors(['body' => 'Body maydonida to\'g\'ri JSON format bo\'lishi kerak.'])->withInput();
+        }
+
+        // Faqat asosiy maydonlarni saqlash
+        ReadingTest::create([
+            'app_test_id' => $validated['app_test_id'],
+            'title' => $validated['title'],
+            'body' => $validated['body']
+        ]);
+
+        return redirect()
+            ->route('reading-tests.index')
+            ->with('success', 'Reading test muvaffaqiyatli yaratildi!');
     }
 
-    public function part1(Test $test, $attemptCode)
-    {
-        return $this->showPart($test, $attemptCode, 1);
-    }
-
-    public function part2(Test $test, $attemptCode)
-    {
-        return $this->showPart($test, $attemptCode, 2);
-    }
-
-    public function part3(Test $test, $attemptCode)
-    {
-        return $this->showPart($test, $attemptCode, 3);
-    }
-    
     /**
-     * Show a specific part
+     * Reading Test - Testni ko'rish
      */
-    private function showPart(Test $test, $attemptCode, int $part)
+    public function show(ReadingTest $readingTest)
     {
-        $attempt = TestAttempt::where('attempt_code', $attemptCode)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
+        $readingTest->load('appTest');
+        $layout = Auth::user()->isAdmin() ? 'layouts.main' : 'layouts.teacher';
+        return view('reading-tests.show', compact('readingTest', 'layout'));
+    }
 
-        // Update current part
-        $attempt->update(['current_part' => $part]);
+    /**
+     * Reading Test - Testni tahrirlash formasi
+     */
+    public function edit(ReadingTest $readingTest)
+    {
+        $appTests = AppTest::active()->get();
+        $readingTest->load('appTest');
+        $layout = Auth::user()->isAdmin() ? 'layouts.main' : 'layouts.teacher';
+        return view('reading-tests.edit', compact('readingTest', 'appTests', 'layout'));
+    }
 
-        // Get questions for this part
-        $questions = $test->questions()
-            ->where('part_number', $part)
-            ->orderBy('question_number_in_part')
+    /**
+     * Reading Test - Testni yangilash
+     */
+    public function update(Request $request, ReadingTest $readingTest)
+    {
+        $validated = $request->validate([
+            'app_test_id' => 'required|exists:app_test,id',
+            'title' => 'required|string|max:255',
+            'body' => 'required|string', // Frontend dan JSON string keladi
+            // Qo'shimcha maydonlar (ixtiyoriy, agar frontend dan alohida kelsa)
+            'content_title' => 'nullable|string|max:255',
+            'content_image' => 'nullable|url',
+            'content_body' => 'nullable|string',
+        ]);
+
+        // Agar alohida content maydonlari kelgan bo'lsa, ularni JSON ga yig'amiz
+        if ($request->has('content_title') || $request->has('content_image') || $request->has('content_body')) {
+            $contentData = [
+                'title' => $validated['content_title'] ?? '',
+                'image' => $validated['content_image'] ?? '',
+                'body' => $validated['content_body'] ?? ''
+            ];
+            $validated['body'] = json_encode($contentData);
+        }
+
+        // JSON formatini tekshirish
+        $bodyArray = json_decode($validated['body'], true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return back()->withErrors(['body' => 'Body maydonida to\'g\'ri JSON format bo\'lishi kerak.'])->withInput();
+        }
+
+        // Faqat asosiy maydonlarni yangilash
+        $readingTest->update([
+            'app_test_id' => $validated['app_test_id'],
+            'title' => $validated['title'],
+            'body' => $validated['body']
+        ]);
+
+        return redirect()
+            ->route('reading-tests.index')
+            ->with('success', 'Reading test muvaffaqiyatli yangilandi!');
+    }
+
+    /**
+     * Reading Test - Testni o'chirish
+     */
+    public function destroy(ReadingTest $readingTest)
+    {
+        $readingTest->delete();
+
+        return redirect()
+            ->route('reading-tests.index')
+            ->with('success', 'Reading test muvaffaqiyatli o\'chirildi!');
+    }
+
+    /**
+     * Reading Test - JSON body formatini ko'rish (AJAX)
+     */
+    public function getBodyFormat()
+    {
+        $format = [
+            'passages' => [
+                [
+                    'title' => 'Passage 1 Title',
+                    'content' => 'Passage 1 content here...',
+                    'questions_count' => 13
+                ],
+                [
+                    'title' => 'Passage 2 Title', 
+                    'content' => 'Passage 2 content here...',
+                    'questions_count' => 13
+                ],
+                [
+                    'title' => 'Passage 3 Title',
+                    'content' => 'Passage 3 content here...',
+                    'questions_count' => 14
+                ]
+            ],
+            'instructions' => 'General instructions for the reading test',
+            'time_limit' => 60,
+            'total_questions' => 40
+        ];
+
+        return response()->json($format);
+    }
+
+    /**
+     * Reading Test - App Test bo'yicha reading testlarni olish (AJAX)
+     */
+    public function getByAppTest(AppTest $appTest)
+    {
+        $readingTests = ReadingTest::where('app_test_id', $appTest->id)
+            ->select('id', 'title', 'body')
             ->get();
 
-        // Get existing answers for this part
-        $existingAnswers = TestAnswer::where('attempt_id', $attempt->id)
-            ->whereIn('question_id', $questions->pluck('id'))
-            ->get()
-            ->keyBy('question_id');
-
-        // Get passage for this part
-        $passage = null;
-        try {
-            $passage = $test->passages()->where('part', $part)->first();
-        } catch (\Exception $e) {
-            // Fallback content if passage not found
-            $userContent = '<p>Bu yerda IELTS Reading Test uchun matn bo\'lishi kerak. Siz o\'quvchilar uchun tayyorlangan matnni ko\'rmoqdasiz.</p>';
-            $passage = (object)[
-                'title' => 'Reading Passage ' . $part,
-                'content' => $userContent,
-                'part' => $part
-            ];
-        }
-
-        return view('tests.reading.part' . $part, compact(
-            'test', 
-            'attempt', 
-            'questions', 
-            'existingAnswers', 
-            'passage'
-        ));
-    }
-    
-    public function submitAnswers(Request $request, Test $test, $attemptCode)
-    {
-        $attempt = TestAttempt::where('attempt_code', $attemptCode)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-        
-        // Only save answers for POST requests
-        if ($request->isMethod('post')) {
-            // Process and save each answer
-            $answers = $request->input('answers', []);
-            
-            foreach ($answers as $questionId => $rawAnswer) {
-                $question = Question::find($questionId);
-                if (!$question) continue;
-                
-                // Process answer based on question type
-                $processedAnswer = $this->processAnswer($rawAnswer, $question->question_format);
-                
-                // Save or update answer
-                TestAnswer::updateOrCreate(
-                    ['attempt_id' => $attempt->id, 'question_id' => $questionId],
-                    [
-                        'raw_answer' => is_array($rawAnswer) ? json_encode($rawAnswer) : $rawAnswer,
-                        'processed_answer' => is_array($processedAnswer) ? json_encode($processedAnswer) : $processedAnswer,
-                        'is_correct' => $this->isAnswerCorrect($question, $processedAnswer),
-                        'answered_at' => now(),
-                    ]
-                );
-            }
-            
-            // Update attempt progress
-            $this->updateAttemptProgress($attempt);
-            
-            // Check if this is the final submission
-            if ($request->has('complete')) {
-                return $this->completeAttempt($test, $attempt);
-            }
-            
-            // Redirect to next part or stay on current page
-            $nextRoute = $request->input('next_route');
-            if ($nextRoute) {
-                return redirect()->route($nextRoute, ['test' => $test->slug, 'attempt' => $attemptCode]);
-            }
-            
-            return redirect()->route('reading.unified', ['test' => $test->slug, 'attempt' => $attemptCode]);
-        }
-        
-        // For GET requests, redirect back to the test
-        return redirect()->route('reading.unified', ['test' => $test->slug, 'attempt' => $attemptCode]);
+        return response()->json($readingTests);
     }
 
-    public function complete(Test $test, $attemptCode)
-    {
-        $attempt = TestAttempt::where('attempt_code', $attemptCode)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-        
-        // Complete the test if not already completed
-        if ($attempt->status !== 'completed') {
-            $this->completeAttempt($test, $attempt);
-        }
-        
-        // Get test results
-        $testAnswers = TestAnswer::where('attempt_id', $attempt->id)->get();
-        $correctAnswers = $testAnswers->where('is_correct', true)->count();
-        $totalQuestions = $attempt->total_questions;
-        $score = $this->convertToBandScore($correctAnswers, $totalQuestions);
-        $partsBreakdown = $this->getPartsBreakdown($testAnswers);
-        
-        return view('tests.reading.complete', compact(
-            'test', 
-            'attempt', 
-            'correctAnswers', 
-            'totalQuestions', 
-            'score', 
-            'partsBreakdown'
-        ));
-    }
-    
+    // ==================== READING TEST ITEM CRUD METHODS ====================
+
     /**
-     * Save a single answer via AJAX
+     * Reading Test Item - Barcha itemlar ro'yxati
      */
-    public function saveAnswer(Request $request, Test $test, $attemptCode)
+    public function itemIndex(ReadingTest $readingTest, Request $request)
     {
-        $attempt = TestAttempt::where('attempt_code', $attemptCode)
-            ->where('user_id', Auth::id())
-            ->firstOrFail();
-            
-        // Validate request
-        $request->validate([
-            'question_id' => 'required|exists:questions,id',
-            'answer' => 'nullable',
-        ]);
-        
-        $questionId = $request->input('question_id');
-        $rawAnswer = $request->input('answer');
-        
-        // Find question
-        $question = Question::find($questionId);
-        if (!$question) {
-            return response()->json(['error' => 'Question not found'], 404);
+        $query = $readingTest->items();
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where('title', 'like', "%{$search}%");
         }
-        
-        // Process answer based on question type
-        $processedAnswer = $this->processAnswer($rawAnswer, $question->question_format);
-        
-        // Save or update answer
-        $answer = TestAnswer::updateOrCreate(
-            ['attempt_id' => $attempt->id, 'question_id' => $questionId],
-            [
-                'raw_answer' => is_array($rawAnswer) ? json_encode($rawAnswer) : $rawAnswer,
-                'processed_answer' => is_array($processedAnswer) ? json_encode($processedAnswer) : $processedAnswer,
-                'is_correct' => $this->isAnswerCorrect($question, $processedAnswer),
-                'answered_at' => now(),
+
+        // Filter by type
+        if ($request->filled('type')) {
+            $query->where('type', $request->get('type'));
+        }
+
+        $items = $query->orderBy('id', 'desc')->paginate(15);
+        $types = ReadingTestItem::getTypes();
+
+        return view('reading-test-items.index', compact('readingTest', 'items', 'types'));
+    }
+
+    /**
+     * Reading Test Item - Yangi item yaratish formasi
+     */
+    public function itemCreate(ReadingTest $readingTest)
+    {
+        $types = ReadingTestItem::getTypes();
+        return view('reading-test-items.create', compact('readingTest', 'types'));
+    }
+
+    /**
+     * Reading Test Item - Yangi itemni saqlash
+     */
+    public function itemStore(Request $request, ReadingTest $readingTest)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'body' => 'required|array',
+            'type' => ['required', 'string', Rule::in(array_keys(ReadingTestItem::getTypes()))],
+        ]);
+
+        $validated['reading_test_id'] = $readingTest->id;
+
+        ReadingTestItem::create($validated);
+
+        return redirect()
+            ->route('reading-tests.items.index', $readingTest)
+            ->with('success', 'Reading test item muvaffaqiyatli yaratildi!');
+    }
+
+    /**
+     * Reading Test Item - Itemni ko'rish
+     */
+    public function itemShow(ReadingTest $readingTest, ReadingTestItem $item)
+    {
+        return view('reading-test-items.show', compact('readingTest', 'item'));
+    }
+
+    /**
+     * Reading Test Item - Itemni tahrirlash formasi
+     */
+    public function itemEdit(ReadingTest $readingTest, ReadingTestItem $item)
+    {
+        $types = ReadingTestItem::getTypes();
+        return view('reading-test-items.edit', compact('readingTest', 'item', 'types'));
+    }
+
+    /**
+     * Reading Test Item - Itemni yangilash
+     */
+    public function itemUpdate(Request $request, ReadingTest $readingTest, ReadingTestItem $item)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'body' => 'required|array',
+            'type' => ['required', 'string', Rule::in(array_keys(ReadingTestItem::getTypes()))],
+        ]);
+
+        $item->update($validated);
+
+        return redirect()
+            ->route('reading-tests.items.index', $readingTest)
+            ->with('success', 'Reading test item muvaffaqiyatli yangilandi!');
+    }
+
+    /**
+     * Reading Test Item - Itemni o'chirish
+     */
+    public function itemDestroy(ReadingTest $readingTest, ReadingTestItem $item)
+    {
+        $item->delete();
+
+        return redirect()
+            ->route('reading-tests.items.index', $readingTest)
+            ->with('success', 'Reading test item muvaffaqiyatli o\'chirildi!');
+    }
+
+    /**
+     * Reading Test Item - Item body formatini ko'rish (AJAX)
+     */
+    public function itemGetBodyFormat($type)
+    {
+        $formats = [
+            'passage' => [
+                'content' => 'Passage text content here...',
+                'word_count' => 300,
+                'difficulty_level' => 'intermediate'
+            ],
+            'question' => [
+                'question_text' => 'What is the main idea of the passage?',
+                'question_type' => 'multiple_choice',
+                'options' => ['A', 'B', 'C', 'D'],
+                'correct_answer' => 'A',
+                'explanation' => 'Explanation for the correct answer'
+            ],
+            'instruction' => [
+                'instruction_text' => 'Read the passage and answer the questions below.',
+                'time_limit' => 20,
+                'special_notes' => 'Pay attention to keywords'
             ]
-        );
-        
-        // Update attempt progress
-        $this->updateAttemptProgress($attempt);
-        
-        // Get progress data for frontend
-        $progress = $this->getAttemptProgress($attempt);
-        
-        return response()->json([
-            'success' => true,
-            'answer_id' => $answer->id,
-            'progress' => $progress,
-        ]);
-    }
-    
-    /**
-     * Get time remaining for the test attempt
-     */
-    public function getTimeRemaining(Test $test, $attemptCode)
-    {
-        $attempt = TestAttempt::where('attempt_code', $attemptCode)
-            ->where('user_id', auth()->id())
-            ->where('test_id', $test->id)
-            ->firstOrFail();
-            
-        // If test is already completed, return 0
-        if ($attempt->status === 'completed') {
-            return response()->json([
-                'time_remaining' => 0,
-                'status' => 'completed'
-            ]);
-        }
-        
-        // Calculate time remaining
-        $startedAt = Carbon::parse($attempt->started_at);
-        $timeLimit = $test->time_limit ?? 60; // Default 60 minutes for reading test
-        $timeSpentSeconds = now()->diffInSeconds($startedAt);
-        $timeRemainingSeconds = max(0, ($timeLimit * 60) - $timeSpentSeconds);
-        
-        // Update time remaining in the attempt
-        $attempt->update([
-            'time_remaining_seconds' => $timeRemainingSeconds,
-            'time_spent_seconds' => $timeSpentSeconds
-        ]);
-        
-        // Auto-complete if time is up
-        if ($timeRemainingSeconds <= 0 && $attempt->status !== 'completed') {
-            $this->autoCompleteAttempt($attempt);
-            return response()->json([
-                'time_remaining' => 0,
-                'status' => 'completed',
-                'message' => 'Test time expired'
-            ]);
-        }
-        
-        return response()->json([
-            'time_remaining' => $timeRemainingSeconds,
-            'formatted_time' => gmdate('i:s', $timeRemainingSeconds),
-            'status' => $attempt->status,
-            'progress' => $this->getAttemptProgress($attempt)
-        ]);
-    }
-    
-    /**
-     * Process answer based on question type
-     */
-    private function processAnswer($rawAnswer, $questionType)
-    {
-        if (empty($rawAnswer)) {
-            return '';
-        }
-        
-        switch ($questionType) {
-            case 'multiple_choice':
-                // Return selected option
-                return is_array($rawAnswer) ? implode(',', $rawAnswer) : $rawAnswer;
-                
-            case 'gap_filling':
-            case 'short_answer':
-                // Normalize text answers
-                if (is_array($rawAnswer)) {
-                    return array_map(function($item) {
-                        return $this->normalizeAnswer($item);
-                    }, $rawAnswer);
-                }
-                return $this->normalizeAnswer($rawAnswer);
-                
-            default:
-                // Default processing
-                return is_array($rawAnswer) ? json_encode($rawAnswer) : $rawAnswer;
-        }
-    }
-    
-    /**
-     * Normalize text answer for comparison
-     */
-    private function normalizeAnswer($text)
-    {
-        if (empty($text)) return '';
-        
-        // Convert to lowercase
-        $text = mb_strtolower($text);
-        
-        // Remove extra spaces
-        $text = preg_replace('/\s+/', ' ', trim($text));
-        
-        // Remove punctuation
-        $text = preg_replace('/[^\p{L}\p{N}\s]/u', '', $text);
-        
-        return $text;
-    }
-    
-    /**
-     * Check if answer is correct
-     */
-    private function isAnswerCorrect($question, $processedAnswer)
-    {
-        $acceptableAnswers = $question->acceptable_answers ?? [];
-        
-        if (empty($acceptableAnswers)) {
-            return false;
-        }
-        
-        // For array answers (like matching questions)
-        if (is_array($processedAnswer)) {
-            // Each element must match one of the acceptable answers
-            foreach ($processedAnswer as $answer) {
-                $found = false;
-                foreach ($acceptableAnswers as $acceptable) {
-                    if ($this->answersMatch($answer, $acceptable)) {
-                        $found = true;
-                        break;
-                    }
-                }
-                if (!$found) return false;
-            }
-            return true;
-        }
-        
-        // For string answers
-        foreach ($acceptableAnswers as $acceptable) {
-            if ($this->answersMatch($processedAnswer, $acceptable)) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    /**
-     * Compare two answers for equality
-     */
-    private function answersMatch($answer, $acceptable)
-    {
-        // Normalize acceptable answer
-        $acceptable = $this->normalizeAnswer($acceptable);
-        
-        // Direct match
-        if ($answer === $acceptable) {
-            return true;
-        }
-        
-        // Check if answer is within acceptable answers (for multiple choice)
-        if (strpos($acceptable, ',') !== false) {
-            $options = explode(',', $acceptable);
-            return in_array($answer, array_map('trim', $options));
-        }
-        
-        return false;
-    }
-    
-    /**
-     * Convert correct answers to IELTS band score
-     */
-    private function convertToBandScore(int $correctAnswers, int $totalQuestions)
-    {
-        if ($totalQuestions != 40) {
-            // If not standard 40 questions, use percentage
-            $percentage = ($correctAnswers / $totalQuestions) * 100;
-            return min(9.0, max(1.0, round($percentage / 11.1, 1)));
-        }
-        
-        // Standard IELTS Reading band score conversion (40 questions)
-        $bandScores = [
-            39 => 9.0, 38 => 9.0, 37 => 8.5, 36 => 8.5, 35 => 8.0,
-            34 => 8.0, 33 => 7.5, 32 => 7.5, 31 => 7.0, 30 => 7.0,
-            29 => 6.5, 28 => 6.5, 27 => 6.0, 26 => 6.0, 25 => 5.5,
-            24 => 5.5, 23 => 5.0, 22 => 5.0, 21 => 4.5, 20 => 4.5,
-            19 => 4.0, 18 => 4.0, 17 => 3.5, 16 => 3.5, 15 => 3.0,
-            14 => 3.0, 13 => 2.5, 12 => 2.5, 11 => 2.0, 10 => 2.0,
-            9 => 1.5, 8 => 1.5, 7 => 1.0, 6 => 1.0, 5 => 1.0,
-            4 => 1.0, 3 => 1.0, 2 => 1.0, 1 => 1.0, 0 => 0.0
         ];
-        
-        return $bandScores[$correctAnswers] ?? 1.0;
-    }
-    
-    /**
-     * Get parts breakdown for detailed results
-     */
-    private function getPartsBreakdown($testAnswers)
-    {
-        $breakdown = [];
-        
-        foreach ($testAnswers->groupBy('question.part_number') as $part => $answers) {
-            $correct = $answers->where('is_correct', true)->count();
-            $total = $answers->count();
-            
-            $breakdown["part_{$part}"] = [
-                'correct' => $correct,
-                'total' => $total,
-                'percentage' => $total > 0 ? round(($correct / $total) * 100, 1) : 0
-            ];
-        }
-        
-        return $breakdown;
-    }
-    
-    /**
-     * Update attempt progress
-     */
-    private function updateAttemptProgress(TestAttempt $attempt)
-    {
-        $answeredQuestions = TestAnswer::where('attempt_id', $attempt->id)->count();
-        $totalQuestions = $attempt->total_questions;
 
-        $attempt->update([
-            'answered_questions' => $answeredQuestions,
-            'parts_progress' => $this->calculatePartsProgress($attempt)
-        ]);
-    }
-
-    /**
-     * Calculate progress for each part
-     */
-    private function calculatePartsProgress(TestAttempt $attempt)
-    {
-        $progress = [];
-        
-        for ($part = 1; $part <= 3; $part++) { // Reading has 3 parts
-            $partQuestions = Question::where('test_id', $attempt->test_id)
-                ->where('part_number', $part)
-                ->pluck('id');
-                
-            $answeredInPart = TestAnswer::where('attempt_id', $attempt->id)
-                ->whereIn('question_id', $partQuestions)
-                ->count();
-                
-            $progress["part_{$part}"] = [
-                'answered' => $answeredInPart,
-                'total' => $partQuestions->count(),
-                'percentage' => $partQuestions->count() > 0 ? 
-                    round(($answeredInPart / $partQuestions->count()) * 100, 1) : 0
-            ];
-        }
-        
-        return $progress;
-    }
-
-    /**
-     * Get attempt progress
-     */
-    private function getAttemptProgress(TestAttempt $attempt)
-    {
-        return [
-            'answered_questions' => $attempt->answered_questions,
-            'total_questions' => $attempt->total_questions,
-            'percentage' => $attempt->total_questions > 0 ? 
-                round(($attempt->answered_questions / $attempt->total_questions) * 100, 1) : 0,
-            'parts_progress' => $attempt->parts_progress
-        ];
-    }
-
-    /**
-     * Complete the attempt and calculate score
-     */
-    private function completeAttempt(Test $test, TestAttempt $attempt)
-    {
-        // Mark attempt as completed
-        $attempt->update([
-            'status' => 'completed',
-            'completed_at' => now(),
-            'time_spent_seconds' => ($test->time_limit ?? 60) * 60 - ($attempt->time_remaining_seconds ?? 0),
-        ]);
-        
-        // Calculate score
-        $testAnswers = TestAnswer::where('attempt_id', $attempt->id)->get();
-        $correctAnswers = $testAnswers->where('is_correct', true)->count();
-        $score = $this->convertToBandScore($correctAnswers, $attempt->total_questions);
-        
-        // Update score
-        $attempt->update([
-            'score' => $score,
-            'correct_answers' => $correctAnswers,
-        ]);
-        
-        return $attempt;
-    }
-
-    /**
-     * Auto-complete attempt when time runs out
-     */
-    private function autoCompleteAttempt(TestAttempt $attempt)
-    {
-        $test = Test::find($attempt->test_id);
-        
-        $attempt->update([
-            'status' => 'completed',
-            'completed_at' => now(),
-            'time_spent_seconds' => ($test->time_limit ?? 60) * 60,
-        ]);
-
-        return $this->completeAttempt($test, $attempt);
-    }
-
-    /**
-     * Generate unique attempt code
-     */
-    private function generateAttemptCode(): string
-    {
-        do {
-            $code = 'RA' . strtoupper(substr(uniqid(), -8)); // RA = Reading Attempt
-        } while (TestAttempt::where('attempt_code', $code)->exists());
-
-        return $code;
+        $format = $formats[$type] ?? [];
+        return response()->json($format);
     }
 }

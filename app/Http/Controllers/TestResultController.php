@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Test;
+use App\Models\AppTest;
 use App\Models\TestAttempt;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -56,7 +56,7 @@ class TestResultController extends Controller
         $attempts = $query->latest('completed_at')->paginate(20);
 
         // Filter uchun ma'lumotlar
-        $tests = Test::when(Auth::user()->isTeacher(), function($q) {
+        $tests = AppTest::when(Auth::user()->isTeacher(), function($q) {
                 $q->where('created_by', Auth::id());
             })
             ->orderBy('title')

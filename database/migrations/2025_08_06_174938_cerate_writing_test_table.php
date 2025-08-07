@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string('title');
             $table->jsonb('questions');
             $table->json('answer');
+            $table->timestamps(); // created_at va updated_at qo'shildi
             $table->index('app_test_id');
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('writing_test');
     }
 };

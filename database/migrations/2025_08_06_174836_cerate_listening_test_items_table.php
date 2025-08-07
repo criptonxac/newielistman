@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('title');
             $table->jsonb('body');
             $table->string('type');
+            $table->timestamps();
             $table->index('listening_test_id');
         });
 
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('listening_test_items');
     }
 };

@@ -6,7 +6,7 @@ use App\Enums\TestStatus;
 use App\Enums\TestType;
 use App\Enums\UserRole;
 use App\Models\TestCategory;
-use App\Models\Test;
+use App\Models\AppTest;
 use App\Models\TestQuestion;
 use App\Models\User;
 use App\Models\UserTestAttempt;
@@ -23,7 +23,7 @@ class HomeController extends Controller
             ->get();
 
         // So'nggi test statistikasi
-        $totalTests = Test::where('is_active', true)->count();
+        $totalTests = AppTest::where('is_active', true)->count();
         $totalAttempts = UserTestAttempt::count();
         $completedTests = UserTestAttempt::where('status', TestStatus::COMPLETED)->count();
          
@@ -33,9 +33,8 @@ class HomeController extends Controller
         $totalTeachers = User::where('role', UserRole::TEACHER)->count();
         $totalQuestions = TestQuestion::count();
 
-        $featuredTests = Test::where('is_active', true)
+        $featuredTests = AppTest::where('is_active', true)
             ->where('type', TestType::FAMILIARISATION)
-            ->with('category')
             ->take(3)
             ->get();
 

@@ -45,6 +45,26 @@
                 Test Boshqaruvi
             </a>
 
+            <a href="{{ route('tests.app-tests.index') }}" class="flex items-center px-6 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-800 transition-all duration-300 {{ request()->routeIs('tests.app-tests.*') ? 'text-white bg-gradient-to-r from-blue-600 to-blue-800 border-r-4 border-blue-400 shadow-lg' : '' }}">
+                <i class="fas fa-file-alt mr-3 text-blue-400"></i>
+                AppTest Boshqaruvi
+            </a>
+
+            <a href="{{ route('reading-tests.index') }}" class="flex items-center px-6 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-800 transition-all duration-300 {{ request()->routeIs('reading-tests.*') ? 'text-white bg-gradient-to-r from-blue-600 to-blue-800 border-r-4 border-blue-400 shadow-lg' : '' }}">
+                <i class="fas fa-book-open mr-3 text-blue-400"></i>
+                Reading Test Boshqaruvi
+            </a>
+
+            <a href="{{ route('listening-tests.index') }}" class="flex items-center px-6 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-800 transition-all duration-300 {{ request()->routeIs('listening-tests.*') ? 'text-white bg-gradient-to-r from-blue-600 to-blue-800 border-r-4 border-blue-400 shadow-lg' : '' }}">
+                <i class="fas fa-headphones mr-3 text-blue-400"></i>
+                Listening Test Boshqaruvi
+            </a>
+
+            <a href="{{ route('writing-tests.index') }}" class="flex items-center px-6 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-800 transition-all duration-300 {{ request()->routeIs('writing-tests.*') ? 'text-white bg-gradient-to-r from-blue-600 to-blue-800 border-r-4 border-blue-400 shadow-lg' : '' }}">
+                <i class="fas fa-pen-fancy mr-3 text-blue-400"></i>
+                Writing Test Boshqaruvi
+            </a>
+
             <a href="{{ route('teacher.students') }}" class="flex items-center px-6 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-800 transition-all duration-300 {{ request()->routeIs('teacher.students') ? 'text-white bg-gradient-to-r from-blue-600 to-blue-800 border-r-4 border-blue-400 shadow-lg' : '' }}">
                 <i class="fas fa-users mr-3 text-blue-400"></i>
                 Talabalar
