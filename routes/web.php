@@ -15,6 +15,7 @@ use App\Http\Controllers\TestResultController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TestTypeController;
 use App\Http\Controllers\WritingTestController;
+use App\Http\Controllers\WritingTestCrudController;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;

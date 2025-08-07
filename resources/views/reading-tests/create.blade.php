@@ -51,7 +51,7 @@
             <!-- Content Image -->
             <div class="mb-4">
                 <label for="content_image" class="block text-gray-700 text-sm font-bold mb-2">Content Image URL:</label>
-                <input type="url" name="content_image" id="content_image" value="{{ old('content_image') }}" 
+                <input type="text" name="content_image" id="content_image" value="{{ old('content_image') }}" 
                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
                        placeholder="https://example.com/image.jpg (ixtiyoriy)">
                 <p class="text-xs text-gray-500 mt-1">Rasm URL manzilini kiriting (ixtiyoriy)</p>

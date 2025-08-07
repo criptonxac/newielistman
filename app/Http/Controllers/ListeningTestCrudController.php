@@ -219,6 +219,8 @@ class ListeningTestCrudController extends Controller
      */
     public function itemIndex(ListeningTest $listeningTest)
     {
+        \Log::info('ItemIndex called', ['test_id' => $listeningTest->id]);
+        
         $items = $listeningTest->items()->orderBy('id', 'desc')->paginate(15);
         $layout = Auth::user()->isAdmin() ? 'layouts.main' : 'layouts.teacher';
         return view('listening-tests.items.index', compact('listeningTest', 'items', 'layout'));
@@ -238,10 +240,12 @@ class ListeningTestCrudController extends Controller
      */
     public function itemStore(Request $request, ListeningTest $listeningTest)
     {
+        \Log::info('ItemStore called', ['request_data' => $request->all()]);
+        
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|string|in:audio,question,instruction',
-            'body' => 'required|string', // Frontend dan JSON string keladi
+            'body' => 'nullable|string', // Frontend dan JSON string keladi
             // Qo'shimcha maydonlar (ixtiyoriy)
             'item_title' => 'nullable|string|max:255',
             'item_content' => 'nullable|string',
@@ -258,6 +262,11 @@ class ListeningTestCrudController extends Controller
             $validated['body'] = json_encode($itemData);
         }
 
+
+        // Agar body bo'sh bo'lsa, default JSON qo'yamiz
+        if (empty($validated['body'])) {
+            $validated['body'] = json_encode(['title' => '', 'content' => '', 'options' => '']);
+        }
         // JSON formatini tekshirish
         $bodyArray = json_decode($validated['body'], true);
         if (json_last_error() !== JSON_ERROR_NONE) {
@@ -301,7 +310,7 @@ class ListeningTestCrudController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|string|in:audio,question,instruction',
-            'body' => 'required|string', // Frontend dan JSON string keladi
+            'body' => 'nullable|string', // Frontend dan JSON string keladi
             // Qo'shimcha maydonlar (ixtiyoriy)
             'item_title' => 'nullable|string|max:255',
             'item_content' => 'nullable|string',
@@ -316,6 +325,11 @@ class ListeningTestCrudController extends Controller
                 'options' => $validated['item_options'] ?? ''
             ];
             $validated['body'] = json_encode($itemData);
+        }
+        
+        // Agar body bo'sh bo'lsa, default JSON qo'yamiz
+        if (empty($validated['body'])) {
+            $validated['body'] = json_encode(['title' => '', 'content' => '', 'options' => '']);
         }
 
         // JSON formatini tekshirish
