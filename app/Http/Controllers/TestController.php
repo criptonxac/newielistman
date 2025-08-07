@@ -7,9 +7,11 @@ use App\Models\Test;
 use App\Models\TestAttempt;
 use App\Models\TestAnswer;
 use App\Models\TestCategory;
+use App\Models\AppTest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class TestController extends Controller
 {
@@ -21,285 +23,163 @@ class TestController extends Controller
                 abort(403, 'Faqat talabalar test topshira oladi');
             }
             return $next($request);
-        });
+        })->except(['appTestIndex', 'appTestCreate', 'appTestStore', 'appTestShow', 'appTestEdit', 'appTestUpdate', 'appTestDestroy', 'appTestToggleStatus']);
+    }
+
+ 
+    public function appTestIndex(Request $request)
+    {
+        $query = AppTest::query();
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('desc', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by type
+        if ($request->filled('type')) {
+            $query->where('type', $request->get('type'));
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $status = $request->get('status') === 'active';
+            $query->where('is_active', $status);
+        }
+
+        $appTests = $query->orderBy('created_at', 'desc')->paginate(15);
+        $types = AppTest::getTypes();
+
+        $layout = 'layouts.teacher';
+        return view('app-tests.index', compact('appTests', 'types', 'layout'));
     }
 
     /**
-     * Mavjud testlar ro'yxati
+     * AppTest - Yangi test yaratish formasi
      */
-    public function index()
+    public function appTestCreate()
     {
-        $categories = TestCategory::active()
-            ->with(['tests' => function($query) {
-                $query->active()
-                    ->withCount('questions')
-                    ->with('audioFiles');
-            }])
-            ->get();
-
-        $userAttempts = Auth::user()->listeningTestAttempts()
-            ->with('test')
-            ->get()
-            ->groupBy('test_id');
-
-        return view('student.tests', compact('categories', 'userAttempts'));
+        $types = AppTest::getTypes();
+        $layout = 'layouts.teacher';
+        return view('app-tests.create', compact('types', 'layout'));
     }
 
     /**
-     * Test haqida ma'lumot
+     * AppTest - Yangi testni saqlash
      */
-    public function show(Test $test)
+    public function appTestStore(Request $request)
     {
-        if (!$test->is_active) {
-            abort(404);
-        }
-
-        $test->load(['category', 'questions', 'audioFiles']);
-        
-        $userAttempts = Auth::user()->listeningTestAttempts()
-            ->where('test_id', $test->id)
-            ->latest()
-            ->get();
-
-        $canAttempt = Auth::user()->canAttemptTest($test->id);
-        $inProgressAttempt = Auth::user()->getCurrentAttempt($test->id);
-
-        return view('student.tests', compact('test', 'userAttempts', 'canAttempt', 'inProgressAttempt'));
-    }
-
-    /**
-     * Testni boshlash
-     */
-    public function start(Test $test)
-    {
-        if (!$test->is_active) {
-            abort(404);
-        }
-
-        // Ruxsat tekshirish
-        if (!Auth::user()->canAttemptTest($test->id)) {
-            return redirect()
-                ->route('student.tests.index')
-                ->with('error', 'Sizning urinishlar limitingiz tugagan.');
-        }
-
-        // Davom etayotgan test bormi tekshirish
-        $inProgressAttempt = Auth::user()->getCurrentAttempt($test->id);
-        if ($inProgressAttempt) {
-            return redirect()->route('student.tests.take', [
-                'test' => $test->slug,
-                'attempt' => $inProgressAttempt->id
-            ]);
-        }
-
-        // Yangi attempt yaratish
-        $attempt = TestAttempt::create([
-            'user_id' => Auth::id(),
-            'test_id' => $test->id,
-            'started_at' => now(),
-            'status' => 'in_progress'
-        ]);
-
-        return redirect()->route('student.tests.take', [
-            'test' => $test->slug,
-            'attempt' => $attempt->id
-        ]);
-    }
-
-    /**
-     * Test topshirish sahifasi
-     */
-    public function take(Test $test, TestAttempt $attempt)
-    {
-        // Tekshirishlar
-        if ($attempt->user_id !== Auth::id()) {
-            abort(403);
-        }
-
-        if ($attempt->status !== 'in_progress') {
-            return redirect()
-                ->route('student.tests.index')
-                ->with('info', 'Bu test allaqachon yakunlangan.');
-        }
-
-        // Vaqt tugaganmi tekshirish
-        if ($attempt->getRemainingTime() <= 0) {
-            // Testni avtomatik yakunlash
-            DB::beginTransaction();
-            try {
-                // Attemptni yakunlash
-                $attempt->complete();
-                DB::commit();
-            } catch (\Exception $e) {
-                DB::rollback();
-            }
-            
-            return redirect()
-                ->route('student.tests.index')
-                ->with('warning', 'Test vaqti tugadi va avtomatik yakunlandi.');
-        }
-
-        $test->load(['questions' => function($query) {
-            $query->orderBy('part_number')->orderBy('question_number');
-        }, 'audioFiles', 'category']);
-
-        // Saqlangan javoblarni yuklash
-        $savedAnswers = $attempt->testAnswers()
-            ->pluck('user_answer', 'test_question_id')
-            ->toArray();
-
-        // Test tipiga qarab tegishli view'ni qaytarish
-        if ($test->type === 'listening') {
-            return redirect()->route('listening.test.part', [
-                'test' => $test->slug,
-                'part' => 1,
-                'attemptCode' => $attempt->attempt_code
-            ]);
-        } elseif ($test->type === 'reading') {
-            return redirect()->route('reading.test.part', [
-                'test' => $test->slug,
-                'part' => 1,
-                'attemptCode' => $attempt->attempt_code
-            ]);
-        } else {
-            return view('student.tests', compact('test', 'attempt', 'savedAnswers'));
-        }
-    }
-
-    /**
-     * Javobni saqlash (AJAX)
-     */
-    public function saveAnswer(Request $request, Test $test, TestAttempt $attempt)
-    {
-        if ($attempt->user_id !== Auth::id() || $attempt->status !== 'in_progress') {
-            return response()->json(['success' => false, 'message' => 'Ruxsat berilmagan'], 403);
-        }
+        // if (!Auth::user()->isAdmin() && !Auth::user()->isTeacher()) {
+        //     abort(403, 'Faqat admin va teacher foydalanuvchilar test yarata oladi');
+        // }
 
         $validated = $request->validate([
-            'question_id' => 'required|exists:test_questions,id',
-            'answer' => 'nullable|string'
+            'title' => 'required|string|max:255',
+            'desc' => 'required|string',
+            'type' => ['required', 'string', Rule::in(array_keys(AppTest::getTypes()))],
+            'is_active' => 'boolean',
+            'test_time' => 'required|string|max:50',
         ]);
 
-        // Javobni saqlash yoki yangilash
-        TestAnswer::updateOrCreate(
-            [
-                'test_attempt_id' => $attempt->id,
-                'test_question_id' => $validated['question_id']
-            ],
-            [
-                'user_answer' => $validated['answer']
-            ]
-        );
+        $validated['is_active'] = $request->has('is_active');
 
-        return response()->json(['success' => true]);
+        AppTest::create($validated);
+
+        return redirect()
+            ->route('tests.app-tests.index')
+            ->with('success', 'Test muvaffaqiyatli yaratildi!');
     }
 
     /**
-     * Testni yakunlash
+     * AppTest - Testni ko'rish
      */
-    public function submit(Request $request, Test $test, TestAttempt $attempt)
+    public function appTestShow(AppTest $appTest)
     {
-        if ($attempt->user_id !== Auth::id() || $attempt->status !== 'in_progress') {
-            abort(403);
-        }
+        // if (!Auth::user()->isAdmin() && !Auth::user()->isTeacher()) {
+        //     abort(403, 'Faqat admin va teacher foydalanuvchilar test ko\'ra oladi');
+        // }
 
-        DB::beginTransaction();
-
-        try {
-            // Barcha javoblarni saqlash
-            if ($request->has('answers')) {
-                foreach ($request->answers as $questionId => $answer) {
-                    if (empty($answer)) continue;
-                    
-                    TestAnswer::updateOrCreate(
-                        [
-                            'test_attempt_id' => $attempt->id,
-                            'test_question_id' => $questionId
-                        ],
-                        [
-                            'user_answer' => $answer
-                        ]
-                    );
-                }
-            }
-
-            // Javoblarni tekshirish va ball hisoblash
-            foreach ($attempt->testAnswers as $testAnswer) {
-                $testAnswer->checkAndScore();
-            }
-
-            // Attemptni yakunlash
-            $attempt->complete();
-
-            DB::commit();
-
-            return redirect()
-                ->route('student.tests.index')
-                ->with('success', 'Test muvaffaqiyatli yakunlandi!');
-
-        } catch (\Exception $e) {
-            DB::rollback();
-            
-            return redirect()
-                ->back()
-                ->with('error', 'Xatolik yuz berdi: ' . $e->getMessage());
-        }
+        $layout = 'layouts.teacher'; // Vaqtincha teacher layout ishlatamiz
+        return view('app-tests.show', compact('appTest', 'layout'));
     }
 
     /**
-     * Test natijasi
+     * AppTest - Testni tahrirlash formasi
      */
-    public function result(Test $test, TestAttempt $attempt)
+    public function appTestEdit(AppTest $appTest)
     {
-        if ($attempt->user_id !== Auth::id()) {
-            abort(403);
-        }
+        // if (!Auth::user()->isAdmin() && !Auth::user()->isTeacher()) {
+        //     abort(403, 'Faqat admin va teacher foydalanuvchilar test tahrir qila oladi');
+        // }
 
-        if ($attempt->status !== 'completed') {
-            // Test tipiga qarab tegishli route'ga yo'naltirish
-            if ($test->type === 'listening') {
-                return redirect()->route('listening.test.part', [
-                    'test' => $test->slug,
-                    'part' => 1,
-                    'attemptCode' => $attempt->attempt_code
-                ])->with('warning', 'Test hali yakunlanmagan.');
-            } elseif ($test->type === 'reading') {
-                return redirect()->route('reading.test.part', [
-                    'test' => $test->slug,
-                    'part' => 1,
-                    'attemptCode' => $attempt->attempt_code
-                ])->with('warning', 'Test hali yakunlanmagan.');
-            } else {
-                return redirect()->route('student.tests.index')
-                    ->with('warning', 'Test hali yakunlanmagan.');
-            }
-        }
-
-        $attempt->load(['testAnswers.testQuestion']);
-
-        // Test tipiga qarab tegishli view'ni qaytarish
-        if ($test->type === 'listening') {
-            return view('listening.result', compact('test', 'attempt'));
-        } elseif ($test->type === 'reading') {
-            return view('reading.result', compact('test', 'attempt'));
-        } else {
-            return view('student.tests', compact('test', 'attempt'));
-        }
+        $types = AppTest::getTypes();
+        $layout = 'layouts.teacher'; // Vaqtincha teacher layout ishlatamiz
+        return view('app-tests.edit', compact('appTest', 'types', 'layout'));
     }
 
     /**
-     * Test tarixim
+     * AppTest - Testni yangilash
      */
-    public function history()
+    public function appTestUpdate(Request $request, AppTest $appTest)
     {
-        $attempts = Auth::user()->listeningTestAttempts()
-            ->with(['test.category'])
-            ->completed()
-            ->latest()
-            ->paginate(15);
+        // if (!Auth::user()->isAdmin() && !Auth::user()->isTeacher()) {
+        //     abort(403, 'Faqat admin va teacher foydalanuvchilar test tahrir qila oladi');
+        // }
 
-        $stats = Auth::user()->getListeningStats();
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'desc' => 'required|string',
+            'type' => ['required', 'string', Rule::in(array_keys(AppTest::getTypes()))],
+            'is_active' => 'boolean',
+            'test_time' => 'required|string|max:50',
+        ]);
 
-        return view('student.tests.history', compact('attempts', 'stats'));
+        $validated['is_active'] = $request->has('is_active');
+
+        $appTest->update($validated);
+
+        return redirect()
+            ->route('tests.app-tests.index')
+            ->with('success', 'Test muvaffaqiyatli yangilandi!');
+    }
+
+    /**
+     * AppTest - Testni o'chirish
+     */
+    public function appTestDestroy(AppTest $appTest)
+    {
+        // if (!Auth::user()->isAdmin() && !Auth::user()->isTeacher()) {
+        //     abort(403, 'Faqat admin va teacher foydalanuvchilar test o\'chira oladi');
+        // }
+
+        $appTest->delete();
+
+        return redirect()
+            ->route('tests.app-tests.index')
+            ->with('success', 'Test muvaffaqiyatli o\'chirildi!');
+    }
+
+    /**
+     * AppTest - Test statusini o'zgartirish (Active/Inactive)
+     */
+    public function appTestToggleStatus(AppTest $appTest)
+    {
+        // if (!Auth::user()->isAdmin() && !Auth::user()->isTeacher()) {
+        //     abort(403, 'Faqat admin va teacher foydalanuvchilar test statusini o\'zgartira oladi');
+        // }
+
+        $appTest->update([
+            'is_active' => !$appTest->is_active
+        ]);
+
+        $status = $appTest->is_active ? 'faollashtirildi' : 'nofaol qilindi';
+        
+        return redirect()
+            ->back()
+            ->with('success', "Test {$status}!");
     }
 }

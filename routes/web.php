@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AudioController;
 use App\Http\Controllers\EnumController;
 use App\Http\Controllers\ListeningTestController;
+use App\Http\Controllers\ListeningTestCrudController;
 use App\Http\Controllers\ReadingTestController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TeacherController;
@@ -389,3 +390,108 @@ Route::prefix('api')->name('api.')
             });
         });
     });
+
+// Test route
+Route::get('/simple-test', function() {
+    return 'Simple test ishlayapti!';
+});
+
+// Simple AppTest route
+Route::get('/tests/app-tests-simple', function() {
+    return 'AppTest route ishlayapti!';
+});
+
+// ==========================================
+// APP TEST CRUD ROUTES (Admin & Teacher)
+// ==========================================
+Route::prefix('tests')->name('tests.')
+    // ->middleware(['auth', 'verified']) // Vaqtincha o'chirildi
+    ->controller(TestController::class)
+    ->group(function () {
+        
+        // AppTest CRUD routes
+        Route::prefix('app-tests')->name('app-tests.')->group(function () {
+            Route::get('/', 'appTestIndex')->name('index');
+            Route::get('/create', 'appTestCreate')->name('create');
+            Route::post('/', 'appTestStore')->name('store');
+            Route::get('/{appTest}', 'appTestShow')->name('show');
+            Route::get('/{appTest}/edit', 'appTestEdit')->name('edit');
+            Route::put('/{appTest}', 'appTestUpdate')->name('update');
+            Route::delete('/{appTest}', 'appTestDestroy')->name('destroy');
+            Route::patch('/{appTest}/toggle-status', 'appTestToggleStatus')->name('toggle-status');
+        });
+    });
+
+// ==========================================
+// READING TEST CRUD ROUTES (Admin & Teacher)
+// ==========================================
+Route::prefix('reading-tests')->name('reading-tests.')
+    ->middleware(['auth', 'verified'])
+    ->controller(ReadingTestController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{readingTest}', 'show')->name('show');
+        Route::get('/{readingTest}/edit', 'edit')->name('edit');
+        Route::put('/{readingTest}', 'update')->name('update');
+        Route::delete('/{readingTest}', 'destroy')->name('destroy');
+        
+        // AJAX routes
+        Route::get('/body-format', 'getBodyFormat')->name('body-format');
+        Route::get('/by-app-test/{appTest}', 'getByAppTest')->name('by-app-test');
+        
+        // Reading Test Items nested routes
+        Route::prefix('/{readingTest}/items')->name('items.')->group(function () {
+            Route::get('/', 'itemIndex')->name('index');
+            Route::get('/create', 'itemCreate')->name('create');
+            Route::post('/', 'itemStore')->name('store');
+            Route::get('/{item}', 'itemShow')->name('show');
+            Route::get('/{item}/edit', 'itemEdit')->name('edit');
+            Route::put('/{item}', 'itemUpdate')->name('update');
+            Route::delete('/{item}', 'itemDestroy')->name('destroy');
+            
+            // AJAX routes
+            Route::get('/body-format/{type}', 'itemGetBodyFormat')->name('body-format');
+        });
+    });
+
+// ==========================================
+// LISTENING TEST CRUD ROUTES (Admin & Teacher)
+// ==========================================
+Route::prefix('listening-tests')->name('listening-tests.')
+    ->middleware(['auth', 'verified'])
+    ->controller(ListeningTestCrudController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('/{listeningTest}', 'show')->name('show');
+        Route::get('/{listeningTest}/edit', 'edit')->name('edit');
+        Route::put('/{listeningTest}', 'update')->name('update');
+        Route::delete('/{listeningTest}', 'destroy')->name('destroy');
+        
+        // Listening Test Items routes
+        Route::prefix('{listeningTest}/items')->name('items.')->group(function () {
+            Route::get('/', 'itemIndex')->name('index');
+            Route::get('/create', 'itemCreate')->name('create');
+            Route::post('/', 'itemStore')->name('store');
+            Route::get('/{item}', 'itemShow')->name('show');
+            Route::get('/{item}/edit', 'itemEdit')->name('edit');
+            Route::put('/{item}', 'itemUpdate')->name('update');
+            Route::delete('/{item}', 'itemDestroy')->name('destroy');
+        });
+    });
+
+// ==========================================
+// WRITING TEST CRUD ROUTES (Admin & Teacher)
+// ==========================================
+Route::middleware(['auth'])->prefix('writing-tests')->name('writing-tests.')->controller(WritingTestCrudController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::get('/create', 'create')->name('create');
+    Route::post('/', 'store')->name('store');
+    Route::get('/{writingTest}', 'show')->name('show');
+    Route::get('/{writingTest}/edit', 'edit')->name('edit');
+    Route::put('/{writingTest}', 'update')->name('update');
+    Route::delete('/{writingTest}', 'destroy')->name('destroy');
+});

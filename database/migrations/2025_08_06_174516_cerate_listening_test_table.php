@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->integer('app_test_id');
             $table->string('title');
             $table->text('audio');
+            $table->timestamps();
             $table->index('app_test_id');
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('listening_test');
     }
 };

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Test;
+use App\Models\AppTest;
 use App\Models\UserTestAttempt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +14,7 @@ class TeacherController extends Controller
     public function dashboard(Request $request)
     {
         $stats = [
-            'total_tests' => Test::count(),
+            'total_tests' => AppTest::count(),
             'total_students' => User::where('role', 'student')->count(),
             'total_attempts' => UserTestAttempt::count(),
             'average_score' => UserTestAttempt::whereNotNull('completed_at')->avg('total_score') ?? 0,

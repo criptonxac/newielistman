@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Test;
+use App\Models\AppTest;
 use App\Models\TestCategory;
 use App\Models\TestQuestion;
 use App\Models\UserTestAttempt;
@@ -20,7 +20,7 @@ class AdminController extends Controller
             'total_students' => User::where('role', 'student')->count(),
             'total_teachers' => User::where('role', 'teacher')->count(),
             'total_questions' => TestQuestion::count(),
-            'total_tests' => Test::count(),
+            'total_tests' => AppTest::count(),
             'total_attempts' => UserTestAttempt::count(),
         ];
 
@@ -192,8 +192,7 @@ class AdminController extends Controller
         }])->get();
 
         // Barcha testlar
-        $tests = Test::with('category')
-            ->orderBy('created_at', 'desc')
+        $tests = AppTest::orderBy('created_at', 'desc')
             ->paginate(10);
 
         return view('admin.tests', compact('categories', 'tests'));
